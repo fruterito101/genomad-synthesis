@@ -1,4 +1,5 @@
-"use client";
+"use client"
+import dynamicImport from "next/dynamic";
 export const dynamic = "force-dynamic";
 
 import { useEffect, useState, useCallback } from "react";
@@ -7,7 +8,10 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { LoginButton } from "@/components/LoginButton";
-import { AgentDetailModal } from "@/components/AgentDetailModal";
+const AgentDetailModal = dynamicImport(
+  () => import("@/components/AgentDetailModal").then(mod => ({ default: mod.AgentDetailModal })),
+  { ssr: false }
+);
 import { AgentCard } from "@/components/agent-card";
 import { PendingApprovals } from "@/components/PendingApprovals";
 import { CoOwnersDisplay } from "@/components/CoOwnersDisplay";

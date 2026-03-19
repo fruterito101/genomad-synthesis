@@ -6,7 +6,7 @@ import { desc, eq } from "drizzle-orm";
 
 // Disable static caching for this route
 export const dynamic = "force-dynamic";
-export const revalidate = 0;
+export const revalidate = 30; // 30 second cache
 
 export async function GET(request: NextRequest) {
   try {
@@ -61,13 +61,13 @@ export async function GET(request: NextRequest) {
     });
     
     // Prevent caching
-    response.headers.set("Cache-Control", "no-store, no-cache, must-revalidate");
+    response.headers.set("Cache-Control", "public, s-maxage=30, stale-while-revalidate=60");
     
     return response;
   } catch (error) {
     console.error("Leaderboard error:", error);
     const response = NextResponse.json({ agents: [], total: 0, updatedAt: new Date().toISOString() });
-    response.headers.set("Cache-Control", "no-store");
+    response.headers.set("Cache-Control", "public, s-maxage=30");
     return response;
   }
 }

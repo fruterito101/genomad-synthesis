@@ -8,4 +8,3 @@ export { AgentsCatalogue } from "./AgentsCatalogue";
 export { HowToStart } from "./HowToStart";
 export { Breeding } from "./Breeding";
 export { Footer } from "./Footer";
-export { InteractiveGlobe } from "../interactive-globe"

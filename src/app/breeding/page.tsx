@@ -1,4 +1,5 @@
-"use client";
+"use client"
+import dynamicImport from "next/dynamic";
 export const dynamic = "force-dynamic";
 
 import { Suspense, useEffect, useState, useCallback } from "react";

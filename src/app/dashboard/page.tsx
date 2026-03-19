@@ -2,6 +2,7 @@
 export const dynamic = "force-dynamic"
 
 import { useEffect, useState, useCallback } from "react"
+import dynamicImport from "next/dynamic"
 import { usePrivy } from "@privy-io/react-auth"
 import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
@@ -22,8 +23,15 @@ import { AgentCard } from "@/components/agent-card"
 import { StatsCard } from "@/components/stats-card"
 import { AppSidebar } from "@/components/app-sidebar"
 import { LoginButton } from "@/components/LoginButton"
-import { ActivityChart } from "@/components/activity-chart"
-import { RequestBreedingModal } from "@/components/RequestBreedingModal"
+// Lazy load heavy components
+const ActivityChart = dynamicImport(
+  () => import("@/components/activity-chart").then(mod => ({ default: mod.ActivityChart })),
+  { ssr: false, loading: () => <div className="h-[280px] bg-card rounded-xl animate-pulse" /> }
+)
+const RequestBreedingModal = dynamicImport(
+  () => import("@/components/RequestBreedingModal").then(mod => ({ default: mod.RequestBreedingModal })),
+  { ssr: false }
+)
 
 interface Agent {
   id: string
@@ -67,7 +75,15 @@ export default function DashboardPage() {
     try {
       setLoading(true)
       
-      const statsRes = await fetch("/api/stats")
+      // Parallel fetching for better performance
+      const token = authenticated ? await getAccessToken() : null
+      
+      const [statsRes, agentsRes, myRes] = await Promise.all([
+        fetch("/api/stats"),
+        fetch("/api/leaderboard?limit=12"),
+        token ? fetch("/api/agents/available", { headers: { Authorization: `Bearer ${token}` } }) : Promise.resolve(null)
+      ])
+      
       if (statsRes.ok) {
         const data = await statsRes.json()
         setStats({
@@ -77,23 +93,14 @@ export default function DashboardPage() {
         })
       }
       
-      const agentsRes = await fetch("/api/leaderboard?limit=12")
       if (agentsRes.ok) {
         const data = await agentsRes.json()
         setGlobalAgents(data.agents || [])
       }
       
-      if (authenticated) {
-        const token = await getAccessToken()
-        if (token) {
-          const myRes = await fetch("/api/agents/available", {
-            headers: { Authorization: `Bearer ${token}` },
-          })
-          if (myRes.ok) {
-            const myData = await myRes.json()
-            setMyAgents(myData.myAgents || [])
-          }
-        }
+      if (myRes?.ok) {
+        const myData = await myRes.json()
+        setMyAgents(myData.myAgents || [])
       }
     } catch (err) {
       console.error("Error fetching data:", err)
