@@ -1,17 +1,102 @@
 @import "tailwindcss";
 
 /* ============================================
-   GENOMAD DESIGN SYSTEM
+   TAILWIND V4 THEME CONFIGURATION
+   Usando @theme para registrar colores custom
+   ============================================ */
+
+@theme {
+  /* Border radius */
+  --radius-sm: 0.5rem;
+  --radius-md: 0.625rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  
+  /* Colors - Dark theme (Genomad default) */
+  --color-background: oklch(0.145 0.02 265);
+  --color-foreground: oklch(0.985 0 0);
+  
+  --color-card: oklch(0.185 0.025 265);
+  --color-card-foreground: oklch(0.985 0 0);
+  
+  --color-popover: oklch(0.185 0.025 265);
+  --color-popover-foreground: oklch(0.985 0 0);
+  
+  --color-primary: oklch(0.628 0.258 292);
+  --color-primary-foreground: oklch(0.985 0 0);
+  
+  --color-secondary: oklch(0.55 0.15 170);
+  --color-secondary-foreground: oklch(0.985 0 0);
+  
+  --color-muted: oklch(0.25 0.02 265);
+  --color-muted-foreground: oklch(0.65 0 0);
+  
+  --color-accent: oklch(0.65 0.25 310);
+  --color-accent-foreground: oklch(0.985 0 0);
+  
+  --color-destructive: oklch(0.577 0.245 27);
+  --color-destructive-foreground: oklch(0.985 0 0);
+  
+  --color-border: oklch(0.3 0.02 265);
+  --color-input: oklch(0.3 0.02 265);
+  --color-ring: oklch(0.628 0.258 292);
+  
+  /* Chart colors */
+  --color-chart-1: oklch(0.628 0.258 292);
+  --color-chart-2: oklch(0.55 0.15 170);
+  --color-chart-3: oklch(0.65 0.25 310);
+  --color-chart-4: oklch(0.8 0.18 85);
+  --color-chart-5: oklch(0.65 0.2 25);
+  
+  /* Sidebar */
+  --color-sidebar: oklch(0.145 0.02 265);
+  --color-sidebar-foreground: oklch(0.985 0 0);
+  --color-sidebar-primary: oklch(0.628 0.258 292);
+  --color-sidebar-primary-foreground: oklch(0.985 0 0);
+  --color-sidebar-accent: oklch(0.2 0.015 265);
+  --color-sidebar-accent-foreground: oklch(0.985 0 0);
+  --color-sidebar-border: oklch(0.25 0.02 265);
+  --color-sidebar-ring: oklch(0.628 0.258 292);
+  
+  /* Success/Warning */
+  --color-success: oklch(0.65 0.2 160);
+  --color-warning: oklch(0.8 0.18 85);
+}
+
+/* ============================================
+   BASE STYLES
+   ============================================ */
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+  
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+  
+  /* Cursor pointer for buttons */
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+}
+
+/* ============================================
+   GENOMAD LEGACY DESIGN TOKENS (for compatibility)
    ============================================ */
 
 :root {
   /* Primary Colors */
-  --color-primary: #7B3FE4;
+  --color-primary-legacy: #7B3FE4;
   --color-primary-hover: #8B4FFF;
   --color-primary-dark: #6B2FD4;
   
   /* Secondary Colors */
-  --color-secondary: #00AA93;
+  --color-secondary-legacy: #00AA93;
   --color-secondary-hover: #00BBAA;
   --color-secondary-dark: #009983;
   
@@ -30,27 +115,15 @@
   --color-text-muted: #71717A;
   
   /* Borders */
-  --color-border: #2A2F5F;
+  --color-border-legacy: #2A2F5F;
   --color-border-hover: #3A3F7F;
   
   /* Status */
-  --color-success: #10B981;
   --color-error: #EF4444;
-  --color-warning: #F59E0B;
   
   /* Fonts */
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-/* ============================================
-   BASE STYLES
-   ============================================ */
-
-body {
-  background: var(--color-bg-primary);
-  color: var(--color-text-primary);
-  font-family: var(--font-sans), system-ui, sans-serif;
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 }
 
 /* ============================================
@@ -59,15 +132,15 @@ body {
 
 /* Gradients */
 .gradient-primary {
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent-1) 100%);
+  background: linear-gradient(135deg, var(--color-primary-legacy) 0%, var(--color-accent-1) 100%);
 }
 
 .gradient-secondary {
-  background: linear-gradient(135deg, var(--color-secondary) 0%, var(--color-primary) 100%);
+  background: linear-gradient(135deg, var(--color-secondary-legacy) 0%, var(--color-primary-legacy) 100%);
 }
 
 .gradient-text {
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent-1) 100%);
+  background: linear-gradient(135deg, var(--color-primary-legacy) 0%, var(--color-accent-1) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -76,7 +149,7 @@ body {
 .gradient-border {
   border: 2px solid transparent;
   background: linear-gradient(var(--color-bg-primary), var(--color-bg-primary)) padding-box,
-              linear-gradient(135deg, var(--color-primary), var(--color-secondary)) border-box;
+              linear-gradient(135deg, var(--color-primary-legacy), var(--color-secondary-legacy)) border-box;
 }
 
 /* Glows */
@@ -187,7 +260,7 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--color-border);
+  background: var(--color-border-legacy);
   border-radius: 4px;
 }
 
@@ -196,64 +269,26 @@ body {
 }
 
 /* ============================================
-   SMOOTH SCROLL
+   SMOOTH SCROLL & MISC
    ============================================ */
 
 html {
   scroll-behavior: smooth;
 }
 
-/* ============================================
-   SELECTION
-   ============================================ */
-
 ::selection {
-  background: var(--color-primary);
+  background: var(--color-primary-legacy);
   color: white;
-}
-
-/* ============================================
-   PHASE 3: SMOOTH SCROLL & NAVIGATION
-   ============================================ */
-
-/* Smooth scroll behavior */
-html {
-  scroll-behavior: smooth;
-}
-
-/* Better scrollbar styling */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: var(--color-bg-secondary);
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--color-border);
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--color-border-hover);
-}
-
-/* Selection styling */
-::selection {
-  background: var(--color-primary);
-  color: var(--color-text-primary);
 }
 
 /* Focus states for accessibility */
 *:focus-visible {
-  outline: 2px solid var(--color-primary);
+  outline: 2px solid var(--color-primary-legacy);
   outline-offset: 2px;
 }
 
 /* ============================================
-   PHASE 4: HOVER EFFECTS & POLISH
+   HOVER EFFECTS & POLISH
    ============================================ */
 
 /* Button glow on hover */
@@ -283,7 +318,7 @@ html {
   left: 0;
   width: 0;
   height: 2px;
-  background: var(--color-primary);
+  background: var(--color-primary-legacy);
   transition: width 0.3s ease;
 }
 
@@ -306,15 +341,6 @@ html {
 }
 
 /* Shimmer effect for loading */
-@keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
-}
-
 .shimmer {
   background: linear-gradient(
     90deg,

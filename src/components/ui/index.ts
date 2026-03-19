@@ -1,8 +1,12 @@
-// src/components/ui/index.ts
-// Barrel export for UI components
+// shadcn/ui components
+export { Button, buttonVariants } from "./button-shadcn"
+export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent } from "./card"
+export { Badge, badgeVariants } from "./badge"
+export { Skeleton } from "./skeleton"
+export { Avatar, AvatarImage, AvatarFallback } from "./avatar"
 
-export { Button } from "./Button";
-export { StepCircle } from "./StepCircle";
-export { SectionTitle } from "./SectionTitle";
-export { FeatureCard } from "./FeatureCard";
-export { AnimatedText } from "./AnimatedText";
+// Legacy Genomad components (for backwards compatibility)
+export { AnimatedText } from "./AnimatedText"
+export { FeatureCard } from "./FeatureCard"
+export { SectionTitle } from "./SectionTitle"
+export { StepCircle } from "./StepCircle"
