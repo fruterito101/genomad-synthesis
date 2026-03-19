@@ -20,6 +20,7 @@ import { NetworkSwitcher } from "@/components/NetworkSwitcher";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui";
+import { ConnectionStatus } from "@/components/relay";
 import { useGMDBalance } from "@/hooks/useGMDBalance";
 import { useTranslation } from "react-i18next";
 import { Dna, Link2, Copy, Check, Clock, Sparkles, Store, Coins, ExternalLink, Activity, Cpu, Heart, Brain, TrendingUp, MessageSquare, GraduationCap, Crown, Palette, ChevronRight, RefreshCw, Star, Zap, Shield, Eye, Download, Terminal } from "lucide-react";
@@ -241,6 +242,8 @@ export default function ProfilePage() {
           </motion.div>
 
           {/* My Agents */}
+          {/* OpenClaw Relay Connection */}
+          <ConnectionStatus userId={user?.id} className="mb-6" />
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}>
             <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 flex items-center gap-2"><Activity className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />{t("profile.stats.agents")}<span className="text-xs sm:text-sm font-normal px-2 py-0.5 rounded-full bg-muted text-muted-foreground">{agents.length}</span></h2>
             {loading ? (<div className="text-center py-8 sm:py-12"><Dna className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-4 animate-pulse text-primary" /><p className="text-sm text-muted-foreground">{t("common.loading")}</p></div>
