@@ -332,3 +332,4 @@ MIT License — ver [LICENSE](LICENSE) para detalles.
 <p align="center">
   <strong>🧬 Genomad — Tu agente, on-chain</strong>
 </p>
+
