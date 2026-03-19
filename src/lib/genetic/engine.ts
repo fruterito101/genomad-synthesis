@@ -6,7 +6,6 @@ import {
   BreedingResult, 
   FitnessWeights,
   PopulationOptions,
-  Traits
 } from "./types";
 import { crossover } from "./crossover";
 import { applyMutation, countMutations } from "./mutation";
@@ -58,11 +57,14 @@ export class GeneticEngine {
     
     const result: BreedingResult = {
       child,
+      parentA,
+      parentB,
       parentAFitness,
       parentBFitness,
       childFitness,
       improved: childFitness > Math.max(parentAFitness, parentBFitness),
-      mutationsApplied
+      mutationsApplied,
+      crossoverType: options.crossoverType,
     };
     
     this.history.push(result);
@@ -90,12 +92,12 @@ export class GeneticEngine {
       nextGen.push(...sorted.slice(0, eliteCount));
       
       while (nextGen.length < options.populationSize) {
-        const [parentA, parentB] = this.selectParents(
+        const [pA, pB] = this.selectParents(
           population,
           options.selectionPressure ?? 1.5
         );
         
-        const result = this.breed(parentA, parentB, {
+        const result = this.breed(pA, pB, {
           crossoverType: options.crossoverType ?? "weighted"
         });
         
@@ -158,16 +160,16 @@ export class GeneticEngine {
       return tournament[idx];
     };
     
-    const parentA = selectOne();
-    let parentB = selectOne();
+    const pA = selectOne();
+    let pB = selectOne();
     
     let attempts = 0;
-    while (parentB.hash === parentA.hash && attempts < 10) {
-      parentB = selectOne();
+    while (pB.hash === pA.hash && attempts < 10) {
+      pB = selectOne();
       attempts++;
     }
     
-    return [parentA, parentB];
+    return [pA, pB];
   }
   
   private adjustMutationRate(): void {

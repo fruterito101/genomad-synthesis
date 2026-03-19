@@ -2,26 +2,9 @@
 
 import { PrivyProvider } from "@privy-io/react-auth";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-
-// Monad Testnet chain definition
-const monadTestnet = {
-  id: 10143,
-  name: "Monad Testnet",
-  network: "monad-testnet",
-  nativeCurrency: {
-    decimals: 18,
-    name: "Monad",
-    symbol: "MON",
-  },
-  rpcUrls: {
-    default: { http: ["https://testnet-rpc.monad.xyz"] },
-    public: { http: ["https://testnet-rpc.monad.xyz"] },
-  },
-  blockExplorers: {
-    default: { name: "Monad Explorer", url: "https://testnet.monadexplorer.com" },
-  },
-  testnet: true,
-};
+import { WagmiProvider } from "wagmi";
+import { monadTestnet } from "viem/chains";
+import { wagmiConfig } from "@/lib/wagmi/config";
 
 const queryClient = new QueryClient();
 
@@ -40,27 +23,29 @@ export function Providers({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <PrivyProvider
-      appId={appId}
-      config={{
-        loginMethods: ["telegram", "wallet"],
-        appearance: {
-          theme: "dark",
-          accentColor: "#10B981",
-          logo: "/logo.png",
-        },
-        embeddedWallets: {
-          ethereum: {
-            createOnLogin: "users-without-wallets",
-          },
-        },
-        defaultChain: monadTestnet,
-        supportedChains: [monadTestnet],
-      }}
-    >
+    <WagmiProvider config={wagmiConfig}>
       <QueryClientProvider client={queryClient}>
-        {children}
+        <PrivyProvider
+          appId={appId}
+          config={{
+            loginMethods: ["telegram", "wallet"],
+            appearance: {
+              theme: "dark",
+              accentColor: "#10B981",
+              logo: "/logo.png",
+            },
+            embeddedWallets: {
+              ethereum: {
+                createOnLogin: "users-without-wallets",
+              },
+            },
+            defaultChain: monadTestnet,
+            supportedChains: [monadTestnet],
+          }}
+        >
+          {children}
+        </PrivyProvider>
       </QueryClientProvider>
-    </PrivyProvider>
+    </WagmiProvider>
   );
 }

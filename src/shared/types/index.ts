@@ -1,33 +1,12 @@
-/**
- * 🧬 GENOMAD - Shared Types
- * Types used by both frontend and backend
- */
-
-export interface AgentDNA {
-  social: number;
-  technical: number;
-  creativity: number;
-  analysis: number;
-  trading: number;
-  empathy: number;
-  teaching: number;
-  leadership: number;
-}
-
-export interface Agent {
-  id: string;
-  name: string;
-  dna: AgentDNA;
-  generation: number;
-  parentA?: string;
-  parentB?: string;
-  owner: string;
-  createdAt: number;
-  dnaHash: string;
-}
-
-export type TraitName = keyof AgentDNA;
-export const TRAIT_NAMES: TraitName[] = [
-  'social', 'technical', 'creativity', 'analysis',
-  'trading', 'empathy', 'teaching', 'leadership'
-];
+// src/shared/types/index.ts
+// Re-export from source of truth
+export {
+  TRAIT_NAMES,
+  type TraitName,
+  type Traits,
+  type AgentDNA,
+  type Agent,
+  type BreedingOptions,
+  type BreedingResult,
+  type FitnessWeights,
+} from "@/lib/genetic/types";
