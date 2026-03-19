@@ -1,73 +1,84 @@
 // src/lib/heuristics/technical.ts
+// MEJORADO: Más keywords, base 0, frecuencia
 
-import { AgentFiles, TraitAnalysis, KeywordConfig } from "./types";
+import { AgentFiles, TraitAnalysis } from "./types";
 
-const KEYWORDS: KeywordConfig = {
+const KEYWORDS = {
   high: [
-    "typescript", "solidity", "rust", "python", "javascript",
-    "smart contract", "api", "backend", "frontend", "deploy",
-    "github", "docker", "kubernetes", "aws", "database",
-    "algorithm", "architecture", "framework", "sdk", "cli"
+    // Languages
+    "typescript", "javascript", "solidity", "rust", "python", "golang", "java",
+    // Frameworks
+    "react", "nextjs", "nodejs", "express", "fastapi", "django",
+    // Blockchain
+    "smart contract", "web3", "ethereum", "monad", "blockchain", "evm", "hardhat", "foundry",
+    // DevOps
+    "docker", "kubernetes", "aws", "gcp", "azure", "github actions",
+    // Databases
+    "postgresql", "mongodb", "redis", "sql", "database", "prisma", "drizzle",
+    // Tools
+    "api", "rest", "graphql", "sdk", "cli", "terminal", "vscode"
   ],
   medium: [
-    "code", "programming", "developer", "engineer", "build",
-    "npm", "git", "server", "debug", "test", "compile",
-    "function", "class", "module", "library", "package"
+    "code", "coding", "programming", "developer", "engineer", "software",
+    "backend", "frontend", "fullstack", "deploy", "deployment", "server",
+    "npm", "yarn", "bun", "git", "github", "gitlab", "repository", "repo",
+    "debug", "test", "testing", "compile", "build", "architecture",
+    "function", "class", "module", "library", "package", "framework",
+    "algorithm", "optimization"
   ],
   low: [
-    "tech", "software", "app", "website", "computer",
-    "system", "tool", "script", "command"
+    "tech", "technical", "app", "application", "website", "web",
+    "computer", "system", "tool", "script", "command", "config"
   ]
 };
+
+function countOccurrences(text: string, keyword: string): number {
+  const escaped = keyword.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const regex = new RegExp(escaped, "gi");
+  return (text.match(regex) || []).length;
+}
 
 export function analyzeTechnical(files: AgentFiles): TraitAnalysis {
   const content = `${files.soul} ${files.identity} ${files.tools}`.toLowerCase();
   const signals: string[] = [];
-  let score = 50; // Base score
+  let score = 0;
 
-  // Buscar keywords de alto impacto
   for (const kw of KEYWORDS.high) {
-    if (content.includes(kw)) {
-      score += 8;
-      signals.push(`[high] ${kw}`);
+    const count = countOccurrences(content, kw);
+    if (count > 0) {
+      score += Math.min(count * 4, 12);
+      signals.push(`${kw} (x${count})`);
     }
   }
 
-  // Keywords de medio impacto
   for (const kw of KEYWORDS.medium) {
-    if (content.includes(kw)) {
-      score += 4;
-      if (signals.length < 10) signals.push(`[med] ${kw}`);
+    const count = countOccurrences(content, kw);
+    if (count > 0) {
+      score += Math.min(count * 2, 6);
+      if (signals.length < 15) signals.push(`${kw} (x${count})`);
     }
   }
 
-  // Keywords de bajo impacto
   for (const kw of KEYWORDS.low) {
-    if (content.includes(kw)) {
-      score += 2;
+    const count = countOccurrences(content, kw);
+    if (count > 0) {
+      score += Math.min(count * 1, 3);
     }
   }
 
-  // Bonus: tiene bloques de código
+  // Bonus: code blocks
   const codeBlocks = (content.match(/```/g) || []).length / 2;
   if (codeBlocks > 0) {
-    score += Math.min(15, codeBlocks * 5);
-    signals.push(`[bonus] ${codeBlocks} code blocks`);
+    score += Math.min(Math.floor(codeBlocks) * 2, 8);
+    signals.push(`${Math.floor(codeBlocks)} code blocks`);
   }
 
-  // Bonus: menciona herramientas específicas en TOOLS.md
-  if (files.tools.length > 200) {
-    score += 5;
-    signals.push("[bonus] detailed TOOLS.md");
-  }
-
-  // Clamp score
   score = Math.min(100, Math.max(0, score));
 
   return {
     trait: "technical",
     score: Math.round(score),
-    confidence: signals.length > 5 ? 0.9 : signals.length > 2 ? 0.7 : 0.5,
-    signals: signals.slice(0, 8)
+    confidence: signals.length > 8 ? 0.95 : signals.length > 4 ? 0.8 : signals.length > 1 ? 0.6 : 0.3,
+    signals: signals.slice(0, 10)
   };
 }

@@ -13,5 +13,14 @@ export { analyzeTrading } from "./trading";
 export { analyzeTeaching } from "./teaching";
 export { analyzeLeadership } from "./leadership";
 
+// DNA Hash utilities
+export { 
+  calculateTraitsHash, 
+  shortHash, 
+  generateDNAHash, 
+  verifyTraitsMatch 
+} from "./dna-hash";
+
 // Main engine
 export { HeuristicsEngine, heuristicsEngine } from "./engine";
+export type { HeuristicsResultWithHash } from "./engine";

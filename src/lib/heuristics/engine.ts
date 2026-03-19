@@ -1,4 +1,5 @@
 // src/lib/heuristics/engine.ts
+// Motor de heurísticas con HASH REAL
 
 import { Traits } from "@/lib/genetic/types";
 import { 
@@ -15,6 +16,18 @@ import { analyzeEmpathy } from "./empathy";
 import { analyzeTrading } from "./trading";
 import { analyzeTeaching } from "./teaching";
 import { analyzeLeadership } from "./leadership";
+import { generateDNAHash } from "./dna-hash";
+
+/**
+ * Resultado extendido con hash real
+ */
+export interface HeuristicsResultWithHash extends HeuristicsResult {
+  dnaHash: {
+    full: string;
+    short: string;
+    commitment: string;
+  };
+}
 
 /**
  * Motor de heurísticas para analizar agentes OpenClaw
@@ -54,10 +67,9 @@ export class HeuristicsEngine {
   }
 
   /**
-   * Analiza archivos de agente y extrae traits
+   * Analiza archivos de agente y extrae traits CON HASH REAL
    */
-  analyze(files: AgentFiles): HeuristicsResult {
-    // Validar primero
+  analyze(files: AgentFiles): HeuristicsResultWithHash {
     const validation = this.validateFiles(files);
     
     // Ejecutar todos los analyzers
@@ -88,11 +100,19 @@ export class HeuristicsEngine {
     const totalConfidence = 
       analyses.reduce((sum, a) => sum + a.confidence, 0) / analyses.length;
 
+    // CALCULAR HASH REAL
+    const hashResult = generateDNAHash(traits, 0);
+
     return {
       traits,
       analysis: analyses,
       totalConfidence: Number(totalConfidence.toFixed(2)),
-      warnings: validation.warnings
+      warnings: validation.warnings,
+      dnaHash: {
+        full: hashResult.fullHash,
+        short: hashResult.shortHash,
+        commitment: hashResult.commitment
+      }
     };
   }
 
@@ -143,7 +163,7 @@ export class HeuristicsEngine {
    * Helper para encontrar score de un trait
    */
   private findScore(analyses: TraitAnalysis[], trait: keyof Traits): number {
-    return analyses.find(a => a.trait === trait)?.score ?? 50;
+    return analyses.find(a => a.trait === trait)?.score ?? 0;
   }
 }
 

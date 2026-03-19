@@ -1,4 +1,5 @@
 // src/lib/heuristics/analysis.ts
+// Base: 0, Score by frequency
 
 import { AgentFiles, TraitAnalysis, KeywordConfig } from "./types";
 
@@ -14,50 +15,48 @@ const KEYWORDS: KeywordConfig = {
     "structure", "organize", "categorize"
   ],
   low: [
-    "think", "consider", "look at", "check", "verify",
-    "detail", "specific"
+    "think", "consider", "check", "verify", "detail", "specific"
   ]
 };
+
+function countOccurrences(text: string, keyword: string): number {
+  const regex = new RegExp(keyword, "gi");
+  return (text.match(regex) || []).length;
+}
 
 export function analyzeAnalysis(files: AgentFiles): TraitAnalysis {
   const content = `${files.soul} ${files.identity} ${files.tools}`.toLowerCase();
   const signals: string[] = [];
-  let score = 50;
+  let score = 0;
 
   for (const kw of KEYWORDS.high) {
-    if (content.includes(kw)) {
-      score += 8;
-      signals.push(`[high] ${kw}`);
+    const count = countOccurrences(content, kw);
+    if (count > 0) {
+      score += Math.min(count * 5, 15);
+      signals.push(`${kw} (x${count})`);
     }
   }
 
   for (const kw of KEYWORDS.medium) {
-    if (content.includes(kw)) {
-      score += 4;
-      if (signals.length < 10) signals.push(`[med] ${kw}`);
+    const count = countOccurrences(content, kw);
+    if (count > 0) {
+      score += Math.min(count * 3, 9);
+      if (signals.length < 10) signals.push(`${kw} (x${count})`);
     }
   }
 
   for (const kw of KEYWORDS.low) {
-    if (content.includes(kw)) {
-      score += 2;
+    const count = countOccurrences(content, kw);
+    if (count > 0) {
+      score += Math.min(count * 1, 3);
     }
   }
 
-  // Bonus: contenido estructurado (bullets, números)
-  const bulletCount = (content.match(/^[\-\*\d\.]\s/gm) || []).length;
-  if (bulletCount > 15) {
-    score += 10;
-    signals.push(`[bonus] highly structured (${bulletCount} bullets)`);
-  } else if (bulletCount > 5) {
-    score += 5;
-    signals.push(`[bonus] structured content`);
-  }
-
-  // Bonus: usa tablas markdown
-  if (content.includes("|---") || content.includes("| ---")) {
-    score += 5;
-    signals.push("[bonus] uses tables");
+  // Bonus: structured content
+  const bulletCount = (content.match(/^[\-\*]\s/gm) || []).length;
+  if (bulletCount > 10) {
+    score += Math.min(bulletCount, 15);
+    signals.push(`${bulletCount} bullets`);
   }
 
   score = Math.min(100, Math.max(0, score));
