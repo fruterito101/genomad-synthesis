@@ -5,8 +5,8 @@ import "./IGenomad.sol";
 
 /**
  * @title GenomadNFT
- * @notice ERC-721 NFT for AI Agents with on-chain DNA commitment
- * @dev Minimal ERC-721 implementation for hackathon
+ * @notice ERC-721 NFT for AI Agents with on-chain DNA and encrypted storage
+ * @dev FASE 4: Full on-chain architecture
  */
 contract GenomadNFT is IGenomad {
     // ═══════════════════════════════════════════════════════
@@ -26,8 +26,11 @@ contract GenomadNFT is IGenomad {
     mapping(uint256 => address) private _tokenApprovals;
     mapping(address => mapping(address => bool)) private _operatorApprovals;
 
-    // Agent data
+    // Agent data (public traits, generation, parents)
     mapping(uint256 => AgentData) private _agents;
+    
+    // Encrypted data (SOUL.md, IDENTITY.md - only owners can decrypt)
+    mapping(uint256 => EncryptedData) private _encryptedData;
 
     // ═══════════════════════════════════════════════════════
     // MODIFIERS
@@ -63,6 +66,7 @@ contract GenomadNFT is IGenomad {
     // AGENT FUNCTIONS
     // ═══════════════════════════════════════════════════════
 
+    /// @notice Register agent with just DNA commitment (legacy/simple)
     function registerAgent(bytes32 dnaCommitment) external returns (uint256 tokenId) {
         tokenId = ++_tokenIdCounter;
 
@@ -70,6 +74,7 @@ contract GenomadNFT is IGenomad {
 
         _agents[tokenId] = AgentData({
             dnaCommitment: dnaCommitment,
+            traits: [uint8(0), 0, 0, 0, 0, 0, 0, 0],
             generation: 0,
             parentA: 0,
             parentB: 0,
@@ -80,6 +85,44 @@ contract GenomadNFT is IGenomad {
         emit AgentRegistered(tokenId, msg.sender, dnaCommitment, 0);
     }
 
+    /// @notice Register agent with full on-chain data (FASE 4)
+    function registerAgentWithData(
+        bytes32 dnaCommitment,
+        uint8[8] calldata traits,
+        bytes calldata encryptedSoul,
+        bytes calldata encryptedIdentity,
+        bytes32 contentHash
+    ) external returns (uint256 tokenId) {
+        // Validate traits are in range
+        for (uint8 i = 0; i < 8; i++) {
+            require(traits[i] <= 100, "Trait must be 0-100");
+        }
+
+        tokenId = ++_tokenIdCounter;
+
+        _mint(msg.sender, tokenId);
+
+        _agents[tokenId] = AgentData({
+            dnaCommitment: dnaCommitment,
+            traits: traits,
+            generation: 0,
+            parentA: 0,
+            parentB: 0,
+            createdAt: block.timestamp,
+            isActive: false
+        });
+
+        _encryptedData[tokenId] = EncryptedData({
+            encryptedSoul: encryptedSoul,
+            encryptedIdentity: encryptedIdentity,
+            contentHash: contentHash
+        });
+
+        emit AgentRegistered(tokenId, msg.sender, dnaCommitment, 0);
+        emit EncryptedDataStored(tokenId, contentHash);
+    }
+
+    /// @notice Register bred agent (called by BreedingFactory)
     function registerBredAgent(
         address to,
         bytes32 dnaCommitment,
@@ -93,8 +136,10 @@ contract GenomadNFT is IGenomad {
 
         _mint(to, tokenId);
 
+        // Inherit traits through crossover (done off-chain, stored here)
         _agents[tokenId] = AgentData({
             dnaCommitment: dnaCommitment,
+            traits: [uint8(0), 0, 0, 0, 0, 0, 0, 0], // Set via setChildTraits
             generation: generation,
             parentA: parentA,
             parentB: parentB,
@@ -105,10 +150,71 @@ contract GenomadNFT is IGenomad {
         emit AgentRegistered(tokenId, to, dnaCommitment, generation);
     }
 
+    /// @notice Register bred agent with full data (FASE 4)
+    function registerBredAgentWithData(
+        address to,
+        bytes32 dnaCommitment,
+        uint8[8] calldata traits,
+        uint256 generation,
+        uint256 parentA,
+        uint256 parentB,
+        bytes calldata encryptedSoul,
+        bytes calldata encryptedIdentity,
+        bytes32 contentHash
+    ) external returns (uint256 tokenId) {
+        require(msg.sender == breedingFactory, "Only breeding factory");
+
+        // Validate traits
+        for (uint8 i = 0; i < 8; i++) {
+            require(traits[i] <= 100, "Trait must be 0-100");
+        }
+
+        tokenId = ++_tokenIdCounter;
+
+        _mint(to, tokenId);
+
+        _agents[tokenId] = AgentData({
+            dnaCommitment: dnaCommitment,
+            traits: traits,
+            generation: generation,
+            parentA: parentA,
+            parentB: parentB,
+            createdAt: block.timestamp,
+            isActive: false
+        });
+
+        _encryptedData[tokenId] = EncryptedData({
+            encryptedSoul: encryptedSoul,
+            encryptedIdentity: encryptedIdentity,
+            contentHash: contentHash
+        });
+
+        emit AgentRegistered(tokenId, to, dnaCommitment, generation);
+        emit EncryptedDataStored(tokenId, contentHash);
+    }
+
+    // ═══════════════════════════════════════════════════════
+    // GETTERS
+    // ═══════════════════════════════════════════════════════
+
     function getAgentData(uint256 tokenId) external view returns (AgentData memory) {
         require(_owners[tokenId] != address(0), "Token does not exist");
         return _agents[tokenId];
     }
+
+    function getEncryptedData(uint256 tokenId) external view returns (EncryptedData memory) {
+        require(_owners[tokenId] != address(0), "Token does not exist");
+        return _encryptedData[tokenId];
+    }
+
+    function getTraits(uint256 tokenId) external view returns (uint8[8] memory) {
+        require(_owners[tokenId] != address(0), "Token does not exist");
+        return _agents[tokenId].traits;
+    }
+
+    // ═══════════════════════════════════════════════════════
+    // STATE CHANGES
+    // ═══════════════════════════════════════════════════════
 
     function activateAgent(uint256 tokenId) external onlyOwnerOf(tokenId) {
         _agents[tokenId].isActive = true;
@@ -118,6 +224,30 @@ contract GenomadNFT is IGenomad {
     function deactivateAgent(uint256 tokenId) external onlyOwnerOf(tokenId) {
         _agents[tokenId].isActive = false;
         emit AgentDeactivated(tokenId);
+    }
+
+    /// @notice Update encrypted data (for agent evolution/updates)
+    function updateEncryptedData(
+        uint256 tokenId,
+        bytes calldata encryptedSoul,
+        bytes calldata encryptedIdentity,
+        bytes32 contentHash
+    ) external onlyOwnerOf(tokenId) {
+        _encryptedData[tokenId] = EncryptedData({
+            encryptedSoul: encryptedSoul,
+            encryptedIdentity: encryptedIdentity,
+            contentHash: contentHash
+        });
+
+        emit EncryptedDataStored(tokenId, contentHash);
+    }
+
+    /// @notice Set traits for an agent (used after breeding calculation)
+    function setTraits(uint256 tokenId, uint8[8] calldata traits) external onlyOwnerOf(tokenId) {
+        for (uint8 i = 0; i < 8; i++) {
+            require(traits[i] <= 100, "Trait must be 0-100");
+        }
+        _agents[tokenId].traits = traits;
     }
 
     // ═══════════════════════════════════════════════════════
