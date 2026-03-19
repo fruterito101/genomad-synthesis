@@ -46,6 +46,7 @@
     "recharts": "^3.7.0",
     "tailwind-merge": "^3.5.0",
     "three": "^0.183.1",
+    "uuid": "^13.0.0",
     "viem": "^2.45.3",
     "wagmi": "^3.4.3",
     "zod": "^4.3.6"
@@ -57,6 +58,7 @@
     "@types/pg": "^8.16.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/uuid": "^11.0.0",
     "@vitejs/plugin-react": "^5.1.4",
     "drizzle-kit": "^0.31.9",
     "eslint": "^9",
