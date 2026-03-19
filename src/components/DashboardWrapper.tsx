@@ -7,6 +7,7 @@ import { Dna } from "lucide-react"
 
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/app-sidebar"
+import { NetworkSwitcher } from "@/components/NetworkSwitcher"
 
 interface DashboardWrapperProps {
   children: React.ReactNode
@@ -42,7 +43,10 @@ export function DashboardWrapper({ children, title }: DashboardWrapperProps) {
         <header className="flex h-14 items-center gap-4 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 lg:px-6">
           <SidebarTrigger className="-ml-1" />
           {title && <h1 className="font-semibold">{title}</h1>}
+          {/* Spacer */}
           <div className="flex-1" />
+          {/* Network Switcher - Siempre visible en la derecha */}
+          <NetworkSwitcher />
         </header>
         <main className="flex-1 p-4 lg:p-6">
           {children}
