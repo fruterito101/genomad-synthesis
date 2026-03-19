@@ -3,6 +3,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { usePrivy } from "@privy-io/react-auth";
+import Link from "next/link";
 import { LoginButton } from "@/components/LoginButton";
 
 interface AgentOwner {
@@ -39,7 +40,7 @@ interface Agent {
 }
 
 export default function DashboardPage() {
-  const { authenticated, ready, getAccessToken } = usePrivy();
+  const { authenticated, ready, getAccessToken, logout, user } = usePrivy();
   const [agents, setAgents] = useState<Agent[]>([]);
   const [myCount, setMyCount] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -53,22 +54,17 @@ export default function DashboardPage() {
   const fetchAgents = useCallback(async () => {
     try {
       setLoading(true);
-      
       const headers: Record<string, string> = {};
       if (authenticated) {
         try {
           const token = await getAccessToken();
-          if (token) {
-            headers["Authorization"] = `Bearer ${token}`;
-          }
+          if (token) headers["Authorization"] = `Bearer ${token}`;
         } catch (e) {
           console.log("Could not get token:", e);
         }
       }
-      
       const res = await fetch("/api/agents/register-skill", { headers });
       const data = await res.json();
-      
       if (data.agents) {
         setAgents(data.agents);
         setMyCount(data.myCount || 0);
@@ -81,38 +77,22 @@ export default function DashboardPage() {
   }, [authenticated, getAccessToken]);
 
   useEffect(() => {
-    if (ready) {
-      fetchAgents();
-    }
+    if (ready) fetchAgents();
   }, [ready, authenticated, fetchAgents]);
 
   const generateCode = async () => {
     setGeneratingCode(true);
     setCodeError(null);
     setVerificationCode(null);
-    
     try {
       const token = await getAccessToken();
-      if (!token) {
-        setCodeError("No auth token - please login first");
-        return;
-      }
-      
+      if (!token) { setCodeError("Please login first"); return; }
       const res = await fetch("/api/codes/generate", {
         method: "POST",
-        headers: {
-          "Authorization": `Bearer ${token}`,
-          "Content-Type": "application/json"
-        }
+        headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" }
       });
-      
       const data = await res.json();
-      
-      if (!res.ok) {
-        setCodeError(data.error || "Failed to generate code");
-        return;
-      }
-      
+      if (!res.ok) { setCodeError(data.error || "Failed"); return; }
       setVerificationCode(data.code);
       setCodeExpiry(new Date(data.expiresAt));
     } catch (err) {
@@ -123,139 +103,185 @@ export default function DashboardPage() {
   };
 
   const copyCode = () => {
-    if (verificationCode) {
-      navigator.clipboard.writeText(verificationCode);
-    }
+    if (verificationCode) navigator.clipboard.writeText(verificationCode);
   };
 
   const getTraitBar = (value: number) => {
     const width = Math.min(100, Math.max(0, value));
     const color = value >= 80 ? "bg-green-500" : value >= 50 ? "bg-yellow-500" : "bg-red-500";
-    return (
-      <div className="w-full bg-gray-700 rounded h-2">
-        <div className={`${color} h-2 rounded`} style={{ width: `${width}%` }} />
-      </div>
-    );
+    return <div className="w-full bg-gray-700 rounded h-2"><div className={`${color} h-2 rounded`} style={{ width: `${width}%` }} /></div>;
   };
 
   const formatTimeLeft = () => {
     if (!codeExpiry) return "";
-    const now = new Date();
-    const diff = codeExpiry.getTime() - now.getTime();
+    const diff = codeExpiry.getTime() - Date.now();
     if (diff <= 0) return "Expired";
-    const mins = Math.floor(diff / 60000);
-    const secs = Math.floor((diff % 60000) / 1000);
-    return `${mins}:${secs.toString().padStart(2, "0")}`;
+    return `${Math.floor(diff / 60000)}:${String(Math.floor((diff % 60000) / 1000)).padStart(2, "0")}`;
   };
 
   const myAgents = agents.filter(a => a.isMine);
+  const walletAddress = user?.wallet?.address;
+  const shortWallet = walletAddress ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}` : null;
 
   if (!ready) {
-    return (
-      <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">
-        <div className="text-2xl">⏳ Loading...</div>
-      </div>
-    );
+    return <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center"><div className="text-2xl">⏳ Loading...</div></div>;
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-8">
-      <div className="max-w-7xl mx-auto">
-        <header className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+    <div className="min-h-screen bg-gray-900 text-white">
+      {/* Navigation Bar */}
+      <header className="bg-gray-800 border-b border-gray-700 sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+          <Link href="/" className="text-2xl font-bold flex items-center gap-2">
+            🧬 Genomad
+          </Link>
+          
+          <nav className="flex items-center gap-6">
+            <Link href="/dashboard" className="text-purple-400 font-medium">
+              Dashboard
+            </Link>
+            {authenticated && (
+              <>
+                <Link href="/profile" className="text-gray-400 hover:text-white transition">
+                  👤 Profile
+                </Link>
+                <Link href="/breeding" className="text-gray-400 hover:text-white transition">
+                  🧬 Breeding
+                </Link>
+              </>
+            )}
+          </nav>
+
+          <div className="flex items-center gap-4">
+            {authenticated && shortWallet && (
+              <div className="flex items-center gap-2 bg-gray-700 px-3 py-1.5 rounded-lg">
+                <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                <code className="text-sm">{shortWallet}</code>
+              </div>
+            )}
+            {authenticated ? (
+              <button onClick={logout} className="text-red-400 hover:text-red-300 text-sm">
+                Logout
+              </button>
+            ) : (
+              <LoginButton />
+            )}
+          </div>
+        </div>
+      </header>
+
+      <main className="max-w-7xl mx-auto px-4 py-8">
+        {/* Stats Header */}
+        <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <h1 className="text-4xl font-bold mb-2">🧬 Genomad Dashboard</h1>
+            <h1 className="text-4xl font-bold mb-2">Dashboard</h1>
             <p className="text-gray-400">
               All Agents: {agents.length} | My Agents: {myCount}
             </p>
           </div>
-          <div className="flex items-center gap-4">
-            <button 
-              onClick={fetchAgents}
-              className="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded transition"
-            >
-              🔄 Refresh
-            </button>
-            <LoginButton />
-          </div>
-        </header>
+          <button onClick={fetchAgents} className="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded transition">
+            🔄 Refresh
+          </button>
+        </div>
 
+        {/* Quick Actions (when authenticated) */}
+        {authenticated && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            <Link href="/profile" className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-500 hover:to-purple-600 rounded-xl p-6 transition">
+              <div className="flex items-center gap-4">
+                <span className="text-4xl">👤</span>
+                <div>
+                  <h3 className="font-bold text-lg">My Profile</h3>
+                  <p className="text-sm text-purple-200">View your agents & stats</p>
+                </div>
+              </div>
+            </Link>
+            
+            <Link href="/breeding" className="bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-500 hover:to-emerald-600 rounded-xl p-6 transition">
+              <div className="flex items-center gap-4">
+                <span className="text-4xl">🧬</span>
+                <div>
+                  <h3 className="font-bold text-lg">Breeding Lab</h3>
+                  <p className="text-sm text-emerald-200">Cross agents to evolve</p>
+                </div>
+              </div>
+            </Link>
+            
+            <div className="bg-gray-700 rounded-xl p-6 opacity-60 cursor-not-allowed">
+              <div className="flex items-center gap-4">
+                <span className="text-4xl">🏪</span>
+                <div>
+                  <h3 className="font-bold text-lg">Marketplace</h3>
+                  <p className="text-sm text-gray-400">Coming soon...</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Link Agent Section */}
         {authenticated && (
           <div className="mb-8 bg-gradient-to-r from-purple-900/50 to-blue-900/50 border border-purple-500/30 rounded-xl p-6">
-            <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-              🔗 Link Your Agent
-            </h2>
+            <h2 className="text-xl font-bold mb-4 flex items-center gap-2">🔗 Link Your Agent</h2>
             
             {!verificationCode ? (
               <div>
                 <p className="text-gray-300 mb-4">
-                  Generate a verification code to link your AI agent to your account.
-                  Then tell your bot: <code className="bg-gray-800 px-2 py-1 rounded">/genomad-verify CODE</code>
+                  Generate a code to link your AI agent. Tell your bot: <code className="bg-gray-800 px-2 py-1 rounded">/genomad-verify CODE</code>
                 </p>
-                <button
-                  onClick={generateCode}
-                  disabled={generatingCode}
-                  className="px-6 py-3 bg-emerald-600 hover:bg-emerald-500 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-lg font-medium transition flex items-center gap-2"
-                >
-                  {generatingCode ? <>⏳ Generating...</> : <>🎫 Generate Verification Code</>}
+                <button onClick={generateCode} disabled={generatingCode} className="px-6 py-3 bg-emerald-600 hover:bg-emerald-500 disabled:bg-gray-600 rounded-lg font-medium transition">
+                  {generatingCode ? "⏳ Generating..." : "🎫 Generate Code"}
                 </button>
                 {codeError && <p className="mt-3 text-red-400">❌ {codeError}</p>}
               </div>
             ) : (
               <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
                 <div className="flex-1">
-                  <p className="text-sm text-gray-400 mb-2">Your verification code:</p>
+                  <p className="text-sm text-gray-400 mb-2">Your code:</p>
                   <div className="flex items-center gap-3">
-                    <code className="text-4xl font-mono font-bold tracking-widest bg-gray-800 px-6 py-3 rounded-lg border-2 border-emerald-500">
-                      {verificationCode}
-                    </code>
-                    <button onClick={copyCode} className="p-3 bg-gray-700 hover:bg-gray-600 rounded-lg transition" title="Copy">📋</button>
+                    <code className="text-4xl font-mono font-bold tracking-widest bg-gray-800 px-6 py-3 rounded-lg border-2 border-emerald-500">{verificationCode}</code>
+                    <button onClick={copyCode} className="p-3 bg-gray-700 hover:bg-gray-600 rounded-lg" title="Copy">📋</button>
                   </div>
-                  <p className="mt-2 text-sm text-yellow-400">⏱️ Expires in: {formatTimeLeft()}</p>
+                  <p className="mt-2 text-sm text-yellow-400">⏱️ Expires: {formatTimeLeft()}</p>
                 </div>
-                <div className="bg-gray-800/50 rounded-lg p-4 max-w-sm">
-                  <p className="text-sm text-gray-300"><strong>Next step:</strong> Tell your AI agent:</p>
-                  <code className="block mt-2 bg-gray-900 px-3 py-2 rounded text-emerald-400">/genomad-verify {verificationCode}</code>
-                </div>
-                <button onClick={() => { setVerificationCode(null); setCodeExpiry(null); }} className="text-gray-400 hover:text-white text-sm">Generate new code</button>
+                <button onClick={() => { setVerificationCode(null); setCodeExpiry(null); }} className="text-gray-400 hover:text-white text-sm">New code</button>
               </div>
             )}
           </div>
         )}
 
         {!authenticated && (
-          <div className="mb-8 bg-gray-800 border border-gray-700 rounded-xl p-6 text-center">
-            <p className="text-gray-300 mb-4">🔐 Login to generate verification codes and link your agents</p>
+          <div className="mb-8 bg-gray-800 border border-gray-700 rounded-xl p-8 text-center">
+            <p className="text-gray-300 mb-4 text-lg">🔐 Connect your wallet to access Profile & Breeding</p>
             <LoginButton />
           </div>
         )}
 
         {error && <div className="bg-red-900 border border-red-500 rounded p-4 mb-8">Error: {error}</div>}
 
+        {/* My Agents */}
         {authenticated && myAgents.length > 0 && (
           <div className="mb-8">
-            <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">👤 My Agents</h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-2xl font-bold flex items-center gap-2">👤 My Agents</h2>
+              <Link href="/profile" className="text-purple-400 hover:text-purple-300 text-sm">View all in Profile →</Link>
+            </div>
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {myAgents.map((agent) => (
-                <AgentCard key={agent.id} agent={agent} getTraitBar={getTraitBar} isOwned />
+              {myAgents.slice(0, 3).map((agent) => (
+                <AgentCard key={agent.id} agent={agent} getTraitBar={getTraitBar} isOwned showBreedButton />
               ))}
             </div>
           </div>
         )}
 
+        {/* All Agents */}
         <div>
           <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">🌍 All Registered Agents</h2>
           
           {loading ? (
-            <div className="text-center py-20">
-              <div className="text-4xl mb-4">🧬</div>
-              <p className="text-xl">Loading agents...</p>
-            </div>
+            <div className="text-center py-20"><div className="text-4xl mb-4">🧬</div><p className="text-xl">Loading...</p></div>
           ) : agents.length === 0 ? (
-            <div className="text-center py-20">
-              <div className="text-6xl mb-4">🥚</div>
-              <h2 className="text-2xl mb-2">No agents registered yet</h2>
-              <p className="text-gray-400">Use the genomad-verify skill to register your first agent!</p>
-            </div>
+            <div className="text-center py-20"><div className="text-6xl mb-4">🥚</div><h2 className="text-2xl mb-2">No agents yet</h2><p className="text-gray-400">Be the first to register!</p></div>
           ) : (
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {agents.map((agent) => (
@@ -264,16 +290,17 @@ export default function DashboardPage() {
             </div>
           )}
         </div>
-      </div>
+      </main>
     </div>
   );
 }
 
-function AgentCard({ agent, getTraitBar, isOwned = false }: { agent: Agent; getTraitBar: (value: number) => React.ReactNode; isOwned?: boolean; }) {
-  const ownerDisplay = agent.owner 
-    ? (agent.owner.name || agent.owner.wallet || "Linked")
-    : "Unclaimed";
-  
+function AgentCard({ agent, getTraitBar, isOwned = false, showBreedButton = false }: { 
+  agent: Agent; 
+  getTraitBar: (value: number) => React.ReactNode; 
+  isOwned?: boolean;
+  showBreedButton?: boolean;
+}) {
   return (
     <div className={`bg-gray-800 rounded-lg p-6 border transition ${isOwned ? "border-emerald-500 ring-2 ring-emerald-500/20" : "border-gray-700 hover:border-purple-500"}`}>
       <div className="flex justify-between items-start mb-4">
@@ -290,23 +317,16 @@ function AgentCard({ agent, getTraitBar, isOwned = false }: { agent: Agent; getT
         </div>
       </div>
 
-      {/* Owner Badge */}
       <div className="mb-4 flex items-center gap-2">
-        <span className={`text-xs px-2 py-1 rounded flex items-center gap-1 ${agent.owner ? "bg-blue-900/50 text-blue-300 border border-blue-700" : "bg-gray-700 text-gray-400"}`}>
-          {agent.owner ? (
-            <>
-              👤 {agent.owner.telegram ? `@${agent.owner.telegram}` : agent.owner.wallet || "Owner"}
-            </>
-          ) : (
-            <>🥚 Unclaimed</>
-          )}
+        <span className={`text-xs px-2 py-1 rounded ${agent.owner ? "bg-blue-900/50 text-blue-300 border border-blue-700" : "bg-gray-700 text-gray-400"}`}>
+          {agent.owner ? <>👤 {agent.owner.telegram ? `@${agent.owner.telegram}` : agent.owner.wallet || "Owner"}</> : <>🥚 Unclaimed</>}
         </span>
       </div>
 
       <div className="mb-4 flex flex-wrap gap-2">
         <span className="text-xs bg-gray-700 px-2 py-1 rounded">Gen {agent.generation}</span>
         <span className={`text-xs px-2 py-1 rounded ${agent.isActive ? "bg-green-900 text-green-300" : "bg-red-900 text-red-300"}`}>
-          {agent.isActive ? "Active" : "Inactive"}
+          {agent.isActive ? "🟢 Active" : "🔴 Inactive"}
         </span>
         {agent.skillCount !== undefined && agent.skillCount > 0 && (
           <span className="text-xs bg-blue-900 text-blue-300 px-2 py-1 rounded">🔧 {agent.skillCount} Skills</span>
@@ -326,7 +346,11 @@ function AgentCard({ agent, getTraitBar, isOwned = false }: { agent: Agent; getT
 
       <div className="mt-4 pt-4 border-t border-gray-700">
         <p className="text-xs text-gray-500 font-mono truncate">DNA: {agent.dnaHash.slice(0, 16)}...</p>
-        <p className="text-xs text-gray-600">{new Date(agent.createdAt).toLocaleString()}</p>
+        {showBreedButton && (
+          <Link href={`/breeding?parentA=${agent.id}`} className="mt-3 block w-full text-center py-2 bg-purple-600 hover:bg-purple-500 rounded-lg text-sm font-medium transition">
+            🧬 Breed This Agent
+          </Link>
+        )}
       </div>
     </div>
   );
