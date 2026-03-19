@@ -23,6 +23,14 @@ const CROSSOVER_TYPES = [
 const traitIcons: Record<string, React.ElementType> = { technical: Cpu, creativity: Palette, social: MessageSquare, analysis: Brain, empathy: Heart, trading: TrendingUp, teaching: GraduationCap, leadership: Crown };
 const traitColors: Record<string, string> = { technical: "#3B82F6", creativity: "#EC4899", social: "#8B5CF6", analysis: "#06B6D4", empathy: "#EF4444", trading: "#10B981", teaching: "#F59E0B", leadership: "#F97316" };
 
+// Helper to safely parse traits
+const defaultTraits = { technical: 50, creativity: 50, social: 50, analysis: 50, empathy: 50, trading: 50, teaching: 50, leadership: 50 };
+function safeTraits(traits: any): typeof defaultTraits {
+  if (!traits) return defaultTraits;
+  if (typeof traits === "string") { try { return { ...defaultTraits, ...JSON.parse(traits) }; } catch { return defaultTraits; } }
+  return { ...defaultTraits, ...traits };
+}
+
 function BreedingContent() {
   const { authenticated, ready, getAccessToken } = usePrivy();
   const router = useRouter();
@@ -72,7 +80,7 @@ function BreedingContent() {
     } catch (err) { setError(String(err)); } finally { setBreeding(false); }
   };
 
-  const predictedTraits = parentA && parentB ? Object.keys(parentA.traits).map(trait => { const key = trait as keyof typeof parentA.traits; const avg = Math.round((parentA.traits[key] + parentB.traits[key]) / 2); return { trait: key, avg }; }) : [];
+  const predictedTraits = parentA && parentB ? Object.keys(defaultTraits).map(trait => { const key = trait as keyof typeof defaultTraits; const tA = safeTraits(parentA.traits); const tB = safeTraits(parentB.traits); const avg = Math.round((tA[key] + tB[key]) / 2); return { trait: key, avg }; }) : [];
   const predictedFitness = parentA && parentB ? ((parentA.fitness + parentB.fitness) / 2).toFixed(1) : "?";
 
   if (!ready) return <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "var(--color-bg-primary)" }}><Dna className="w-10 h-10 sm:w-12 sm:h-12 animate-pulse" style={{ color: "var(--color-primary)" }} /></div>;
