@@ -9,6 +9,7 @@ import { LoginButton } from "@/components/LoginButton";
 import { AppHeader } from "@/components/AppHeader";
 import { Button } from "@/components/ui";
 import { useTranslation } from "react-i18next";
+import { RequestBreedingModal } from "@/components/RequestBreedingModal";
 import { 
   Dna, Sparkles, Users, TrendingUp, ArrowRight, Zap, Shield, Crown, Activity,
   Globe, Star, Cpu, Palette, MessageSquare, Brain, Heart, GraduationCap,
@@ -26,6 +27,9 @@ interface Agent {
   generation: number;
   isActive: boolean;
   owner?: { wallet: string | null } | null;
+  isMine?: boolean;
+  ownerDisplay?: string;
+  ownerId?: string;
 }
 
 const traitIcons: Record<string, React.ElementType> = {
@@ -51,6 +55,9 @@ export default function DashboardPage() {
   const [globalAgents, setGlobalAgents] = useState<Agent[]>([]);
   const [stats, setStats] = useState({ totalAgents: 0, activeAgents: 0, totalBreedings: 0 });
   const [loading, setLoading] = useState(true);
+  const [myAgents, setMyAgents] = useState<Agent[]>([]);
+  const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
+  const [showBreedingModal, setShowBreedingModal] = useState(false);
 
   const features = [
     { icon: Dna, title: i18n.language === "es" ? "DNA Único" : "Unique DNA", description: i18n.language === "es" ? "8 traits que definen la personalidad de tu agente" : "8 traits that define your agent's personality", color: "var(--color-primary)" },
@@ -82,12 +89,31 @@ export default function DashboardPage() {
         const data = await agentsRes.json();
         setGlobalAgents(data.agents || []);
       }
+      // Fetch my agents if authenticated
+      if (authenticated) {
+        try {
+          const token = await getAccessToken();
+          if (token) {
+            const myRes = await fetch("/api/agents/available", { headers: { Authorization: `Bearer ${token}` } });
+            if (myRes.ok) {
+              const myData = await myRes.json();
+              setMyAgents(myData.myAgents || []);
+              // Enrich global agents with isMine
+              setGlobalAgents(prev => prev.map(a => ({
+                ...a,
+                isMine: myData.myAgents?.some((m: Agent) => m.id === a.id) || false,
+                ownerDisplay: myData.allAgents?.find((x: Agent) => x.id === a.id)?.ownerDisplay
+              })));
+            }
+          }
+        } catch (e) { console.error(e); }
+      }
     } catch (err) {
       console.error(err);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [authenticated, getAccessToken]);
 
   useEffect(() => { fetchGlobalData(); }, [fetchGlobalData]);
 
@@ -298,7 +324,7 @@ export default function DashboardPage() {
                 const TopIcon = traitIcons[topTrait.key];
                 const topColor = traitColors[topTrait.key];
                 return (
-                  <motion.div key={agent.id} className="p-4 rounded-xl cursor-pointer" style={{ backgroundColor: "var(--color-bg-tertiary)", border: "1px solid var(--color-border)" }} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.03 }} whileHover={{ borderColor: "var(--color-primary)", y: -2 }}>
+                  <motion.div key={agent.id} className="p-4 rounded-xl cursor-pointer" onClick={() => { if (!agent.isMine && authenticated) { setSelectedAgent(agent); setShowBreedingModal(true); } }} style={{ backgroundColor: "var(--color-bg-tertiary)", border: "1px solid var(--color-border)" }} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.03 }} whileHover={{ borderColor: "var(--color-primary)", y: -2 }}>
                     <div className="flex items-center gap-3 mb-3">
                       <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${topColor}, var(--color-primary))` }}>
                         <TopIcon className="w-5 h-5 text-white" />
@@ -322,6 +348,15 @@ export default function DashboardPage() {
           )}
         </motion.div>
       </main>
+      {/* Breeding Request Modal */}
+      <RequestBreedingModal
+        isOpen={showBreedingModal}
+        onClose={() => { setShowBreedingModal(false); setSelectedAgent(null); }}
+        targetAgent={selectedAgent}
+        myAgents={myAgents}
+        getAccessToken={getAccessToken}
+        onSuccess={fetchGlobalData}
+      />
     </div>
   );
 }
