@@ -56,7 +56,7 @@ export function Hero() {
 
             {/* Features List */}
             <motion.ul 
-              className="space-y-2 sm:space-y-3 mb-6 sm:mb-8"
+              className="space-y-1 sm:space-y-2 mb-6 sm:mb-8"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.6, delay: 0.3 }}
