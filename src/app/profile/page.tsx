@@ -6,6 +6,7 @@ import { usePrivy } from "@privy-io/react-auth";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { LoginButton } from "@/components/LoginButton";
+import { useGMDBalance } from "@/hooks/useGMDBalance";
 
 interface Agent {
   id: string;
@@ -57,7 +58,9 @@ export default function ProfilePage() {
   const router = useRouter();
   const [agents, setAgents] = useState<Agent[]>([]);
   const [loading, setLoading] = useState(true);
-  const [gmdBalance, setGmdBalance] = useState<number>(0);
+  
+  // 🪙 GMD Balance Hook - REAL BALANCE FROM BLOCKCHAIN
+  const { formatted: gmdBalance, isLoading: gmdLoading, refetch: refetchGMD, symbol } = useGMDBalance();
   
   // Verification code state
   const [generatingCode, setGeneratingCode] = useState(false);
@@ -76,8 +79,6 @@ export default function ProfilePage() {
         const data = await res.json();
         setAgents(data.agents || []);
       }
-      // TODO: Fetch GMD balance when token is created
-      setGmdBalance(0);
     } catch (err) {
       console.error(err);
     } finally {
@@ -144,12 +145,20 @@ export default function ProfilePage() {
             <Link href="/breeding" className="text-gray-400 hover:text-white">🧬 Breeding</Link>
           </nav>
           <div className="flex items-center gap-4">
-            {/* GMD Balance */}
-            <div className="flex items-center gap-2 bg-gradient-to-r from-yellow-900/50 to-yellow-800/50 border border-yellow-600/50 px-3 py-1.5 rounded-lg">
+            {/* GMD Balance - REAL FROM BLOCKCHAIN */}
+            <button 
+              onClick={() => refetchGMD()} 
+              className="flex items-center gap-2 bg-gradient-to-r from-yellow-900/50 to-yellow-800/50 border border-yellow-600/50 px-3 py-1.5 rounded-lg hover:from-yellow-800/50 hover:to-yellow-700/50 transition"
+              title="Click to refresh balance"
+            >
               <span className="text-yellow-400 font-bold">🪙</span>
-              <span className="font-mono font-bold text-yellow-300">{gmdBalance.toLocaleString()}</span>
-              <span className="text-yellow-400/70 text-sm">GMD</span>
-            </div>
+              {gmdLoading ? (
+                <span className="font-mono text-yellow-300 animate-pulse">...</span>
+              ) : (
+                <span className="font-mono font-bold text-yellow-300">{gmdBalance}</span>
+              )}
+              <span className="text-yellow-400/70 text-sm">{symbol}</span>
+            </button>
             {/* Wallet */}
             <div className="flex items-center gap-2 bg-gray-700 px-3 py-1.5 rounded-lg">
               <span className="w-2 h-2 bg-green-500 rounded-full"></span>
@@ -183,7 +192,12 @@ export default function ProfilePage() {
             <div className="flex gap-6 text-center">
               <div><div className="text-3xl font-bold text-purple-400">{agents.length}</div><div className="text-xs text-gray-500">AGENTS</div></div>
               <div><div className="text-3xl font-bold text-emerald-400">{agents.filter(a => a.isActive).length}</div><div className="text-xs text-gray-500">ACTIVE</div></div>
-              <div><div className="text-3xl font-bold text-yellow-400">{gmdBalance}</div><div className="text-xs text-gray-500">GMD</div></div>
+              <div>
+                <div className="text-3xl font-bold text-yellow-400">
+                  {gmdLoading ? "..." : gmdBalance}
+                </div>
+                <div className="text-xs text-gray-500">GMD</div>
+              </div>
             </div>
           </div>
         </div>
@@ -195,10 +209,18 @@ export default function ProfilePage() {
             <div><h3 className="font-bold text-lg">Start Breeding</h3><p className="text-sm text-purple-200">Cross your agents</p></div>
           </Link>
           
-          <button className="bg-gradient-to-r from-yellow-600 to-yellow-700 hover:from-yellow-500 hover:to-yellow-600 rounded-xl p-6 transition flex items-center gap-4 text-left">
+          <a 
+            href="https://testnet.nad.fun/token/0x03DD45bA22F57b715a2F30C3C945E57DA0AC7777" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="bg-gradient-to-r from-yellow-600 to-yellow-700 hover:from-yellow-500 hover:to-yellow-600 rounded-xl p-6 transition flex items-center gap-4 text-left"
+          >
             <span className="text-4xl">🪙</span>
-            <div><h3 className="font-bold text-lg">Get GMD</h3><p className="text-sm text-yellow-200">Buy tokens to use platform</p></div>
-          </button>
+            <div>
+              <h3 className="font-bold text-lg">Get GMD</h3>
+              <p className="text-sm text-yellow-200">Buy on nad.fun →</p>
+            </div>
+          </a>
           
           <div className="bg-gray-700 rounded-xl p-6 flex items-center gap-4 opacity-60 cursor-not-allowed">
             <span className="text-4xl">🏪</span>

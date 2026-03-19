@@ -328,3 +328,49 @@ Incluye:
 - Plan de implementación por fases
 
 ---
+
+---
+
+## 🔗 Smart Contracts (Monad Testnet)
+
+### Contratos Genomad
+
+| Contrato | Address | Descripción |
+|----------|---------|-------------|
+| **GenomadNFT** | `0x9f20494A0FbC929adAC553f4A2FCFa7D2b448Cf0` | NFT de agentes con DNA on-chain |
+| **BreedingFactory** | `0x72D60f32185B67606a533dc28DeC3f88E05788De` | Lógica de breeding y crossover |
+| **$GMD Token** | `0x03DD45bA22F57b715a2F30C3C945E57DA0AC7777` | Token de utilidad del ecosistema |
+
+### Links Directos
+
+- 🔍 [GenomadNFT en Explorer](https://testnet.monadexplorer.com/address/0x9f20494A0FbC929adAC553f4A2FCFa7D2b448Cf0)
+- 🔍 [BreedingFactory en Explorer](https://testnet.monadexplorer.com/address/0x72D60f32185B67606a533dc28DeC3f88E05788De)
+- 🪙 [$GMD en nad.fun](https://testnet.nad.fun/token/0x03DD45bA22F57b715a2F30C3C945E57DA0AC7777)
+- 🪙 [$GMD en Explorer](https://testnet.monadexplorer.com/token/0x03DD45bA22F57b715a2F30C3C945E57DA0AC7777)
+
+### Wallet Deployer
+
+| Wallet | Address |
+|--------|---------|
+| Deployer | `0xD8040F5b6c88bD5A42f6F2a8211D99Cb21a51C7c` |
+
+### Contratos nad.fun (Plataforma)
+
+| Contrato | Address |
+|----------|---------|
+| BondingCurveRouter | `0x865054F0F6A288adaAc30261731361EA7E908003` |
+| Curve | `0x1228b0dc9481C11D3071E7A924B794CfB038994e` |
+| Lens | `0xB056d79CA5257589692699a46623F901a3BB76f1` |
+| DEX Router | `0x5D4a4f430cA3B1b2dB86B9cFE48a5316800F5fb2` |
+| CreatorTreasury | `0x24dFf9B68fA36f8400302e2babC3e049eA19459E` |
+
+### Network Info
+
+| Campo | Valor |
+|-------|-------|
+| Chain | Monad Testnet |
+| Chain ID | `10143` |
+| RPC | `https://testnet-rpc.monad.xyz` |
+| Explorer | `https://testnet.monadexplorer.com` |
+
+---
