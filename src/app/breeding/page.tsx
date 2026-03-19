@@ -11,7 +11,7 @@ import { LoginButton } from "@/components/LoginButton";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui";
-import { Dna, Plus, ArrowRight, Sparkles, Check, Clock, Shield, Zap, Crown, Activity, RefreshCw, AlertCircle, ChevronDown, Cpu, Palette, MessageSquare, Brain, Heart, TrendingUp, GraduationCap } from "lucide-react";
+import { Dna, Plus, Loader2, ArrowRight, Sparkles, Check, Clock, Shield, Zap, Crown, Activity, RefreshCw, AlertCircle, ChevronDown, Cpu, Palette, MessageSquare, Brain, Heart, TrendingUp, GraduationCap } from "lucide-react";
 import { SuccessModal } from "@/components/SuccessModal";
 
 interface Agent { id: string; name: string; botUsername: string | null; traits: { technical: number; creativity: number; social: number; analysis: number; empathy: number; trading: number; teaching: number; leadership: number; }; fitness: number; generation: number; isActive: boolean; ownerId: string; isMine?: boolean; ownerDisplay?: string; }
