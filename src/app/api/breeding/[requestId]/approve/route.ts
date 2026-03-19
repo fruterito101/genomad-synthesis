@@ -4,6 +4,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth/middleware";
 import { getUserByPrivyId, getBreedingRequestById, approveBreedingRequest } from "@/lib/db";
+import { notifyBreedingApproved } from "@/lib/notifications";
 
 export async function POST(
   request: NextRequest,
@@ -78,6 +79,14 @@ export async function POST(
     }
 
     const fullyApproved = updated.parentAApproved && updated.parentBApproved;
+
+    // 9. Enviar notificación al iniciador
+    const approverName = user.displayName || user.telegramUsername || "Un usuario";
+    await notifyBreedingApproved(
+      breedingRequest.initiatorId,
+      approverName,
+      requestId
+    );
 
     return NextResponse.json({
       success: true,
