@@ -5,3 +5,4 @@ export * from "./useGMDBalance";
 export * from "./useContractWrite";
 export * from "./useGenomadNFT";
 export * from "./useBreedingFactory";
+export * from "./useBreedingFlow";

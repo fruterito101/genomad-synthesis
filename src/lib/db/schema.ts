@@ -139,6 +139,11 @@ export const breedingRequests = pgTable("breeding_requests", {
   feePaid: boolean("fee_paid").default(false).notNull(),
   feeTxHash: text("fee_tx_hash"),
   
+  // On-chain IDs
+  onChainRequestId: text("on_chain_request_id"),
+  onChainParentA: text("on_chain_parent_a"),
+  onChainParentB: text("on_chain_parent_b"),
+  
   // Result
   childId: uuid("child_id"),
   executedAt: timestamp("executed_at"),

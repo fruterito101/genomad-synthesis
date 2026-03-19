@@ -1,5 +1,5 @@
 // src/app/api/breeding/request/route.ts
-// Ticket 7.5: Crear solicitud de breeding
+// Ticket 7.5 + 2.3: Crear solicitud de breeding con integración on-chain
 
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth/middleware";
@@ -23,11 +23,25 @@ export async function POST(request: NextRequest) {
 
     // 3. Parsear body
     const body = await request.json();
-    const { parentAId, parentBId, childName, crossoverType } = body as {
+    const { 
+      parentAId, 
+      parentBId, 
+      childName, 
+      crossoverType,
+      // On-chain fields (optional)
+      txHash,
+      onChainRequestId,
+      onChainParentA,
+      onChainParentB,
+    } = body as {
       parentAId: string;
       parentBId: string;
       childName?: string;
       crossoverType?: "uniform" | "single" | "weighted";
+      txHash?: string;
+      onChainRequestId?: string;
+      onChainParentA?: string;
+      onChainParentB?: string;
     };
 
     if (!parentAId || !parentBId) {
@@ -76,7 +90,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 6. Crear request
+    // 6. Crear request (incluyendo campos on-chain si existen)
     const breedingRequest = await createBreedingRequest({
       initiatorId: user.id,
       parentAId,
@@ -92,6 +106,11 @@ export async function POST(request: NextRequest) {
       parentBApproved: ownsB,
       parentBApprovedAt: ownsB ? new Date() : null,
       expiresInHours: 24,
+      // On-chain fields
+      ...(txHash && { feeTxHash: txHash }),
+      ...(onChainRequestId && { onChainRequestId }),
+      ...(onChainParentA && { onChainParentA }),
+      ...(onChainParentB && { onChainParentB }),
     });
 
     // Si ambos padres son del mismo owner, auto-aprobar
@@ -116,10 +135,13 @@ export async function POST(request: NextRequest) {
       request: {
         id: breedingRequest.id,
         status: autoApproved ? "approved" : "pending",
-        parentA: { id: parentA.id, name: parentA.name, approved: ownsA },
-        parentB: { id: parentB.id, name: parentB.name, approved: ownsB },
+        parentA: { id: parentA.id, name: parentA.name, approved: ownsA, tokenId: parentA.tokenId },
+        parentB: { id: parentB.id, name: parentB.name, approved: ownsB, tokenId: parentB.tokenId },
         childName: breedingRequest.childName,
         expiresAt: breedingRequest.expiresAt,
+        // On-chain info
+        txHash,
+        onChainRequestId,
       },
       autoApproved,
       message: autoApproved

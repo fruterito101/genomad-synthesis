@@ -23,6 +23,17 @@ export async function POST(
   try {
     const { requestId } = await params;
 
+    // Parsear body para campos on-chain (opcional)
+    let txHash: string | undefined;
+    let childTokenId: string | undefined;
+    try {
+      const body = await request.json();
+      txHash = body.txHash;
+      childTokenId = body.childTokenId;
+    } catch {
+      // Body vacío es OK
+    }
+
     // 1. Verificar auth
     const auth = await requireAuth(request);
     if (auth instanceof NextResponse) return auth;
@@ -144,6 +155,7 @@ export async function POST(
       parentAId: parentA.id,
       parentBId: parentB.id,
       commitment: zkProof.proof.commitment,
+      ...(childTokenId && { tokenId: childTokenId }),
     });
 
     // 14. Crear custody shares para el hijo
@@ -155,6 +167,7 @@ export async function POST(
       status: "executed",
       childId: child.id,
       executedAt: new Date(),
+      ...(txHash && { txHash }),
     }).where(eq(breedingRequests.id, requestId));
 
     // 16. Respuesta con info de custodia
@@ -168,6 +181,7 @@ export async function POST(
         fitness: child.fitness,
         generation: child.generation,
         commitment: zkProof.proof.commitment,
+      ...(childTokenId && { tokenId: childTokenId }),
       },
       custody: {
         shares: childCustody.map(s => ({
@@ -188,6 +202,7 @@ export async function POST(
       zkProof: {
         isValid: zkProof.proof.isValid,
         commitment: zkProof.proof.commitment,
+      ...(childTokenId && { tokenId: childTokenId }),
       },
     });
   } catch (error) {
