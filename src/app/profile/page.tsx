@@ -77,7 +77,7 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen" style={{ backgroundColor: "var(--color-bg-primary)" }}>
       <AppHeader />
-      <AgentDetailModal agent={selectedAgent ? { ...selectedAgent, isMine: true } : null} isOpen={!!selectedAgent} onClose={() => setSelectedAgent(null)} onAgentUpdated={fetchProfile} />
+      <AgentDetailModal agent={selectedAgent ? { ...selectedAgent, isMine: true } : null} isOpen={!!selectedAgent} onClose={() => setSelectedAgent(null)} onAgentUpdated={fetchProfile} getAccessToken={getAccessToken} />
 
       <main className="max-w-7xl mx-auto px-4 pt-20 sm:pt-24 pb-8 sm:pb-12">
         {/* Profile Card */}

@@ -15,6 +15,7 @@ interface AgentDetailModalProps {
   isOpen: boolean; 
   onClose: () => void;
   onAgentUpdated?: () => void; // Callback to refresh data after actions
+  getAccessToken?: () => Promise<string | null>; // Privy token getter
 }
 
 const defaultTraits: AgentTraits = { technical: 50, creativity: 50, social: 50, analysis: 50, empathy: 50, trading: 50, teaching: 50, leadership: 50 };
@@ -25,7 +26,7 @@ function parseTraits(traits: AgentTraits | string | null | undefined): AgentTrai
   return { ...defaultTraits, ...traits };
 }
 
-export function AgentDetailModal({ agent, isOpen, onClose, onAgentUpdated }: AgentDetailModalProps) {
+export function AgentDetailModal({ agent, isOpen, onClose, onAgentUpdated, getAccessToken }: AgentDetailModalProps) {
   const { t, i18n } = useTranslation();
   const [copied, setCopied] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -73,7 +74,8 @@ export function AgentDetailModal({ agent, isOpen, onClose, onAgentUpdated }: Age
     setActionLoading("toggle");
     setActionError(null);
     try {
-      const token = localStorage.getItem("privy:token");
+      const token = getAccessToken ? await getAccessToken() : null;
+      if (!token) { setActionError("No auth token"); setActionLoading(null); return; }
       const res = await fetch(`/api/agents/${agent.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
@@ -95,7 +97,8 @@ export function AgentDetailModal({ agent, isOpen, onClose, onAgentUpdated }: Age
     setActionLoading("delete");
     setActionError(null);
     try {
-      const token = localStorage.getItem("privy:token");
+      const token = getAccessToken ? await getAccessToken() : null;
+      if (!token) { setActionError("No auth token"); setActionLoading(null); return; }
       const res = await fetch(`/api/agents/${agent.id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
@@ -118,7 +121,8 @@ export function AgentDetailModal({ agent, isOpen, onClose, onAgentUpdated }: Age
     setActionLoading("unlink");
     setActionError(null);
     try {
-      const token = localStorage.getItem("privy:token");
+      const token = getAccessToken ? await getAccessToken() : null;
+      if (!token) { setActionError("No auth token"); setActionLoading(null); return; }
       const res = await fetch(`/api/agents/${agent.id}/unlink`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
