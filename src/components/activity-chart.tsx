@@ -62,8 +62,8 @@ const defaultData = [
 ]
 
 const chartConfig: ChartConfig = {
-  agents: { label: "Agents", color: "hsl(var(--primary))" },
-  breedings: { label: "Breedings", color: "hsl(var(--secondary))" },
+  agents: { label: "Agents", color: "#A855F7" }, // Purple-500
+  breedings: { label: "Breedings", color: "#10B981" }, // Emerald-500
 }
 
 export function ActivityChart({ 
