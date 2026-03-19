@@ -21,6 +21,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { StatsCard } from "@/components/stats-card"
 import { AppSidebar } from "@/components/app-sidebar"
 import { LoginButton } from "@/components/LoginButton"
+import { ActivityChart } from "@/components/activity-chart"
 import { RequestBreedingModal } from "@/components/RequestBreedingModal"
 
 interface Agent {
@@ -314,6 +315,9 @@ export default function DashboardPage() {
                 icon={<Dna className="h-4 w-4 text-accent" />}
               />
             </div>
+
+\n            {/* Activity Chart */}
+            <ActivityChart className="col-span-full" />
 
             {/* Quick Actions */}
             <div className="grid gap-4 md:grid-cols-2">
