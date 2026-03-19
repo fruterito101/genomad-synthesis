@@ -225,8 +225,8 @@ export default function DashboardPage() {
           <SidebarTrigger className="-ml-1" />
           <div className="flex-1" />
         </header>
-        <main className="flex-1 p-4 lg:p-6">
-          <div className="space-y-6">
+        <main className="flex-1 p-4 lg:p-6 min-w-0">
+          <div className="space-y-6 min-w-0">
             {/* Header */}
             <div>
               <h1 className="text-2xl font-bold tracking-tight">
@@ -261,18 +261,18 @@ export default function DashboardPage() {
               />
             </div>
 
-\n            {/* Activity Chart */}
+            {/* Activity Chart */}
             <ActivityChart className="col-span-full" />
 
             {/* Quick Actions */}
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
               <Card className="border-primary/20 hover:border-primary/40 transition-colors">
                 <CardHeader className="flex flex-row items-center gap-4 pb-2">
                   <div className="h-12 w-12 rounded-lg bg-gradient-to-br from-secondary to-primary flex items-center justify-center">
                     <Dna className="h-6 w-6 text-white" />
                   </div>
                   <div>
-                    <CardTitle>{isEs ? "Vincula tu Agente" : "Link Your Agent"}</CardTitle>
+                    <CardTitle className="text-sm sm:text-base truncate">{isEs ? "Vincula tu Agente" : "Link Your Agent"}</CardTitle>
                     <CardDescription>
                       {isEs ? "Conecta tu agente OpenClaw" : "Connect your OpenClaw agent"}
                     </CardDescription>
@@ -293,7 +293,7 @@ export default function DashboardPage() {
                     <Sparkles className="h-6 w-6 text-white" />
                   </div>
                   <div>
-                    <CardTitle>{isEs ? "Iniciar Breeding" : "Start Breeding"}</CardTitle>
+                    <CardTitle className="text-sm sm:text-base truncate">{isEs ? "Iniciar Breeding" : "Start Breeding"}</CardTitle>
                     <CardDescription>
                       {isEs ? "Combina agentes para crear nuevos" : "Combine agents to create new ones"}
                     </CardDescription>

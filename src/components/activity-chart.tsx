@@ -1,6 +1,9 @@
 "use client"
 
+import { useState } from "react"
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis, ResponsiveContainer } from "recharts"
+import { motion, AnimatePresence } from "framer-motion"
+import { ChevronDown, ChevronUp, Activity } from "lucide-react"
 import {
   Card,
   CardContent,
@@ -8,6 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import { Button } from "@/components/ui/button-shadcn"
 import { cn } from "@/lib/utils"
 
 export interface ChartConfig {
@@ -22,26 +26,16 @@ interface ChartContainerProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode
 }
 
-export function ChartContainer({
-  config,
-  children,
-  className,
-  ...props
-}: ChartContainerProps) {
+export function ChartContainer({ config, children, className, ...props }: ChartContainerProps) {
   return (
     <div
       className={cn("w-full", className)}
-      style={
-        {
-          ...Object.entries(config).reduce(
-            (acc, [key, value]) => ({
-              ...acc,
-              [`--color-${key}`]: value.color,
-            }),
-            {}
-          ),
-        } as React.CSSProperties
-      }
+      style={{
+        ...Object.entries(config).reduce(
+          (acc, [key, value]) => ({ ...acc, [`--color-${key}`]: value.color }),
+          {}
+        ),
+      } as React.CSSProperties}
       {...props}
     >
       <ResponsiveContainer width="100%" height="100%">
@@ -51,56 +45,11 @@ export function ChartContainer({
   )
 }
 
-interface ChartTooltipProps {
-  active?: boolean
-  payload?: Array<{
-    value: number
-    name: string
-    dataKey: string
-    color: string
-  }>
-  label?: string
-  config?: ChartConfig
-}
-
-export function ChartTooltipContent({
-  active,
-  payload,
-  label,
-  config,
-}: ChartTooltipProps) {
-  if (!active || !payload?.length) return null
-
-  return (
-    <div className="rounded-lg border border-border bg-background p-2 shadow-md">
-      <div className="text-xs text-muted-foreground mb-1">{label}</div>
-      <div className="flex flex-col gap-1">
-        {payload.map((item, i) => (
-          <div key={i} className="flex items-center gap-2 text-sm">
-            <div
-              className="h-2.5 w-2.5 rounded-full"
-              style={{ backgroundColor: item.color }}
-            />
-            <span className="text-muted-foreground">
-              {config?.[item.dataKey]?.label || item.name}:
-            </span>
-            <span className="font-medium">{item.value}</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
-
-// Pre-configured Activity Chart for Genomad
 interface ActivityChartProps {
-  data?: Array<{
-    date: string
-    agents: number
-    breedings: number
-  }>
+  data?: Array<{ date: string; agents: number; breedings: number }>
   loading?: boolean
   className?: string
+  defaultExpanded?: boolean
 }
 
 const defaultData = [
@@ -113,95 +62,121 @@ const defaultData = [
 ]
 
 const chartConfig: ChartConfig = {
-  agents: {
-    label: "Agents",
-    color: "hsl(var(--primary))",
-  },
-  breedings: {
-    label: "Breedings",
-    color: "hsl(var(--secondary))",
-  },
+  agents: { label: "Agents", color: "hsl(var(--primary))" },
+  breedings: { label: "Breedings", color: "hsl(var(--secondary))" },
 }
 
 export function ActivityChart({ 
   data = defaultData, 
   loading = false,
-  className 
+  className,
+  defaultExpanded = true
 }: ActivityChartProps) {
+  const [expanded, setExpanded] = useState(defaultExpanded)
+
   if (loading) {
     return (
       <Card className={className}>
         <CardHeader>
           <div className="h-5 w-32 bg-muted animate-pulse rounded" />
-          <div className="h-4 w-48 bg-muted animate-pulse rounded" />
         </CardHeader>
         <CardContent>
-          <div className="h-[300px] bg-muted/50 animate-pulse rounded" />
+          <div className="h-[200px] bg-muted/50 animate-pulse rounded" />
         </CardContent>
       </Card>
     )
   }
 
   return (
-    <Card className={className}>
-      <CardHeader>
-        <CardTitle>Platform Activity</CardTitle>
-        <CardDescription>Total agents and breedings over time</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <ChartContainer config={chartConfig} className="h-[300px]">
-          <AreaChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-            <defs>
-              <linearGradient id="fillAgents" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="var(--color-agents)" stopOpacity={0.3} />
-                <stop offset="95%" stopColor="var(--color-agents)" stopOpacity={0} />
-              </linearGradient>
-              <linearGradient id="fillBreedings" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="var(--color-breedings)" stopOpacity={0.3} />
-                <stop offset="95%" stopColor="var(--color-breedings)" stopOpacity={0} />
-              </linearGradient>
-            </defs>
-            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
-            <XAxis
-              dataKey="date"
-              tickLine={false}
-              axisLine={false}
-              tickMargin={8}
-              tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }}
-            />
-            <YAxis
-              tickLine={false}
-              axisLine={false}
-              tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }}
-              tickMargin={8}
-            />
-            <Area
-              type="monotone"
-              dataKey="breedings"
-              stroke="var(--color-breedings)"
-              strokeWidth={2}
-              fill="url(#fillBreedings)"
-            />
-            <Area
-              type="monotone"
-              dataKey="agents"
-              stroke="var(--color-agents)"
-              strokeWidth={2}
-              fill="url(#fillAgents)"
-            />
-          </AreaChart>
-        </ChartContainer>
-        <div className="flex items-center justify-center gap-6 mt-4">
+    <Card className={cn("overflow-hidden", className)}>
+      <CardHeader className="pb-2">
+        <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="h-3 w-3 rounded-full" style={{ backgroundColor: chartConfig.agents.color }} />
-            <span className="text-sm text-muted-foreground">{chartConfig.agents.label}</span>
+            <Activity className="h-5 w-5 text-primary" />
+            <div>
+              <CardTitle className="text-base">Platform Activity</CardTitle>
+              <CardDescription className="text-xs">Agents and breedings over time</CardDescription>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="h-3 w-3 rounded-full" style={{ backgroundColor: chartConfig.breedings.color }} />
-            <span className="text-sm text-muted-foreground">{chartConfig.breedings.label}</span>
-          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setExpanded(!expanded)}
+            className="h-8 w-8 p-0"
+          >
+            {expanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+          </Button>
         </div>
-      </CardContent>
+      </CardHeader>
+      
+      <AnimatePresence initial={false}>
+        {expanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <CardContent className="pt-0">
+              <ChartContainer config={chartConfig} className="h-[200px] sm:h-[250px]">
+                <AreaChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="fillAgents" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="var(--color-agents)" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="var(--color-agents)" stopOpacity={0} />
+                    </linearGradient>
+                    <linearGradient id="fillBreedings" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="var(--color-breedings)" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="var(--color-breedings)" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
+                  <XAxis
+                    dataKey="date"
+                    tickLine={false}
+                    axisLine={false}
+                    tickMargin={8}
+                    tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }}
+                  />
+                  <YAxis
+                    tickLine={false}
+                    axisLine={false}
+                    tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }}
+                    tickMargin={4}
+                    width={30}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="breedings"
+                    stroke="var(--color-breedings)"
+                    strokeWidth={2}
+                    fill="url(#fillBreedings)"
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="agents"
+                    stroke="var(--color-agents)"
+                    strokeWidth={2}
+                    fill="url(#fillAgents)"
+                  />
+                </AreaChart>
+              </ChartContainer>
+              
+              {/* Legend */}
+              <div className="flex items-center justify-center gap-4 sm:gap-6 mt-3">
+                <div className="flex items-center gap-1.5">
+                  <div className="h-2.5 w-2.5 rounded-full bg-primary" />
+                  <span className="text-xs text-muted-foreground">Agents</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <div className="h-2.5 w-2.5 rounded-full bg-secondary" />
+                  <span className="text-xs text-muted-foreground">Breedings</span>
+                </div>
+              </div>
+            </CardContent>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </Card>
   )
 }
