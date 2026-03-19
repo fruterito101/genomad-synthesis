@@ -1,11 +1,21 @@
 // src/hooks/useGMDBalance.ts
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
+import { usePrivy } from "@privy-io/react-auth";
+import { formatUnits } from "viem";
+import { useNetwork } from "@/contexts/NetworkContext";
 
-//  Token Address (Monad Testnet)
-// NOTE: Currently disabled because wagmi is on Sepolia, contracts on Monad
-// const GMD_TOKEN_ADDRESS = "0x03DD45bA22F57b715a2F30C3C945E57DA0AC7777" as const;
+// ERC20 ABI for balanceOf
+const ERC20_ABI = [
+  {
+    inputs: [{ name: "account", type: "address" }],
+    name: "balanceOf",
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+    type: "function",
+  },
+] as const;
 
 export interface GMDBalanceResult {
   balance: bigint;
@@ -18,25 +28,59 @@ export interface GMDBalanceResult {
 }
 
 export function useGMDBalance(): GMDBalanceResult {
+  const { user } = usePrivy();
+  const { publicClient, contracts, network } = useNetwork();
+  const [balance, setBalance] = useState<bigint>(BigInt(0));
   const [isLoading, setIsLoading] = useState(false);
+  const [isError, setIsError] = useState(false);
 
-  // TEMPORARILY DISABLED: GMD token is on Monad but wagmi is configured for Sepolia
-  // When we fix the Privy+Monad integration, we can re-enable this
-  // Removed wagmi imports to prevent SSR issues
-  
-  const refetch = useCallback(() => {
+  const walletAddress = user?.wallet?.address as `0x${string}` | undefined;
+  const gmdTokenAddress = contracts.gmdToken as `0x${string}`;
+
+  const fetchBalance = useCallback(async () => {
+    if (!walletAddress || !gmdTokenAddress || !publicClient) {
+      return;
+    }
+
     setIsLoading(true);
-    setTimeout(() => setIsLoading(false), 500);
-  }, []);
+    setIsError(false);
+
+    try {
+      const result = await publicClient.readContract({
+        address: gmdTokenAddress,
+        abi: ERC20_ABI,
+        functionName: "balanceOf",
+        args: [walletAddress],
+      });
+
+      setBalance(result as bigint);
+    } catch (error) {
+      console.error("Error fetching GMD balance:", error);
+      setIsError(true);
+      setBalance(BigInt(0));
+    } finally {
+      setIsLoading(false);
+    }
+  }, [walletAddress, gmdTokenAddress, publicClient]);
+
+  // Fetch on mount and when dependencies change
+  useEffect(() => {
+    fetchBalance();
+  }, [fetchBalance, network]);
+
+  // Format balance (18 decimals)
+  const formatted = balance > 0 
+    ? parseFloat(formatUnits(balance, 18)).toFixed(2)
+    : "0";
 
   return {
-    balance: BigInt(0),
-    formatted: "0",
+    balance,
+    formatted,
     decimals: 18,
     symbol: "GMD",
     isLoading,
-    isError: false,
-    refetch,
+    isError,
+    refetch: fetchBalance,
   };
 }
 

@@ -4,18 +4,39 @@ import { useState, useEffect } from "react";
 import { PrivyProvider } from "@privy-io/react-auth";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { WagmiProvider } from "wagmi";
-import { monadTestnet, monadMainnet, activeChain } from "@/lib/blockchain/chains";
+import { monadTestnet, monadMainnet } from "@/lib/blockchain/chains";
 import { wagmiConfig } from "@/lib/wagmi/config";
 import { I18nProvider } from "@/i18n";
+import { NetworkProvider } from "@/contexts/NetworkContext";
 
 const queryClient = new QueryClient();
 
+// Get initial chain from localStorage (client-side only)
+function getInitialChain() {
+  if (typeof window === "undefined") return monadTestnet;
+  const saved = localStorage.getItem("genomad-network");
+  return saved === "mainnet" ? monadMainnet : monadTestnet;
+}
+
 export function Providers({ children }: { children: React.ReactNode }) {
   const [mounted, setMounted] = useState(false);
+  const [currentChain, setCurrentChain] = useState(monadTestnet);
   const appId = process.env.NEXT_PUBLIC_PRIVY_APP_ID;
 
   useEffect(() => {
     setMounted(true);
+    // Set initial chain from localStorage
+    setCurrentChain(getInitialChain());
+    
+    // Listen for network changes
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "genomad-network") {
+        setCurrentChain(e.newValue === "mainnet" ? monadMainnet : monadTestnet);
+      }
+    };
+    
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
   }, []);
 
   // Always render I18nProvider for translations
@@ -45,31 +66,33 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
   return (
     <I18nProvider>
-      <WagmiProvider config={wagmiConfig}>
-        <QueryClientProvider client={queryClient}>
-          <PrivyProvider
-            appId={appId}
-            config={{
-              loginMethods: ["wallet", "email"],
-              appearance: {
-                theme: "dark",
-                accentColor: "#7B3FE4",
-                logo: "/logo.png",
-              },
-              embeddedWallets: {
-                ethereum: {
-                  createOnLogin: "users-without-wallets",
+      <NetworkProvider>
+        <WagmiProvider config={wagmiConfig}>
+          <QueryClientProvider client={queryClient}>
+            <PrivyProvider
+              appId={appId}
+              config={{
+                loginMethods: ["wallet", "email"],
+                appearance: {
+                  theme: "dark",
+                  accentColor: "#7B3FE4",
+                  logo: "/logo.png",
                 },
-              },
-              // Soporta AMBAS redes
-              defaultChain: activeChain,
-              supportedChains: [monadTestnet, monadMainnet],
-            }}
-          >
-            {children}
-          </PrivyProvider>
-        </QueryClientProvider>
-      </WagmiProvider>
+                embeddedWallets: {
+                  ethereum: {
+                    createOnLogin: "users-without-wallets",
+                  },
+                },
+                // Soporta AMBAS redes - default es la seleccionada
+                defaultChain: currentChain,
+                supportedChains: [monadTestnet, monadMainnet],
+              }}
+            >
+              {children}
+            </PrivyProvider>
+          </QueryClientProvider>
+        </WagmiProvider>
+      </NetworkProvider>
     </I18nProvider>
   );
 }
