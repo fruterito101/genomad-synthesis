@@ -115,7 +115,7 @@ const ZK_API_URL = process.env.NEXT_PUBLIC_ZK_API_URL || "/api/zk";
 
 export async function generateProof(request: ProofRequest): Promise<ProofResponse> {
   try {
-    const response = await fetch(\`\${ZK_API_URL}/prove\`, {
+    const response = await fetch(`${ZK_API_URL}/prove`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(request),
@@ -125,7 +125,7 @@ export async function generateProof(request: ProofRequest): Promise<ProofRespons
       const error = await response.text();
       return {
         success: false,
-        error: \`ZK API error: \${response.status} - \${error}\`,
+        error: `ZK API error: \${response.status} - \${error}`,
       };
     }
 
@@ -133,7 +133,7 @@ export async function generateProof(request: ProofRequest): Promise<ProofRespons
   } catch (error) {
     return {
       success: false,
-      error: \`Failed to generate proof: \${error instanceof Error ? error.message : "Unknown error"}\`,
+      error: `Failed to generate proof: \${error instanceof Error ? error.message : "Unknown error"}`,
     };
   }
 }
