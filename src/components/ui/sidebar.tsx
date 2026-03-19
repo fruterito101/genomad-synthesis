@@ -322,12 +322,16 @@ const SidebarInset = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<"main">
 >(({ className, ...props }, ref) => {
+  const { state, isMobile } = useSidebar()
+  const isCollapsed = state === "collapsed"
+  
   return (
     <main
       ref={ref}
       className={cn(
-        "relative flex min-h-svh flex-1 flex-col bg-background overflow-x-hidden md:ml-[--sidebar-width] peer-data-[state=collapsed]:md:ml-[--sidebar-width-icon]",
-        "peer-data-[variant=inset]:min-h-[calc(100svh-theme(spacing.4))] md:peer-data-[variant=inset]:m-2 md:peer-data-[state=collapsed]:peer-data-[variant=inset]:ml-2 md:peer-data-[variant=inset]:ml-0 md:peer-data-[variant=inset]:rounded-xl md:peer-data-[variant=inset]:shadow",
+        "relative flex min-h-svh flex-1 flex-col bg-background overflow-x-hidden transition-[margin] duration-200",
+        // Only apply margin on desktop (md+), not on mobile
+        !isMobile && (isCollapsed ? "md:ml-[--sidebar-width-icon]" : "md:ml-[--sidebar-width]"),
         className
       )}
       {...props}
