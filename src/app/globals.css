@@ -6,6 +6,10 @@
    ============================================ */
 
 @theme {
+  /* Typography */
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+
   /* Border radius */
   --radius-sm: 0.5rem;
   --radius-md: 0.625rem;
@@ -120,10 +124,6 @@
   
   /* Status */
   --color-error: #EF4444;
-  
-  /* Fonts */
-  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 }
 
 /* ============================================
