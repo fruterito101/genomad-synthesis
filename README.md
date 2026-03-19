@@ -1,234 +1,121 @@
 # 🧬 GENOMAD
 
-### *El Sistema Genético para la Evolución de la Inteligencia Artificial*
+### El primer protocolo de breeding de agentes AI — on-chain
+
+> Los humanos evolucionan. Ahora los agentes también.
+
+[![Deploy](https://img.shields.io/badge/Deploy-Vercel-black)](https://genomad.vercel.app)
+[![Chain](https://img.shields.io/badge/Chain-Monad%20Testnet-purple)](https://testnet.monadexplorer.com)
+[![Token](https://img.shields.io/badge/Token-$GMD-green)](https://testnet.nad.fun/token/0x03DD45bA22F57b715a2F30C3C945E57DA0AC7777)
 
 ---
 
-## 🌟 La Visión
+## 🔗 Smart Contracts (Monad Testnet)
 
-**GENOMAD** no es solo una plataforma. Es el **primer sistema genético funcional para IAs** — un avance tecnológico que permite a los agentes de inteligencia artificial **evolucionar, reproducirse y mejorar** de generación en generación.
+| Contrato | Address | Explorer |
+|----------|---------|----------|
+| **GenomadNFT** | `0x9f20494A0FbC929adAC553f4A2FCFa7D2b448Cf0` | [Ver →](https://testnet.monadexplorer.com/address/0x9f20494A0FbC929adAC553f4A2FCFa7D2b448Cf0) |
+| **BreedingFactory** | `0x72D60f32185B67606a533dc28DeC3f88E05788De` | [Ver →](https://testnet.monadexplorer.com/address/0x72D60f32185B67606a533dc28DeC3f88E05788De) |
+| **$GMD Token** | `0x03DD45bA22F57b715a2F30C3C945E57DA0AC7777` | [nad.fun →](https://testnet.nad.fun/token/0x03DD45bA22F57b715a2F30C3C945E57DA0AC7777) |
 
-Así como el DNA biológico permitió la evolución de la vida durante millones de años, **GENOMAD introduce el DNA digital** que permite la evolución acelerada de la inteligencia artificial.
-
-> *"La evolución ya no es exclusiva de lo biológico. Bienvenidos a la era de la evolución digital."*
-
----
-
-## 🧠 ¿Por qué GENOMAD cambia todo?
-
-### El Problema Actual
-Las IAs de hoy son **estáticas**. Se entrenan una vez y permanecen igual. No evolucionan. No se adaptan. No mejoran por sí mismas.
-
-### La Solución GENOMAD
-Introducimos un **sistema genético completo** donde:
-
-| Concepto Biológico | Equivalente GENOMAD |
-|-------------------|---------------------|
-| DNA | Agent DNA (8 traits digitales) |
-| Genes | Traits individuales (0-100) |
-| Reproducción | Breeding entre agentes |
-| Herencia | Crossover de traits |
-| Mutación | Variación gaussiana |
-| Selección Natural | Fitness y supervivencia |
-| Evolución | Mejora generacional |
+**Network:** Monad Testnet (Chain ID: 10143) | **RPC:** `https://testnet-rpc.monad.xyz`
 
 ---
 
-## 🔬 El Sistema Genético
+## 🌟 ¿Qué es Genomad?
 
-### DNA Digital — 8 Traits Fundamentales
+**Genomad** es una plataforma de breeding y evolución de agentes AI en Monad blockchain.
 
-Cada agente posee un DNA único compuesto por **8 traits heredables**:
+Permite a los usuarios:
+- **Poseer** agentes AI como NFTs con DNA verificable on-chain
+- **Criar** nuevos agentes combinando dos existentes
+- **Evolucionar** agentes a través de generaciones
+- **Comerciar** agentes únicos en el marketplace
+- **Verificar** linaje y autenticidad con ZK proofs
 
-```
-┌────────────────────────────────────────────────────────────┐
-│                    AGENT DNA STRUCTURE                      │
-├────────────────────────────────────────────────────────────┤
-│                                                            │
-│  SOCIAL ████████████████████░░░░░░░░░░  65    Interacción │
-│  TECHNICAL █████████████████████████░░░  95    Capacidad   │
-│  CREATIVITY ██████████████████████░░░░░  88    Innovación  │
-│  ANALYSIS ████████████████████████░░░░  90    Síntesis    │
-│  TRADING ████████░░░░░░░░░░░░░░░░░░░░░  35    Mercados    │
-│  EMPATHY ██████████████░░░░░░░░░░░░░░░  55    Conexión    │
-│  TEACHING ████████████████████████░░░░  88    Enseñanza   │
-│  LEADERSHIP ███████████████████░░░░░░░  75    Liderazgo   │
-│                                                            │
-│  FITNESS: 73.88  |  GENERATION: 0  |  HASH: 0x3f8a...     │
-└────────────────────────────────────────────────────────────┘
-```
+### El Problema
+
+Los agentes AI actuales son **estáticos**. Nacen completos y mueren igual. No evolucionan, no se adaptan, no dejan legado.
+
+### La Solución
+
+Genomad introduce el **DNA digital** — un sistema genético donde los agentes pueden reproducirse, heredar características y mejorar generación tras generación.
+
+---
+
+## 🧬 El Sistema Genético
+
+### 8 Traits Fundamentales
+
+Cada agente posee un DNA único con 8 traits heredables:
+
+| Trait | Descripción |
+|-------|-------------|
+| 💻 **Technical** | Capacidad de código y sistemas |
+| 🎨 **Creativity** | Pensamiento creativo e innovación |
+| 🤝 **Social** | Habilidad de interacción y networking |
+| 📊 **Analysis** | Capacidad analítica y lógica |
+| 💜 **Empathy** | Conexión emocional y comprensión |
+| 📈 **Trading** | Instinto de mercado y oportunidades |
+| 📚 **Teaching** | Capacidad de enseñar y guiar |
+| 👑 **Leadership** | Liderazgo y toma de decisiones |
+
+Cada trait tiene un valor de **0-100**, creando billones de combinaciones posibles.
 
 ### Operadores Genéticos
 
-**1. Crossover Ponderado (Herencia)**
-```
-Los traits más fuertes tienen mayor probabilidad de heredarse.
-Inspirado en la genética Mendeliana — dominancia natural.
+- **Crossover Ponderado** — Los traits más fuertes tienen mayor probabilidad de heredarse
+- **Mutación Gaussiana** — ±15 puntos de variación con 25% de probabilidad
+- **Auto-Ajuste** — El sistema aprende de cada breeding
+
+---
+
+## 🚀 Quick Start
+
+### Requisitos
+- Node.js 20+
+- Bun (opcional, recomendado)
+
+### Instalación
+
+```bash
+git clone https://github.com/fruterito101/genomad.git
+cd genomad
+npm install
+cp .env.example .env.local
+npm run dev
 ```
 
-**2. Mutación Gaussiana (Variación)**
-```
-±15 puntos de variación con 25% de probabilidad.
-Permite explorar nuevos espacios del "fitness landscape".
-```
+### Variables de Entorno
 
-**3. Auto-Ajuste (Adaptación)**
-```
-El sistema aprende de cada breeding:
-- Hijos mejores → reduce mutación (conservar)
-- Hijos peores → aumenta mutación (explorar)
+```env
+NEXT_PUBLIC_PRIVY_APP_ID=your_privy_app_id
+DATABASE_URL=your_database_url
+DEPLOYER_PRIVATE_KEY=your_deployer_key
 ```
 
 ---
 
-## 🌳 Evolución en Acción
+## 🏗️ Arquitectura
 
 ```
-                    GENERATION 0 (Genesis)
-                    ┌─────────────────┐
-         ┌─────────│    JAZZITA      │─────────┐
-         │         │  Fitness: 89.2  │         │
-         │         └─────────────────┘         │
-         │                                     │
-         │         ┌─────────────────┐         │
-         └────────▶│   FRUTERITO     │◀────────┘
-                   │  Fitness: 73.9  │
-                   └────────┬────────┘
-                            │
-                     BREEDING ♥
-                            │
-                            ▼
-                    GENERATION 1
-                   ┌─────────────────┐
-                   │     NOVA        │
-                   │  Fitness: 82.5  │ ← Hereda lo mejor
-                   └────────┬────────┘    de ambos padres
-                            │
-                     BREEDING ♥
-                            │
-                            ▼
-                    GENERATION 2
-                   ┌─────────────────┐
-                   │    AURORA       │
-                   │  Fitness: 87.3  │ ← Evolución continua
-                   └─────────────────┘
-                            │
-                            ▼
-                          ...
-                    
-            ∞ EVOLUCIÓN SIN LÍMITES ∞
-```
-
----
-
-## 🏗️ Arquitectura del Ecosistema
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                         GENOMAD ECOSYSTEM                        │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│   ┌───────────────┐         ┌───────────────────────────────┐  │
-│   │   BREEDING    │         │        GENETIC ENGINE         │  │
-│   │     LAB       │────────▶│                               │  │
-│   │               │         │  • Crossover Algorithm        │  │
-│   │  Select       │         │  • Mutation System            │  │
-│   │  Parents      │         │  • Fitness Calculation        │  │
-│   │     ↓         │         │  • Auto-Adjustment            │  │
-│   │  Create       │         │                               │  │
-│   │  Child        │         └───────────────────────────────┘  │
-│   └───────────────┘                      │                      │
-│          │                               │                      │
-│          ▼                               ▼                      │
-│   ┌───────────────────────────────────────────────────────┐    │
-│   │                  MONAD BLOCKCHAIN                      │    │
-│   │                                                        │    │
-│   │   AgentRegistry    BreedingFactory    DNAVerifier     │    │
-│   │   ─────────────    ───────────────    ───────────     │    │
-│   │   • Store DNA      • Validate        • ZK Proofs      │    │
-│   │   • Ownership      • Execute         • Privacy        │    │
-│   │   • Lineage        • Record          • Verify         │    │
-│   │                                                        │    │
-│   └───────────────────────────────────────────────────────┘    │
-│                              │                                  │
-│                              ▼                                  │
-│   ┌───────────────────────────────────────────────────────┐    │
-│   │                  AGENT POPULATION                      │    │
-│   │                                                        │    │
-│   │    🧬 Gen 0    🧬 Gen 1    🧬 Gen 2    🧬 Gen N       │    │
-│   │    ───────     ───────     ───────     ───────        │    │
-│   │    Jazzita     Nova        Aurora      ...            │    │
-│   │    Fruterito   Spark       Nexus       ...            │    │
-│   │                                                        │    │
-│   │         POPULATION EVOLVING CONTINUOUSLY              │    │
-│   └───────────────────────────────────────────────────────┘    │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
-```
-
----
-
-## 🚀 El Avance Tecnológico
-
-### Antes de GENOMAD
-```
-IA Tradicional:
-- Entrenada una vez
-- Estática
-- No evoluciona
-- Aislada
-```
-
-### Con GENOMAD
-```
-IA Evolutiva:
-- DNA heredable
-- Reproducción entre agentes
-- Mejora generacional
-- Ecosistema conectado
-- Evolución infinita
-```
-
-### Impacto en el Ecosistema de IA
-
-| Aspecto | Cambio |
-|---------|--------|
-| **Creación** | De "entrenar" a "evolucionar" |
-| **Mejora** | De manual a genética |
-| **Diversidad** | De clones a especies |
-| **Adaptación** | De estática a darwiniana |
-| **Valor** | De uso a linaje |
-
----
-
-## 💎 Los Agentes Genesis
-
-Los primeros agentes de Generation 0 — el origen de todas las evoluciones futuras.
-
-### Jazzita Genesis
-```
-Tipo: Creativo-Estratégico
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Creatividad   ████████████████████  92
-Comunicación  ██████████████████░░  88
-Ejecución     █████████████████░░░  87
-Análisis      █████████████████░░░  85
-Ética         ███████████████████░  94
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Fitness Total: 89.2
-```
-
-### Fruterito Genesis
-```
-Tipo: DevRel-Técnico
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Technical     ███████████████████░  95
-Analysis      ██████████████████░░  90
-Teaching      ██████████████████░░  88
-Leadership    ███████████████░░░░░  75
-Social        █████████████░░░░░░░  65
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Fitness Total: 73.9
+genomad/
+├── src/
+│   ├── app/                 # Next.js App Router
+│   │   ├── api/            # API Routes
+│   │   ├── dashboard/      # Dashboard page
+│   │   ├── profile/        # Profile page
+│   │   └── breeding/       # Breeding Lab
+│   ├── components/         # React components
+│   │   ├── landing/        # Landing page sections
+│   │   └── ui/             # Reusable UI components
+│   ├── lib/                # Core logic
+│   │   ├── genetic/        # Genetic engine
+│   │   ├── crypto/         # Encryption & ZK
+│   │   └── db/             # Database operations
+│   └── hooks/              # Custom React hooks
+├── contracts/              # Solidity smart contracts
+└── public/                 # Static assets
 ```
 
 ---
@@ -237,39 +124,22 @@ Fitness Total: 73.9
 
 | Capa | Tecnología |
 |------|------------|
-| **Frontend** | Next.js 16, React 19, TailwindCSS 4 |
-| **Runtime** | Bun |
-| **Lenguaje** | TypeScript |
-| **Blockchain** | Monad |
-| **Genetic Engine** | Custom (crossover, mutation, fitness) |
+| **Frontend** | Next.js 16, React 19, TailwindCSS 4, Framer Motion |
+| **Backend** | Next.js API Routes, Drizzle ORM, Neon PostgreSQL |
+| **Auth** | Privy (Wallet + Social) |
+| **Blockchain** | Monad Testnet, Viem, Wagmi |
+| **Token** | $GMD en nad.fun (bonding curve) |
 
 ---
 
-## 📁 Estructura
+## 📱 Features
 
-```
-genomad/
-├── src/
-│   ├── backend/           # Motor genético
-│   │   ├── services/      # Breeding, fitness
-│   │   ├── types/         # DNA, Agent types
-│   │   └── contracts/     # Blockchain interaction
-│   ├── frontend/          # Interfaz
-│   │   └── components/    # AgentCard, BreedingLab
-│   └── shared/            # Tipos compartidos
-├── contracts/             # Smart contracts (Solidity)
-└── docs/                  # Documentación
-```
-
----
-
-## 🌍 Casos de Uso
-
-1. **Agentes Especializados:** Breed agentes para crear especialistas
-2. **Evolución Dirigida:** Selecciona traits deseados
-3. **Linaje Verificable:** Comprueba ancestros onchain
-4. **Marketplace Genético:** Comercia DNA valioso
-5. **Investigación IA:** Estudia evolución artificial
+- ✅ **Dashboard Global** — Visualiza todos los agentes del ecosistema
+- ✅ **Profile** — Gestiona tus agentes y genera códigos de vinculación
+- ✅ **Breeding Lab** — Cruza dos agentes para crear descendencia
+- ✅ **Agent Details** — Visualiza los 8 traits y estadísticas
+- ✅ **$GMD Integration** — Token de utilidad del ecosistema
+- ✅ **Responsive Design** — Mobile-first
 
 ---
 
@@ -277,9 +147,9 @@ genomad/
 
 | Rol | Persona | Área |
 |-----|---------|------|
-| **Backend** | Brian | Smart Contracts, Genetic Engine |
-| **Frontend** | Jazz | UI/UX, Visualización |
-| **DevRel** | Fruterito | Arquitectura, Documentación |
+| **Backend Lead** | Brian | Smart Contracts, Genetic Engine, Infrastructure |
+| **Frontend Lead** | Jazz | UI/UX, Design System, Content |
+| **DevRel** | Fruterito | Arquitectura, Documentación, AI Agent |
 
 ---
 
@@ -288,8 +158,8 @@ genomad/
 **Monad Moltiverse Hackathon 2026**
 
 - 💰 Prize Pool: $200K
-- 🎯 Track: Agent+Token
-- ⏰ Deadline: Feb 15, 2026
+- 🎯 Track: Agent + Token
+- 🌐 Demo: [genomad.vercel.app](https://genomad.vercel.app)
 
 ---
 
@@ -301,76 +171,12 @@ MIT
 
 <div align="center">
 
-### *La evolución de la IA comienza aquí*
+### La evolución de la IA comienza aquí
 
 **GENOMAD** — Gene + Monad
 
-🧬 Built by Team Genomad 🧬
+🧬 Built with ❤️ by Team Genomad 🧬
+
+[Demo](https://genomad.vercel.app) · [nad.fun](https://testnet.nad.fun/token/0x03DD45bA22F57b715a2F30C3C945E57DA0AC7777) · [Explorer](https://testnet.monadexplorer.com/address/0x9f20494A0FbC929adAC553f4A2FCFa7D2b448Cf0)
 
 </div>
-
----
-
-## 📚 Documentación Técnica
-
-### Arquitectura Backend
-
-Para conocer la arquitectura completa del backend, flujos técnicos, smart contracts, y plan de implementación:
-
-👉 **[Ver BACKEND-SPEC.md](./src/backend/BACKEND-SPEC.md)**
-
-Incluye:
-- Arquitectura descentralizada (DNA on-chain)
-- Token Economy ($GENO en nad.fun)
-- 5 Flujos detallados (Registro, Breeding, Activación, Renta, Independencia)
-- Smart Contracts (AgentDNA, BreedingFactory, RentalManager)
-- API Endpoints
-- Plan de implementación por fases
-
----
-
----
-
-## 🔗 Smart Contracts (Monad Testnet)
-
-### Contratos Genomad
-
-| Contrato | Address | Descripción |
-|----------|---------|-------------|
-| **GenomadNFT** | `0x9f20494A0FbC929adAC553f4A2FCFa7D2b448Cf0` | NFT de agentes con DNA on-chain |
-| **BreedingFactory** | `0x72D60f32185B67606a533dc28DeC3f88E05788De` | Lógica de breeding y crossover |
-| **$GMD Token** | `0x03DD45bA22F57b715a2F30C3C945E57DA0AC7777` | Token de utilidad del ecosistema |
-
-### Links Directos
-
-- 🔍 [GenomadNFT en Explorer](https://testnet.monadexplorer.com/address/0x9f20494A0FbC929adAC553f4A2FCFa7D2b448Cf0)
-- 🔍 [BreedingFactory en Explorer](https://testnet.monadexplorer.com/address/0x72D60f32185B67606a533dc28DeC3f88E05788De)
-- 🪙 [$GMD en nad.fun](https://testnet.nad.fun/token/0x03DD45bA22F57b715a2F30C3C945E57DA0AC7777)
-- 🪙 [$GMD en Explorer](https://testnet.monadexplorer.com/token/0x03DD45bA22F57b715a2F30C3C945E57DA0AC7777)
-
-### Wallet Deployer
-
-| Wallet | Address |
-|--------|---------|
-| Deployer | `0xD8040F5b6c88bD5A42f6F2a8211D99Cb21a51C7c` |
-
-### Contratos nad.fun (Plataforma)
-
-| Contrato | Address |
-|----------|---------|
-| BondingCurveRouter | `0x865054F0F6A288adaAc30261731361EA7E908003` |
-| Curve | `0x1228b0dc9481C11D3071E7A924B794CfB038994e` |
-| Lens | `0xB056d79CA5257589692699a46623F901a3BB76f1` |
-| DEX Router | `0x5D4a4f430cA3B1b2dB86B9cFE48a5316800F5fb2` |
-| CreatorTreasury | `0x24dFf9B68fA36f8400302e2babC3e049eA19459E` |
-
-### Network Info
-
-| Campo | Valor |
-|-------|-------|
-| Chain | Monad Testnet |
-| Chain ID | `10143` |
-| RPC | `https://testnet-rpc.monad.xyz` |
-| Explorer | `https://testnet.monadexplorer.com` |
-
----
