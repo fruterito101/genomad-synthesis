@@ -85,6 +85,37 @@ function BreedingContent() {
   }, [authenticated, getAccessToken]);
 
   useEffect(() => { if (ready && !authenticated) router.push("/dashboard"); else if (ready && authenticated) fetchAgents(); }, [ready, authenticated, router, fetchAgents]);
+
+  // Verificar si ya existe una solicitud aprobada entre los padres seleccionados
+  useEffect(() => {
+    const checkBreedingStatus = async () => {
+      if (!parentA || !parentB || !authenticated) {
+        setBreedingCheck(null);
+        return;
+      }
+      if (parentA.isMine && parentB.isMine) {
+        setBreedingCheck({ exists: false, canBreed: true, needsRequest: false });
+        return;
+      }
+      try {
+        setCheckingBreeding(true);
+        const token = await getAccessToken();
+        const res = await fetch(
+          `/api/breeding/check?parentAId=${parentA.id}&parentBId=${parentB.id}`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        if (res.ok) {
+          const data = await res.json();
+          setBreedingCheck(data);
+        }
+      } catch (e) {
+        console.error("Failed to check breeding status", e);
+      } finally {
+        setCheckingBreeding(false);
+      }
+    };
+    checkBreedingStatus();
+  }, [parentA, parentB, authenticated, getAccessToken]);
   useEffect(() => { const parentAId = searchParams.get("parentA"); if (parentAId && myAgents.length > 0) { const agent = myAgents.find(a => a.id === parentAId); if (agent) setParentA(agent); } }, [searchParams, myAgents]);
 
   const startBreeding = async () => {
@@ -93,6 +124,22 @@ function BreedingContent() {
     try {
       const token = await getAccessToken();
       if (!token) return;
+      
+      // Si ya existe una solicitud aprobada, ejecutar directamente
+      if (breedingCheck?.canBreed && breedingCheck?.requestId) {
+        const execRes = await fetch(`/api/breeding/${breedingCheck.requestId}/execute`, { 
+          method: "POST", 
+          headers: { Authorization: `Bearer ${token}` } 
+        });
+        const execData = await execRes.json();
+        if (!execRes.ok) { setError(execData.error || "Breeding execution failed"); return; }
+        setResult({ id: breedingCheck.requestId, child: execData.child, breeding: execData.breeding, executed: true });
+        setShowSuccessModal(true);
+        fetchAgents();
+        return;
+      }
+      
+      // Si no hay solicitud aprobada, crear nueva
       const res = await fetch("/api/breeding/request", { method: "POST", headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" }, body: JSON.stringify({ parentAId: parentA.id, parentBId: parentB.id, crossoverType, childName: childName || undefined }) });
       const data = await res.json();
       if (!res.ok) { setError(data.error || "Breeding failed"); return; }
