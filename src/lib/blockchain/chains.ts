@@ -1,7 +1,7 @@
 import { defineChain } from "viem";
 
 // ============================================
-// MONAD TESTNET - Configuración Principal
+// MONAD TESTNET
 // ============================================
 export const monadTestnet = defineChain({
   id: 10143,
@@ -26,10 +26,10 @@ export const monadTestnet = defineChain({
 });
 
 // ============================================
-// MONAD MAINNET - Para futuro
+// MONAD MAINNET
 // ============================================
 export const monadMainnet = defineChain({
-  id: 10143, // Actualizar cuando salga mainnet
+  id: 1, // TODO: Actualizar con el chainId real de Monad Mainnet cuando se lance
   name: "Monad",
   nativeCurrency: {
     decimals: 18,
@@ -51,9 +51,21 @@ export const monadMainnet = defineChain({
 });
 
 // ============================================
-// CHAIN ACTIVA
+// CHAIN SELECTION (via ENV)
 // ============================================
-export const activeChain = monadTestnet;
+// Set NEXT_PUBLIC_NETWORK=mainnet for production
+// Default: testnet
+const isMainnet = process.env.NEXT_PUBLIC_NETWORK === "mainnet";
 
-// Legacy alias (para compatibilidad)
-export const sepoliaTestnet = monadTestnet;
+export const activeChain = isMainnet ? monadMainnet : monadTestnet;
+
+// Export both for flexibility
+export const chains = {
+  testnet: monadTestnet,
+  mainnet: monadMainnet,
+};
+
+// Helper to get chain by network name
+export function getChain(network: "testnet" | "mainnet") {
+  return network === "mainnet" ? monadMainnet : monadTestnet;
+}
