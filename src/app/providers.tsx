@@ -3,7 +3,7 @@
 import { PrivyProvider } from "@privy-io/react-auth";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { WagmiProvider } from "wagmi";
-import { monadTestnet } from "@/lib/blockchain/chains";
+import { sepoliaTestnet } from "@/lib/blockchain/chains";
 import { wagmiConfig } from "@/lib/wagmi/config";
 import { I18nProvider } from "@/i18n";
 
@@ -43,8 +43,8 @@ export function Providers({ children }: { children: React.ReactNode }) {
                   createOnLogin: "users-without-wallets",
                 },
               },
-              defaultChain: monadTestnet,
-              supportedChains: [monadTestnet],
+              defaultChain: sepoliaTestnet,
+              supportedChains: [sepoliaTestnet],
             }}
           >
             {children}

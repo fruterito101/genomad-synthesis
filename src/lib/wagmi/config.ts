@@ -1,11 +1,10 @@
-// src/lib/wagmi/config.ts
 import { createConfig, http } from "wagmi";
-import { monadTestnet } from "@/lib/blockchain/chains";
+import { sepoliaTestnet } from "@/lib/blockchain/chains";
 
 export const wagmiConfig = createConfig({
-  chains: [monadTestnet],
+  chains: [sepoliaTestnet],
   transports: {
-    [monadTestnet.id]: http(process.env.NEXT_PUBLIC_MONAD_RPC || "https://testnet-rpc.monad.xyz"),
+    [sepoliaTestnet.id]: http(process.env.NEXT_PUBLIC_CHAIN_RPC || "https://rpc.sepolia.org"),
   },
   ssr: true,
 });
