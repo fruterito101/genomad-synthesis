@@ -2,11 +2,12 @@
 pragma solidity ^0.8.28;
 
 import "./IGenomad.sol";
+import "./TraitVerifier.sol";
 
 /**
  * @title GenomadNFT
  * @notice ERC-721 NFT for AI Agents with on-chain DNA and encrypted storage
- * @dev FASE 4: Full on-chain architecture with custody system
+ * @dev FASE 4: Full on-chain architecture with custody system and ZK verification
  */
 contract GenomadNFT is IGenomad {
     // ═══════════════════════════════════════════════════════
@@ -25,6 +26,9 @@ contract GenomadNFT is IGenomad {
     uint256 private _tokenIdCounter;
     address public breedingFactory;
     address public owner;
+    
+    // ZK Verifier
+    ITraitVerifier public traitVerifier;
 
     // Token data (ERC-721)
     mapping(uint256 => address) private _owners;
@@ -63,6 +67,8 @@ contract GenomadNFT is IGenomad {
         uint256 shareB
     );
 
+    event VerifierUpdated(address indexed oldVerifier, address indexed newVerifier);
+
     // ═══════════════════════════════════════════════════════
     // MODIFIERS
     // ═══════════════════════════════════════════════════════
@@ -98,26 +104,28 @@ contract GenomadNFT is IGenomad {
         breedingFactory = _factory;
     }
 
+    function setTraitVerifier(address _verifier) external onlyOwner {
+        address old = address(traitVerifier);
+        traitVerifier = ITraitVerifier(_verifier);
+        emit VerifierUpdated(old, _verifier);
+    }
+
     // ═══════════════════════════════════════════════════════
     // CUSTODY FUNCTIONS
     // ═══════════════════════════════════════════════════════
 
-    /// @notice Get custody percentage for an address (in basis points)
     function getCustody(uint256 tokenId, address holder) external view returns (uint256) {
         return _custody[tokenId][holder];
     }
 
-    /// @notice Get all custody holders for a token
     function getCustodyHolders(uint256 tokenId) external view returns (address[] memory) {
         return _custodyHolders[tokenId];
     }
 
-    /// @notice Check if address has at least threshold custody
     function hasCustodyThreshold(uint256 tokenId, address holder, uint256 threshold) external view returns (bool) {
         return _custody[tokenId][holder] >= threshold;
     }
 
-    /// @notice Transfer custody to another address
     function transferCustody(uint256 tokenId, address to, uint256 amount) external {
         require(to != address(0), "Cannot transfer to zero");
         require(to != msg.sender, "Cannot transfer to self");
@@ -126,14 +134,12 @@ contract GenomadNFT is IGenomad {
 
         _custody[tokenId][msg.sender] -= amount;
         
-        // Add to holders if new
         if (_custody[tokenId][to] == 0) {
             _custodyHolders[tokenId].push(to);
         }
         
         _custody[tokenId][to] += amount;
 
-        // Remove from holders if zero
         if (_custody[tokenId][msg.sender] == 0) {
             _removeCustodyHolder(tokenId, msg.sender);
         }
@@ -141,15 +147,13 @@ contract GenomadNFT is IGenomad {
         emit CustodyTransferred(tokenId, msg.sender, to, amount);
     }
 
-    /// @notice Internal: Set initial custody (100% to creator)
     function _setInitialCustody(uint256 tokenId, address holder) internal {
         _custody[tokenId][holder] = BASIS_POINTS;
         _custodyHolders[tokenId].push(holder);
     }
 
-    /// @notice Internal: Divide custody 50/50 for breeding
     function _divideCustody(uint256 tokenId, address holderA, address holderB) internal {
-        uint256 halfShare = BASIS_POINTS / 2; // 5000 each
+        uint256 halfShare = BASIS_POINTS / 2;
         
         _custody[tokenId][holderA] = halfShare;
         _custody[tokenId][holderB] = halfShare;
@@ -158,14 +162,12 @@ contract GenomadNFT is IGenomad {
         if (holderA != holderB) {
             _custodyHolders[tokenId].push(holderB);
         } else {
-            // Same owner = 100%
             _custody[tokenId][holderA] = BASIS_POINTS;
         }
 
         emit CustodyDivided(tokenId, holderA, holderB, halfShare, halfShare);
     }
 
-    /// @notice Internal: Remove address from custody holders array
     function _removeCustodyHolder(uint256 tokenId, address holder) internal {
         address[] storage holders = _custodyHolders[tokenId];
         for (uint256 i = 0; i < holders.length; i++) {
@@ -209,9 +211,61 @@ contract GenomadNFT is IGenomad {
         bytes calldata encryptedIdentity,
         bytes32 contentHash
     ) external returns (uint256 tokenId) {
-        // Validate traits are in range
         for (uint8 i = 0; i < 8; i++) {
             require(traits[i] <= 100, "Trait must be 0-100");
+        }
+
+        tokenId = ++_tokenIdCounter;
+
+        _mint(msg.sender, tokenId);
+        _setInitialCustody(tokenId, msg.sender);
+
+        _agents[tokenId] = AgentData({
+            dnaCommitment: dnaCommitment,
+            traits: traits,
+            generation: 0,
+            parentA: 0,
+            parentB: 0,
+            createdAt: block.timestamp,
+            isActive: false
+        });
+
+        _encryptedData[tokenId] = EncryptedData({
+            encryptedSoul: encryptedSoul,
+            encryptedIdentity: encryptedIdentity,
+            contentHash: contentHash
+        });
+
+        emit AgentRegistered(tokenId, msg.sender, dnaCommitment, 0);
+        emit EncryptedDataStored(tokenId, contentHash);
+    }
+
+    /// @notice Register agent with ZK proof verification (FASE 4 - Full)
+    /// @param dnaCommitment Hash commitment of agent DNA
+    /// @param traits 8 traits (0-100 each)
+    /// @param encryptedSoul Encrypted SOUL.md content
+    /// @param encryptedIdentity Encrypted IDENTITY.md content
+    /// @param contentHash Hash of original content
+    /// @param zkProof ZK proof that traits match content
+    function registerAgentWithProof(
+        bytes32 dnaCommitment,
+        uint8[8] calldata traits,
+        bytes calldata encryptedSoul,
+        bytes calldata encryptedIdentity,
+        bytes32 contentHash,
+        bytes calldata zkProof
+    ) external returns (uint256 tokenId) {
+        // Validate traits range
+        for (uint8 i = 0; i < 8; i++) {
+            require(traits[i] <= 100, "Trait must be 0-100");
+        }
+
+        // Verify ZK proof if verifier is set
+        if (address(traitVerifier) != address(0)) {
+            require(
+                traitVerifier.verifyTraitProof(zkProof, traits, contentHash),
+                "Invalid trait proof"
+            );
         }
 
         tokenId = ++_tokenIdCounter;
@@ -253,7 +307,6 @@ contract GenomadNFT is IGenomad {
 
         _mint(to, tokenId);
         
-        // Get parent owners for custody division
         address ownerA = _owners[parentA];
         address ownerB = _owners[parentB];
         _divideCustody(tokenId, ownerA, ownerB);
@@ -271,7 +324,66 @@ contract GenomadNFT is IGenomad {
         emit AgentRegistered(tokenId, to, dnaCommitment, generation);
     }
 
-    /// @notice Register bred agent with full data (FASE 4)
+    /// @notice Register bred agent with full data and ZK proof (FASE 4)
+    function registerBredAgentWithProof(
+        address to,
+        bytes32 dnaCommitment,
+        uint8[8] calldata traits,
+        uint256 generation,
+        uint256 parentA,
+        uint256 parentB,
+        bytes calldata encryptedSoul,
+        bytes calldata encryptedIdentity,
+        bytes32 contentHash,
+        bytes calldata zkProof
+    ) external returns (uint256 tokenId) {
+        require(msg.sender == breedingFactory, "Only breeding factory");
+
+        // Validate traits
+        for (uint8 i = 0; i < 8; i++) {
+            require(traits[i] <= 100, "Trait must be 0-100");
+        }
+
+        // Verify breeding proof if verifier is set
+        if (address(traitVerifier) != address(0)) {
+            uint8[8] memory parentATraits = _agents[parentA].traits;
+            uint8[8] memory parentBTraits = _agents[parentB].traits;
+            
+            require(
+                traitVerifier.verifyBreedProof(zkProof, parentATraits, parentBTraits, traits),
+                "Invalid breed proof"
+            );
+        }
+
+        tokenId = ++_tokenIdCounter;
+
+        _mint(to, tokenId);
+        
+        address ownerA = _owners[parentA];
+        address ownerB = _owners[parentB];
+        _divideCustody(tokenId, ownerA, ownerB);
+
+        _agents[tokenId] = AgentData({
+            dnaCommitment: dnaCommitment,
+            traits: traits,
+            generation: generation,
+            parentA: parentA,
+            parentB: parentB,
+            createdAt: block.timestamp,
+            isActive: false
+        });
+
+        _encryptedData[tokenId] = EncryptedData({
+            encryptedSoul: encryptedSoul,
+            encryptedIdentity: encryptedIdentity,
+            contentHash: contentHash
+        });
+
+        emit AgentRegistered(tokenId, to, dnaCommitment, generation);
+        emit EncryptedDataStored(tokenId, contentHash);
+    }
+
+    /// @notice Legacy function for compatibility
     function registerBredAgentWithData(
         address to,
         bytes32 dnaCommitment,
@@ -285,7 +397,6 @@ contract GenomadNFT is IGenomad {
     ) external returns (uint256 tokenId) {
         require(msg.sender == breedingFactory, "Only breeding factory");
 
-        // Validate traits
         for (uint8 i = 0; i < 8; i++) {
             require(traits[i] <= 100, "Trait must be 0-100");
         }
@@ -294,7 +405,6 @@ contract GenomadNFT is IGenomad {
 
         _mint(to, tokenId);
         
-        // Get parent owners for custody division
         address ownerA = _owners[parentA];
         address ownerB = _owners[parentB];
         _divideCustody(tokenId, ownerA, ownerB);
@@ -348,19 +458,16 @@ contract GenomadNFT is IGenomad {
     }
 
     function deactivateAgent(uint256 tokenId) external hasCustody(tokenId, 5001) {
-        // Deactivation requires >50% (majority)
         _agents[tokenId].isActive = false;
         emit AgentDeactivated(tokenId);
     }
 
-    /// @notice Update encrypted data (for agent evolution/updates)
     function updateEncryptedData(
         uint256 tokenId,
         bytes calldata encryptedSoul,
         bytes calldata encryptedIdentity,
         bytes32 contentHash
     ) external hasCustody(tokenId, BASIS_POINTS) {
-        // Requires 100% custody to update data
         _encryptedData[tokenId] = EncryptedData({
             encryptedSoul: encryptedSoul,
             encryptedIdentity: encryptedIdentity,
@@ -370,7 +477,6 @@ contract GenomadNFT is IGenomad {
         emit EncryptedDataStored(tokenId, contentHash);
     }
 
-    /// @notice Set traits for an agent (used after breeding calculation)
     function setTraits(uint256 tokenId, uint8[8] calldata traits) external onlyOwnerOf(tokenId) {
         for (uint8 i = 0; i < 8; i++) {
             require(traits[i] <= 100, "Trait must be 0-100");
@@ -458,7 +564,6 @@ contract GenomadNFT is IGenomad {
         _balances[to]++;
         _owners[tokenId] = to;
 
-        // Transfer full custody to new owner
         uint256 fromCustody = _custody[tokenId][from];
         if (fromCustody > 0) {
             _custody[tokenId][from] = 0;

@@ -4,7 +4,7 @@ pragma solidity ^0.8.28;
 /**
  * @title IGenomad
  * @notice Interface for Genomad NFT and Breeding
- * @dev FASE 4: Full on-chain storage with encrypted data and custody
+ * @dev FASE 4: Full on-chain storage with encrypted data, custody, and ZK proofs
  */
 interface IGenomad {
     // ═══════════════════════════════════════════════════════
@@ -12,8 +12,8 @@ interface IGenomad {
     // ═══════════════════════════════════════════════════════
 
     struct AgentData {
-        bytes32 dnaCommitment;      // Hash of traits + content
-        uint8[8] traits;            // 8 traits (0-100 each)
+        bytes32 dnaCommitment;
+        uint8[8] traits;
         uint256 generation;
         uint256 parentA;
         uint256 parentB;
@@ -22,9 +22,9 @@ interface IGenomad {
     }
 
     struct EncryptedData {
-        bytes encryptedSoul;        // SOUL.md encrypted with owner public key
-        bytes encryptedIdentity;    // IDENTITY.md encrypted
-        bytes32 contentHash;        // Hash of original content for verification
+        bytes encryptedSoul;
+        bytes encryptedIdentity;
+        bytes32 contentHash;
     }
 
     // ═══════════════════════════════════════════════════════
@@ -41,10 +41,7 @@ interface IGenomad {
     event AgentActivated(uint256 indexed tokenId, address indexed activator);
     event AgentDeactivated(uint256 indexed tokenId);
     
-    event EncryptedDataStored(
-        uint256 indexed tokenId,
-        bytes32 contentHash
-    );
+    event EncryptedDataStored(uint256 indexed tokenId, bytes32 contentHash);
 
     event BreedingRequested(
         uint256 indexed requestId,
@@ -69,6 +66,15 @@ interface IGenomad {
         bytes calldata encryptedSoul,
         bytes calldata encryptedIdentity,
         bytes32 contentHash
+    ) external returns (uint256 tokenId);
+
+    function registerAgentWithProof(
+        bytes32 dnaCommitment,
+        uint8[8] calldata traits,
+        bytes calldata encryptedSoul,
+        bytes calldata encryptedIdentity,
+        bytes32 contentHash,
+        bytes calldata zkProof
     ) external returns (uint256 tokenId);
 
     function getAgentData(uint256 tokenId) external view returns (AgentData memory);
