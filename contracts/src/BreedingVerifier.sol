@@ -3,10 +3,31 @@ pragma solidity ^0.8.28;
 
 /**
  * @title BreedingVerifier
- * @notice Verifies ZK proofs for breeding operations
- * @dev Uses RISC Zero Groth16 verification (simplified for hackathon)
+ * @notice Verifies ZK proofs for Genomad breeding operations
+ * @dev Based on: skills/risc-zero/GENESIS-TEMPLATE.md
+ * 
+ * Journal Layout (54 bytes):
+ * - [0:32]   Child DNA commitment (bytes32)
+ * - [32:33]  Is valid (uint8, 0 or 1)
+ * - [33:41]  Parent A ID (uint64)
+ * - [41:49]  Parent B ID (uint64)
+ * - [49:53]  Child generation (uint32)
+ * - [53:54]  Mutation count (uint8)
  */
 contract BreedingVerifier {
+    // ═══════════════════════════════════════════════════════
+    // TYPES
+    // ═══════════════════════════════════════════════════════
+
+    struct BreedingJournal {
+        bytes32 childCommitment;
+        bool isValid;
+        uint64 parentAId;
+        uint64 parentBId;
+        uint32 childGeneration;
+        uint8 mutationCount;
+    }
+
     // ═══════════════════════════════════════════════════════
     // STORAGE
     // ═══════════════════════════════════════════════════════
@@ -20,11 +41,21 @@ contract BreedingVerifier {
     // Mapping of verified commitments
     mapping(bytes32 => bool) public verifiedCommitments;
     
+    // Mapping of commitment to breeding details
+    mapping(bytes32 => BreedingJournal) public breedingDetails;
+    
     // ═══════════════════════════════════════════════════════
     // EVENTS
     // ═══════════════════════════════════════════════════════
     
-    event ProofVerified(bytes32 indexed commitment, bool isValid);
+    event BreedingProofVerified(
+        bytes32 indexed commitment,
+        uint64 indexed parentAId,
+        uint64 indexed parentBId,
+        uint32 childGeneration,
+        uint8 mutationCount
+    );
+    
     event ImageIdUpdated(bytes32 oldImageId, bytes32 newImageId);
     
     // ═══════════════════════════════════════════════════════
@@ -63,41 +94,67 @@ contract BreedingVerifier {
     // ═══════════════════════════════════════════════════════
     
     /**
-     * @notice Verify a breeding proof
+     * @notice Verify a breeding proof and decode the journal
      * @param seal The Groth16 proof seal
-     * @param journal The public outputs (commitment + isValid)
-     * @return isValid Whether the proof is valid
-     * @return commitment The child DNA commitment
+     * @param journal The public outputs from ZK execution
+     * @return decoded The decoded breeding journal
      */
     function verifyBreedingProof(
         bytes calldata seal,
         bytes calldata journal
-    ) external returns (bool isValid, bytes32 commitment) {
-        // Decode journal
-        require(journal.length >= 33, "Invalid journal length");
+    ) external returns (BreedingJournal memory decoded) {
+        // Validate journal length
+        require(journal.length >= 54, "Invalid journal length");
         
-        // First 32 bytes: commitment
-        commitment = bytes32(journal[0:32]);
+        // In production: verify Groth16 proof
+        // verifier.verify(seal, breedingImageId, sha256(journal));
         
-        // Next byte: isValid flag
-        isValid = journal[32] != 0;
-        
-        // In production, verify the Groth16 proof against the image ID
-        // For hackathon MVP, we trust the proof structure
-        // verifyGroth16(seal, breedingImageId, sha256(journal));
-        
-        // Simple validation for hackathon
+        // For hackathon: validate structure
         require(seal.length > 0, "Empty seal");
-        require(commitment != bytes32(0), "Empty commitment");
+        
+        // Decode journal
+        decoded = decodeJournal(journal);
+        
+        // Validate breeding
+        require(decoded.isValid, "Invalid breeding");
+        require(decoded.childCommitment != bytes32(0), "Empty commitment");
+        require(decoded.parentAId != decoded.parentBId, "Cannot breed with self");
         
         // Mark commitment as verified
-        if (isValid) {
-            verifiedCommitments[commitment] = true;
+        verifiedCommitments[decoded.childCommitment] = true;
+        breedingDetails[decoded.childCommitment] = decoded;
+        
+        emit BreedingProofVerified(
+            decoded.childCommitment,
+            decoded.parentAId,
+            decoded.parentBId,
+            decoded.childGeneration,
+            decoded.mutationCount
+        );
+        
+        return decoded;
+    }
+    
+    /**
+     * @notice Decode a breeding journal without verification
+     * @dev Useful for previewing journal contents
+     */
+    function decodeJournal(bytes calldata journal) public pure returns (BreedingJournal memory) {
+        require(journal.length >= 54, "Invalid journal length");
+        
+        bytes32 commitment;
+        assembly {
+            commitment := calldataload(journal.offset)
         }
         
-        emit ProofVerified(commitment, isValid);
-        
-        return (isValid, commitment);
+        return BreedingJournal({
+            childCommitment: commitment,
+            isValid: journal[32] != 0,
+            parentAId: uint64(bytes8(journal[33:41])),
+            parentBId: uint64(bytes8(journal[41:49])),
+            childGeneration: uint32(bytes4(journal[49:53])),
+            mutationCount: uint8(journal[53])
+        });
     }
     
     /**
@@ -108,21 +165,35 @@ contract BreedingVerifier {
     }
     
     /**
-     * @notice Batch verify multiple proofs
+     * @notice Get breeding details for a verified commitment
      */
-    function batchVerify(
-        bytes[] calldata seals,
-        bytes[] calldata journals
-    ) external returns (bool[] memory results) {
-        require(seals.length == journals.length, "Length mismatch");
-        
-        results = new bool[](seals.length);
-        
-        for (uint256 i = 0; i < seals.length; i++) {
-            (bool isValid,) = this.verifyBreedingProof(seals[i], journals[i]);
-            results[i] = isValid;
-        }
-        
-        return results;
+    function getBreedingDetails(bytes32 commitment) external view returns (BreedingJournal memory) {
+        require(verifiedCommitments[commitment], "Commitment not verified");
+        return breedingDetails[commitment];
+    }
+    
+    /**
+     * @notice Verify and extract just the essential data for breeding
+     * @return commitment The child DNA commitment
+     * @return parentAId First parent ID
+     * @return parentBId Second parent ID  
+     * @return generation Child generation number
+     */
+    function verifyAndExtract(
+        bytes calldata seal,
+        bytes calldata journal
+    ) external returns (
+        bytes32 commitment,
+        uint64 parentAId,
+        uint64 parentBId,
+        uint32 generation
+    ) {
+        BreedingJournal memory decoded = this.verifyBreedingProof(seal, journal);
+        return (
+            decoded.childCommitment,
+            decoded.parentAId,
+            decoded.parentBId,
+            decoded.childGeneration
+        );
     }
 }
