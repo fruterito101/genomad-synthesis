@@ -42,6 +42,7 @@ export default function ProfilePage() {
   const [codeExpiry, setCodeExpiry] = useState<Date | null>(null);
   const [codeError, setCodeError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false)
+  const [walletCopied, setWalletCopied] = useState(false)
   const [skillCopied, setSkillCopied] = useState<string | null>(null);
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
 
@@ -65,6 +66,7 @@ export default function ProfilePage() {
     setTimeout(() => setSkillCopied(null), 2000)
   }
 
+  const copyWallet = () => { if (walletAddress) { navigator.clipboard.writeText(walletAddress); setWalletCopied(true); setTimeout(() => setWalletCopied(false), 2000); } };
   const copyCode = () => { if (verificationCode) { navigator.clipboard.writeText(verificationCode); setCopied(true); setTimeout(() => setCopied(false), 2000); } };
   const formatTimeLeft = () => { if (!codeExpiry) return ""; const diff = codeExpiry.getTime() - Date.now(); if (diff <= 0) return i18n.language === "es" ? "Expirado" : "Expired"; return `${Math.floor(diff / 60000)}:${String(Math.floor((diff % 60000) / 1000)).padStart(2, "0")}`; };
 
@@ -98,7 +100,7 @@ export default function ProfilePage() {
               <div className="flex-1 text-center sm:text-left">
                 <h1 className="text-xl sm:text-2xl font-bold mb-1 sm:mb-2">{shortWallet}</h1>
                 <div className="flex flex-wrap justify-center sm:justify-start gap-2 sm:gap-4 text-xs sm:text-sm">
-                  <span className="flex items-center gap-1 sm:gap-2 text-muted-foreground"><Shield className="w-3 h-3 sm:w-4 sm:h-4 text-secondary" /><code className="px-1.5 sm:px-2 py-0.5 rounded text-xs bg-muted">{walletAddress?.slice(0, 8)}...</code></span>
+                  <button onClick={copyWallet} className="flex items-center gap-1 sm:gap-2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer" title={walletAddress}>{walletCopied ? <Check className="w-3 h-3 sm:w-4 sm:h-4 text-emerald-500" /> : <Copy className="w-3 h-3 sm:w-4 sm:h-4 text-secondary" />}<code className="px-1.5 sm:px-2 py-0.5 rounded text-xs bg-muted hover:bg-muted/80">{walletAddress?.slice(0, 6)}...{walletAddress?.slice(-4)}</code></button>
                 </div>
               </div>
               <div className="flex gap-4 sm:gap-6 md:gap-8 text-center">
