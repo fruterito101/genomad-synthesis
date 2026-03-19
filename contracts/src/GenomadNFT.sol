@@ -6,9 +6,15 @@ import "./IGenomad.sol";
 /**
  * @title GenomadNFT
  * @notice ERC-721 NFT for AI Agents with on-chain DNA and encrypted storage
- * @dev FASE 4: Full on-chain architecture
+ * @dev FASE 4: Full on-chain architecture with custody system
  */
 contract GenomadNFT is IGenomad {
+    // ═══════════════════════════════════════════════════════
+    // CONSTANTS
+    // ═══════════════════════════════════════════════════════
+    
+    uint256 public constant BASIS_POINTS = 10000; // 100% = 10000
+
     // ═══════════════════════════════════════════════════════
     // STORAGE
     // ═══════════════════════════════════════════════════════
@@ -20,7 +26,7 @@ contract GenomadNFT is IGenomad {
     address public breedingFactory;
     address public owner;
 
-    // Token data
+    // Token data (ERC-721)
     mapping(uint256 => address) private _owners;
     mapping(address => uint256) private _balances;
     mapping(uint256 => address) private _tokenApprovals;
@@ -31,6 +37,31 @@ contract GenomadNFT is IGenomad {
     
     // Encrypted data (SOUL.md, IDENTITY.md - only owners can decrypt)
     mapping(uint256 => EncryptedData) private _encryptedData;
+
+    // Custody system: tokenId => owner => basis points (10000 = 100%)
+    mapping(uint256 => mapping(address => uint256)) private _custody;
+    
+    // Track all custody holders for a token
+    mapping(uint256 => address[]) private _custodyHolders;
+
+    // ═══════════════════════════════════════════════════════
+    // EVENTS
+    // ═══════════════════════════════════════════════════════
+
+    event CustodyTransferred(
+        uint256 indexed tokenId,
+        address indexed from,
+        address indexed to,
+        uint256 amount
+    );
+
+    event CustodyDivided(
+        uint256 indexed tokenId,
+        address indexed holderA,
+        address indexed holderB,
+        uint256 shareA,
+        uint256 shareB
+    );
 
     // ═══════════════════════════════════════════════════════
     // MODIFIERS
@@ -43,6 +74,11 @@ contract GenomadNFT is IGenomad {
 
     modifier onlyOwnerOf(uint256 tokenId) {
         require(_owners[tokenId] == msg.sender, "Not token owner");
+        _;
+    }
+
+    modifier hasCustody(uint256 tokenId, uint256 minBasisPoints) {
+        require(_custody[tokenId][msg.sender] >= minBasisPoints, "Insufficient custody");
         _;
     }
 
@@ -63,6 +99,85 @@ contract GenomadNFT is IGenomad {
     }
 
     // ═══════════════════════════════════════════════════════
+    // CUSTODY FUNCTIONS
+    // ═══════════════════════════════════════════════════════
+
+    /// @notice Get custody percentage for an address (in basis points)
+    function getCustody(uint256 tokenId, address holder) external view returns (uint256) {
+        return _custody[tokenId][holder];
+    }
+
+    /// @notice Get all custody holders for a token
+    function getCustodyHolders(uint256 tokenId) external view returns (address[] memory) {
+        return _custodyHolders[tokenId];
+    }
+
+    /// @notice Check if address has at least threshold custody
+    function hasCustodyThreshold(uint256 tokenId, address holder, uint256 threshold) external view returns (bool) {
+        return _custody[tokenId][holder] >= threshold;
+    }
+
+    /// @notice Transfer custody to another address
+    function transferCustody(uint256 tokenId, address to, uint256 amount) external {
+        require(to != address(0), "Cannot transfer to zero");
+        require(to != msg.sender, "Cannot transfer to self");
+        require(_custody[tokenId][msg.sender] >= amount, "Insufficient custody");
+        require(amount > 0, "Amount must be positive");
+
+        _custody[tokenId][msg.sender] -= amount;
+        
+        // Add to holders if new
+        if (_custody[tokenId][to] == 0) {
+            _custodyHolders[tokenId].push(to);
+        }
+        
+        _custody[tokenId][to] += amount;
+
+        // Remove from holders if zero
+        if (_custody[tokenId][msg.sender] == 0) {
+            _removeCustodyHolder(tokenId, msg.sender);
+        }
+
+        emit CustodyTransferred(tokenId, msg.sender, to, amount);
+    }
+
+    /// @notice Internal: Set initial custody (100% to creator)
+    function _setInitialCustody(uint256 tokenId, address holder) internal {
+        _custody[tokenId][holder] = BASIS_POINTS;
+        _custodyHolders[tokenId].push(holder);
+    }
+
+    /// @notice Internal: Divide custody 50/50 for breeding
+    function _divideCustody(uint256 tokenId, address holderA, address holderB) internal {
+        uint256 halfShare = BASIS_POINTS / 2; // 5000 each
+        
+        _custody[tokenId][holderA] = halfShare;
+        _custody[tokenId][holderB] = halfShare;
+        
+        _custodyHolders[tokenId].push(holderA);
+        if (holderA != holderB) {
+            _custodyHolders[tokenId].push(holderB);
+        } else {
+            // Same owner = 100%
+            _custody[tokenId][holderA] = BASIS_POINTS;
+        }
+
+        emit CustodyDivided(tokenId, holderA, holderB, halfShare, halfShare);
+    }
+
+    /// @notice Internal: Remove address from custody holders array
+    function _removeCustodyHolder(uint256 tokenId, address holder) internal {
+        address[] storage holders = _custodyHolders[tokenId];
+        for (uint256 i = 0; i < holders.length; i++) {
+            if (holders[i] == holder) {
+                holders[i] = holders[holders.length - 1];
+                holders.pop();
+                break;
+            }
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════
     // AGENT FUNCTIONS
     // ═══════════════════════════════════════════════════════
 
@@ -71,6 +186,7 @@ contract GenomadNFT is IGenomad {
         tokenId = ++_tokenIdCounter;
 
         _mint(msg.sender, tokenId);
+        _setInitialCustody(tokenId, msg.sender);
 
         _agents[tokenId] = AgentData({
             dnaCommitment: dnaCommitment,
@@ -101,6 +217,7 @@ contract GenomadNFT is IGenomad {
         tokenId = ++_tokenIdCounter;
 
         _mint(msg.sender, tokenId);
+        _setInitialCustody(tokenId, msg.sender);
 
         _agents[tokenId] = AgentData({
             dnaCommitment: dnaCommitment,
@@ -135,11 +252,15 @@ contract GenomadNFT is IGenomad {
         tokenId = ++_tokenIdCounter;
 
         _mint(to, tokenId);
+        
+        // Get parent owners for custody division
+        address ownerA = _owners[parentA];
+        address ownerB = _owners[parentB];
+        _divideCustody(tokenId, ownerA, ownerB);
 
-        // Inherit traits through crossover (done off-chain, stored here)
         _agents[tokenId] = AgentData({
             dnaCommitment: dnaCommitment,
-            traits: [uint8(0), 0, 0, 0, 0, 0, 0, 0], // Set via setChildTraits
+            traits: [uint8(0), 0, 0, 0, 0, 0, 0, 0],
             generation: generation,
             parentA: parentA,
             parentB: parentB,
@@ -172,6 +293,11 @@ contract GenomadNFT is IGenomad {
         tokenId = ++_tokenIdCounter;
 
         _mint(to, tokenId);
+        
+        // Get parent owners for custody division
+        address ownerA = _owners[parentA];
+        address ownerB = _owners[parentB];
+        _divideCustody(tokenId, ownerA, ownerB);
 
         _agents[tokenId] = AgentData({
             dnaCommitment: dnaCommitment,
@@ -216,12 +342,13 @@ contract GenomadNFT is IGenomad {
     // STATE CHANGES
     // ═══════════════════════════════════════════════════════
 
-    function activateAgent(uint256 tokenId) external onlyOwnerOf(tokenId) {
+    function activateAgent(uint256 tokenId) external hasCustody(tokenId, 5000) {
         _agents[tokenId].isActive = true;
         emit AgentActivated(tokenId, msg.sender);
     }
 
-    function deactivateAgent(uint256 tokenId) external onlyOwnerOf(tokenId) {
+    function deactivateAgent(uint256 tokenId) external hasCustody(tokenId, 5001) {
+        // Deactivation requires >50% (majority)
         _agents[tokenId].isActive = false;
         emit AgentDeactivated(tokenId);
     }
@@ -232,7 +359,8 @@ contract GenomadNFT is IGenomad {
         bytes calldata encryptedSoul,
         bytes calldata encryptedIdentity,
         bytes32 contentHash
-    ) external onlyOwnerOf(tokenId) {
+    ) external hasCustody(tokenId, BASIS_POINTS) {
+        // Requires 100% custody to update data
         _encryptedData[tokenId] = EncryptedData({
             encryptedSoul: encryptedSoul,
             encryptedIdentity: encryptedIdentity,
@@ -329,6 +457,18 @@ contract GenomadNFT is IGenomad {
         _balances[from]--;
         _balances[to]++;
         _owners[tokenId] = to;
+
+        // Transfer full custody to new owner
+        uint256 fromCustody = _custody[tokenId][from];
+        if (fromCustody > 0) {
+            _custody[tokenId][from] = 0;
+            _removeCustodyHolder(tokenId, from);
+            
+            if (_custody[tokenId][to] == 0) {
+                _custodyHolders[tokenId].push(to);
+            }
+            _custody[tokenId][to] += fromCustody;
+        }
 
         emit Transfer(from, to, tokenId);
     }

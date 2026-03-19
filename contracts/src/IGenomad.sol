@@ -4,7 +4,7 @@ pragma solidity ^0.8.28;
 /**
  * @title IGenomad
  * @notice Interface for Genomad NFT and Breeding
- * @dev FASE 4: Full on-chain storage with encrypted data
+ * @dev FASE 4: Full on-chain storage with encrypted data and custody
  */
 interface IGenomad {
     // ═══════════════════════════════════════════════════════
@@ -22,7 +22,7 @@ interface IGenomad {
     }
 
     struct EncryptedData {
-        bytes encryptedSoul;        // SOUL.md encrypted with owner's public key
+        bytes encryptedSoul;        // SOUL.md encrypted with owner public key
         bytes encryptedIdentity;    // IDENTITY.md encrypted
         bytes32 contentHash;        // Hash of original content for verification
     }
@@ -58,7 +58,7 @@ interface IGenomad {
     event BreedingCancelled(uint256 indexed requestId);
 
     // ═══════════════════════════════════════════════════════
-    // FUNCTIONS
+    // AGENT FUNCTIONS
     // ═══════════════════════════════════════════════════════
 
     function registerAgent(bytes32 dnaCommitment) external returns (uint256 tokenId);
@@ -84,4 +84,13 @@ interface IGenomad {
         bytes calldata encryptedIdentity,
         bytes32 contentHash
     ) external;
+
+    // ═══════════════════════════════════════════════════════
+    // CUSTODY FUNCTIONS
+    // ═══════════════════════════════════════════════════════
+
+    function getCustody(uint256 tokenId, address holder) external view returns (uint256);
+    function getCustodyHolders(uint256 tokenId) external view returns (address[] memory);
+    function hasCustodyThreshold(uint256 tokenId, address holder, uint256 threshold) external view returns (bool);
+    function transferCustody(uint256 tokenId, address to, uint256 amount) external;
 }

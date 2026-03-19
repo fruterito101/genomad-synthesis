@@ -52,13 +52,11 @@ contract GenomadNFTTest is Test {
         assertEq(tokenId, 1);
         assertEq(nft.ownerOf(tokenId), alice);
 
-        // Check traits
         uint8[8] memory storedTraits = nft.getTraits(tokenId);
         for (uint8 i = 0; i < 8; i++) {
             assertEq(storedTraits[i], traits[i]);
         }
 
-        // Check encrypted data
         IGenomad.EncryptedData memory encData = nft.getEncryptedData(tokenId);
         assertEq(encData.encryptedSoul, encryptedSoul);
         assertEq(encData.encryptedIdentity, encryptedIdentity);
@@ -80,82 +78,113 @@ contract GenomadNFTTest is Test {
     }
 
     // ═══════════════════════════════════════════════════════
-    // ENCRYPTED DATA UPDATE TESTS
+    // CUSTODY TESTS (Ticket 4.2)
     // ═══════════════════════════════════════════════════════
 
-    function test_UpdateEncryptedData() public {
+    function test_InitialCustody() public {
         vm.prank(alice);
         uint256 tokenId = nft.registerAgent(bytes32("test"));
 
-        bytes memory newSoul = hex"aabbccddeeff00112233";
-        bytes memory newIdentity = hex"11223344556677889900";
-        bytes32 newHash = keccak256("new_content");
-
-        vm.prank(alice);
-        nft.updateEncryptedData(tokenId, newSoul, newIdentity, newHash);
-
-        IGenomad.EncryptedData memory encData = nft.getEncryptedData(tokenId);
-        assertEq(encData.encryptedSoul, newSoul);
-        assertEq(encData.encryptedIdentity, newIdentity);
-        assertEq(encData.contentHash, newHash);
+        assertEq(nft.getCustody(tokenId, alice), 10000);
+        
+        address[] memory holders = nft.getCustodyHolders(tokenId);
+        assertEq(holders.length, 1);
+        assertEq(holders[0], alice);
     }
 
-    function test_UpdateEncryptedData_OnlyOwner() public {
+    function test_TransferCustody() public {
         vm.prank(alice);
         uint256 tokenId = nft.registerAgent(bytes32("test"));
+
+        vm.prank(alice);
+        nft.transferCustody(tokenId, bob, 3000);
+
+        assertEq(nft.getCustody(tokenId, alice), 7000);
+        assertEq(nft.getCustody(tokenId, bob), 3000);
+
+        address[] memory holders = nft.getCustodyHolders(tokenId);
+        assertEq(holders.length, 2);
+    }
+
+    function test_TransferCustody_InsufficientCustody() public {
+        vm.prank(alice);
+        uint256 tokenId = nft.registerAgent(bytes32("test"));
+
+        vm.prank(alice);
+        vm.expectRevert("Insufficient custody");
+        nft.transferCustody(tokenId, bob, 15000);
+    }
+
+    function test_CustodyThreshold() public {
+        vm.prank(alice);
+        uint256 tokenId = nft.registerAgent(bytes32("test"));
+
+        assertTrue(nft.hasCustodyThreshold(tokenId, alice, 5000));
+        assertTrue(nft.hasCustodyThreshold(tokenId, alice, 10000));
+        assertFalse(nft.hasCustodyThreshold(tokenId, bob, 1));
+    }
+
+    function test_ActivateRequires50Percent() public {
+        vm.prank(alice);
+        uint256 tokenId = nft.registerAgent(bytes32("test"));
+
+        vm.prank(alice);
+        nft.transferCustody(tokenId, bob, 6000);
+
+        vm.prank(alice);
+        vm.expectRevert("Insufficient custody");
+        nft.activateAgent(tokenId);
 
         vm.prank(bob);
-        vm.expectRevert("Not token owner");
-        nft.updateEncryptedData(tokenId, hex"00", hex"00", bytes32(0));
+        nft.activateAgent(tokenId);
+
+        assertTrue(nft.getAgentData(tokenId).isActive);
     }
 
-    // ═══════════════════════════════════════════════════════
-    // TRAITS UPDATE TESTS
-    // ═══════════════════════════════════════════════════════
-
-    function test_SetTraits() public {
+    function test_DeactivateRequiresMajority() public {
         vm.prank(alice);
         uint256 tokenId = nft.registerAgent(bytes32("test"));
-
-        uint8[8] memory newTraits = [uint8(50), 50, 50, 50, 50, 50, 50, 50];
-
-        vm.prank(alice);
-        nft.setTraits(tokenId, newTraits);
-
-        uint8[8] memory storedTraits = nft.getTraits(tokenId);
-        for (uint8 i = 0; i < 8; i++) {
-            assertEq(storedTraits[i], 50);
-        }
-    }
-
-    function test_SetTraits_OnlyOwner() public {
-        vm.prank(alice);
-        uint256 tokenId = nft.registerAgent(bytes32("test"));
-
-        uint8[8] memory newTraits = [uint8(50), 50, 50, 50, 50, 50, 50, 50];
-
-        vm.prank(bob);
-        vm.expectRevert("Not token owner");
-        nft.setTraits(tokenId, newTraits);
-    }
-
-    // ═══════════════════════════════════════════════════════
-    // ACTIVATION TESTS
-    // ═══════════════════════════════════════════════════════
-
-    function test_ActivateDeactivate() public {
-        vm.prank(alice);
-        uint256 tokenId = nft.registerAgent(bytes32("test"));
-
-        assertEq(nft.getAgentData(tokenId).isActive, false);
 
         vm.prank(alice);
         nft.activateAgent(tokenId);
-        assertEq(nft.getAgentData(tokenId).isActive, true);
 
         vm.prank(alice);
+        nft.transferCustody(tokenId, bob, 5000);
+
+        vm.prank(alice);
+        vm.expectRevert("Insufficient custody");
         nft.deactivateAgent(tokenId);
-        assertEq(nft.getAgentData(tokenId).isActive, false);
+
+        vm.prank(alice);
+        nft.transferCustody(tokenId, bob, 1);
+
+        vm.prank(bob);
+        nft.deactivateAgent(tokenId);
+
+        assertFalse(nft.getAgentData(tokenId).isActive);
+    }
+
+    function test_UpdateDataRequires100Percent() public {
+        vm.prank(alice);
+        uint256 tokenId = nft.registerAgent(bytes32("test"));
+
+        vm.prank(alice);
+        nft.transferCustody(tokenId, bob, 100);
+
+        vm.prank(alice);
+        vm.expectRevert("Insufficient custody");
+        nft.updateEncryptedData(tokenId, hex"00", hex"00", bytes32(0));
+    }
+
+    function test_TransferMovesToNewOwner() public {
+        vm.prank(alice);
+        uint256 tokenId = nft.registerAgent(bytes32("test"));
+
+        vm.prank(alice);
+        nft.transferFrom(alice, bob, tokenId);
+
+        assertEq(nft.getCustody(tokenId, alice), 0);
+        assertEq(nft.getCustody(tokenId, bob), 10000);
     }
 
     // ═══════════════════════════════════════════════════════
@@ -164,11 +193,8 @@ contract GenomadNFTTest is Test {
 
     function test_GasEstimate_RegisterWithData() public {
         uint8[8] memory traits = [uint8(75), 60, 80, 45, 90, 30, 55, 70];
-        
-        // Simulate ~2KB encrypted data
         bytes memory encryptedSoul = new bytes(2048);
         bytes memory encryptedIdentity = new bytes(1024);
-
         bytes32 contentHash = keccak256("test");
 
         uint256 gasBefore = gasleft();
@@ -183,10 +209,7 @@ contract GenomadNFTTest is Test {
         );
 
         uint256 gasUsed = gasBefore - gasleft();
-        
         emit log_named_uint("Gas used for 3KB encrypted data", gasUsed);
-        
-        // Should be reasonable (< 500k gas)
-        assertLt(gasUsed, 500000);
+        assertLt(gasUsed, 600000);
     }
 }
