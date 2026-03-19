@@ -127,7 +127,7 @@ console.log("\n📍 Commitment Scheme...\n");
 const commitment = createCommitment(secretData);
 console.log(`   📝 Hash: ${commitment.hash.slice(0, 32)}...`);
 console.log(`      Nonce: ${commitment.nonce.slice(0, 16)}...`);
-const verified = verifyCommitment(secretData, commitment.nonce, commitment.hash);
+const verified = verifyCommitment(secretData, commitment);
 console.log(`      Verificado: ${verified ? "✅" : "❌"}`);
 console.log("\n");
 
