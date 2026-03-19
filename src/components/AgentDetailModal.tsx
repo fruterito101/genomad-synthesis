@@ -3,25 +3,27 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Dna, Shield, Clock, Crown, Cpu, Palette, MessageSquare, Brain, Heart, TrendingUp, GraduationCap, Star, ExternalLink, Copy, Check, Activity } from "lucide-react";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Button } from "@/components/ui";
 import Link from "next/link";
+
+interface AgentTraits {
+  technical: number;
+  creativity: number;
+  social: number;
+  analysis: number;
+  empathy: number;
+  trading: number;
+  teaching: number;
+  leadership: number;
+}
 
 interface Agent {
   id: string;
   name: string;
   botUsername: string | null;
   dnaHash: string;
-  traits: {
-    technical: number;
-    creativity: number;
-    social: number;
-    analysis: number;
-    empathy: number;
-    trading: number;
-    teaching: number;
-    leadership: number;
-  };
+  traits: AgentTraits | string | null;
   fitness: number;
   generation: number;
   isActive: boolean;
@@ -50,7 +52,31 @@ const traitConfig: Record<string, { icon: React.ElementType; color: string; labe
   leadership: { icon: Crown, color: "#F97316", label: "Leadership" },
 };
 
-function getRarity(traits: Agent["traits"]): { label: string; color: string; bg: string } {
+const defaultTraits: AgentTraits = {
+  technical: 50,
+  creativity: 50,
+  social: 50,
+  analysis: 50,
+  empathy: 50,
+  trading: 50,
+  teaching: 50,
+  leadership: 50,
+};
+
+function parseTraits(traits: AgentTraits | string | null | undefined): AgentTraits {
+  if (!traits) return defaultTraits;
+  if (typeof traits === "string") {
+    try {
+      const parsed = JSON.parse(traits);
+      return { ...defaultTraits, ...parsed };
+    } catch {
+      return defaultTraits;
+    }
+  }
+  return { ...defaultTraits, ...traits };
+}
+
+function getRarity(traits: AgentTraits): { label: string; color: string; bg: string } {
   const values = Object.values(traits);
   const avg = values.reduce((a, b) => a + b, 0) / values.length;
   const max = Math.max(...values);
@@ -65,13 +91,17 @@ function getRarity(traits: Agent["traits"]): { label: string; color: string; bg:
 export function AgentDetailModal({ agent, isOpen, onClose }: AgentDetailModalProps) {
   const [copied, setCopied] = useState(false);
 
+  const safeTraits = useMemo(() => parseTraits(agent?.traits), [agent?.traits]);
+  const rarity = useMemo(() => getRarity(safeTraits), [safeTraits]);
+  const sortedTraits = useMemo(() => 
+    Object.entries(safeTraits).sort(([, a], [, b]) => b - a),
+    [safeTraits]
+  );
+
   if (!agent) return null;
 
-  const rarity = getRarity(agent.traits);
-  const sortedTraits = Object.entries(agent.traits).sort(([, a], [, b]) => b - a);
-
   const copyHash = () => {
-    navigator.clipboard.writeText(agent.dnaHash);
+    navigator.clipboard.writeText(agent.dnaHash || "");
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -104,7 +134,7 @@ export function AgentDetailModal({ agent, isOpen, onClose }: AgentDetailModalPro
                   <Dna className="w-7 h-7 sm:w-8 sm:h-8 text-white" />
                 </div>
                 <div>
-                  <h2 className="text-xl sm:text-2xl font-bold" style={{ color: "var(--color-text-primary)" }}>{agent.name}</h2>
+                  <h2 className="text-xl sm:text-2xl font-bold" style={{ color: "var(--color-text-primary)" }}>{agent.name || "Unknown Agent"}</h2>
                   <div className="flex items-center gap-2 mt-1">
                     {agent.botUsername && <span className="text-sm" style={{ color: "var(--color-text-muted)" }}>@{agent.botUsername}</span>}
                     <span className="px-2 py-0.5 rounded text-xs font-medium" style={{ backgroundColor: rarity.bg, color: rarity.color }}>
@@ -122,11 +152,11 @@ export function AgentDetailModal({ agent, isOpen, onClose }: AgentDetailModalPro
               {/* Stats Row */}
               <div className="grid grid-cols-3 gap-3">
                 <div className="p-4 rounded-xl text-center" style={{ backgroundColor: "var(--color-bg-tertiary)" }}>
-                  <p className="text-3xl sm:text-4xl font-bold gradient-text">{agent.fitness.toFixed(1)}</p>
+                  <p className="text-3xl sm:text-4xl font-bold gradient-text">{(agent.fitness ?? 0).toFixed(1)}</p>
                   <p className="text-xs mt-1" style={{ color: "var(--color-text-muted)" }}>FITNESS</p>
                 </div>
                 <div className="p-4 rounded-xl text-center" style={{ backgroundColor: "var(--color-bg-tertiary)" }}>
-                  <p className="text-3xl sm:text-4xl font-bold" style={{ color: "var(--color-primary)" }}>{agent.generation}</p>
+                  <p className="text-3xl sm:text-4xl font-bold" style={{ color: "var(--color-primary)" }}>{agent.generation ?? 0}</p>
                   <p className="text-xs mt-1" style={{ color: "var(--color-text-muted)" }}>GENERATION</p>
                 </div>
                 <div className="p-4 rounded-xl text-center" style={{ backgroundColor: "var(--color-bg-tertiary)" }}>
@@ -148,7 +178,9 @@ export function AgentDetailModal({ agent, isOpen, onClose }: AgentDetailModalPro
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {sortedTraits.map(([key, value], index) => {
                     const config = traitConfig[key];
+                    if (!config) return null;
                     const Icon = config.icon;
+                    const safeValue = typeof value === "number" ? value : 50;
                     return (
                       <motion.div
                         key={key}
@@ -164,14 +196,14 @@ export function AgentDetailModal({ agent, isOpen, onClose }: AgentDetailModalPro
                         <div className="flex-1">
                           <div className="flex items-center justify-between mb-1">
                             <span className="text-sm font-medium" style={{ color: "var(--color-text-primary)" }}>{config.label}</span>
-                            <span className="text-sm font-bold" style={{ color: config.color }}>{value}</span>
+                            <span className="text-sm font-bold" style={{ color: config.color }}>{safeValue}</span>
                           </div>
                           <div className="h-2 rounded-full" style={{ backgroundColor: "var(--color-bg-primary)" }}>
                             <motion.div
                               className="h-full rounded-full"
                               style={{ backgroundColor: config.color }}
                               initial={{ width: 0 }}
-                              animate={{ width: `${value}%` }}
+                              animate={{ width: `${safeValue}%` }}
                               transition={{ duration: 0.5, delay: index * 0.05 }}
                             />
                           </div>
@@ -192,7 +224,7 @@ export function AgentDetailModal({ agent, isOpen, onClose }: AgentDetailModalPro
                     <span className="text-sm" style={{ color: "var(--color-text-muted)" }}>DNA Hash</span>
                     <div className="flex items-center gap-2">
                       <code className="text-xs px-2 py-1 rounded" style={{ backgroundColor: "var(--color-bg-primary)", color: "var(--color-text-secondary)" }}>
-                        {agent.dnaHash.slice(0, 8)}...{agent.dnaHash.slice(-8)}
+                        {agent.dnaHash ? `${agent.dnaHash.slice(0, 8)}...${agent.dnaHash.slice(-8)}` : "N/A"}
                       </code>
                       <button onClick={copyHash} className="p-1 rounded hover:bg-white/10">
                         {copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" style={{ color: "var(--color-text-muted)" }} />}
