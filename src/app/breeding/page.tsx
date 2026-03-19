@@ -33,7 +33,7 @@ const CROSSOVER_TYPES = [
   { id: "single", name: "Single-Point", desc: "Random cut", icon: Zap },
 ];
 
-const traitIcons: Record<string, React.ElementType> = { technical: Cpu, creativity: Palette, social: MessageSquare, analysis: Brain, empathy: Heart, trading: TrendingUp, teaching: GraduationCap, leadership: Crown };
+const traitIcons = { technical: Cpu, creativity: Palette, social: MessageSquare, analysis: Brain, empathy: Heart, trading: TrendingUp, teaching: GraduationCap, leadership: Crown };
 const traitColors: Record<string, string> = { technical: "#3B82F6", creativity: "#EC4899", social: "#8B5CF6", analysis: "#06B6D4", empathy: "#EF4444", trading: "#10B981", teaching: "#F59E0B", leadership: "#F97316" };
 
 const defaultTraits = { technical: 50, creativity: 50, social: 50, analysis: 50, empathy: 50, trading: 50, teaching: 50, leadership: 50 };
@@ -311,7 +311,7 @@ function BreedingContent() {
                   <div className="text-left sm:text-right"><span className="text-xs sm:text-sm text-muted-foreground">Est. Fitness:</span><span className="ml-2 text-xl sm:text-2xl font-bold gradient-text">{predictedFitness}</span></div>
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
-                  {predictedTraits.map(({ trait, avg }) => { const Icon = traitIcons[trait]; const color = traitColors[trait]; return (
+                  {predictedTraits.map(({ trait, avg }) => { const Icon = traitIcons[trait as keyof typeof traitIcons]; const color = traitColors[trait as keyof typeof traitColors]; return (
                     <div key={trait} className="p-2 sm:p-3 rounded-lg bg-card">
                       <div className="flex items-center gap-1 sm:gap-2 mb-1 sm:mb-2"><Icon className="w-3 h-3 sm:w-4 sm:h-4" style={{ color }} /><span className="text-[10px] sm:text-xs capitalize truncate text-muted-foreground">{trait}</span></div>
                       <div className="flex items-center justify-between"><span className="text-sm sm:text-lg font-bold">{avg}</span><span className="text-[10px] sm:text-xs text-muted-foreground">±15</span></div>

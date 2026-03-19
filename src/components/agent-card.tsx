@@ -52,7 +52,7 @@ interface AgentCardProps {
   }
 }
 
-const traitIcons: Record<string, React.ElementType> = {
+const traitIcons = {
   technical: Cpu, creativity: Palette, social: MessageSquare, analysis: Brain,
   empathy: Heart, trading: TrendingUp, teaching: GraduationCap, leadership: Crown,
 }
