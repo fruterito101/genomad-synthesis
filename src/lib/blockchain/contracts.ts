@@ -1,11 +1,16 @@
 // src/lib/blockchain/contracts.ts
 
+import { getActiveContracts } from "./contracts.config";
+
 /**
- * Contract addresses - UPDATE AFTER DEPLOYMENT
+ * Contract addresses - From contracts.config.ts
  */
+const activeContracts = getActiveContracts();
+
 export const CONTRACTS = {
-  genomadNFT: process.env.NEXT_PUBLIC_GENOMAD_NFT_ADDRESS || "",
-  breedingFactory: process.env.NEXT_PUBLIC_BREEDING_FACTORY_ADDRESS || "",
+  genomadNFT: activeContracts.genomadNFT,
+  breedingFactory: activeContracts.breedingFactory,
+  traitVerifier: activeContracts.traitVerifier,
 } as const;
 
 /**
@@ -61,7 +66,7 @@ export const GENOMAD_NFT_ABI = [
     stateMutability: "view",
     type: "function",
   },
-  // Write functions
+  // Write functions  
   {
     inputs: [{ name: "dnaCommitment", type: "bytes32" }],
     name: "registerAgent",
