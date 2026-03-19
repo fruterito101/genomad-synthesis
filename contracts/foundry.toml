@@ -14,3 +14,7 @@ monad_mainnet = "https://rpc.monad.xyz"
 
 [etherscan]
 monad_testnet = { key = "", url = "https://sourcify-api-monad.blockvision.org/" }
+
+remappings = [
+    "risc0/=src/interfaces/"
+]

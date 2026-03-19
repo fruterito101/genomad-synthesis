@@ -1,0 +1,14 @@
+[workspace]
+resolver = "2"
+members = ["host", "methods"]
+
+[workspace.dependencies]
+risc0-zkvm = { version = "3.0" }
+risc0-build = { version = "3.0" }
+
+[profile.release]
+debug = 1
+lto = "thin"
+
+[profile.dev]
+opt-level = 3
