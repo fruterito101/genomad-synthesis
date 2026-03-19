@@ -65,7 +65,7 @@ const traitIcons = {
 
 const traitColors: Record<string, string> = {
   technical: "#3B82F6", creativity: "#EC4899", social: "#8B5CF6", analysis: "#06B6D4",
-  empathy: "#EF4444", trading: "#10B981", teaching: "#F59E0B", leadership: "#F97316",
+  empathy: "#EF4444", trading: "#F97316", teaching: "#F59E0B", leadership: "#F97316",
 }
 
 function getTopTraits(traits: Record<string, number>, count = 3): { key: string; value: number }[] {
@@ -85,7 +85,7 @@ function getRarity(traits: Record<string, number>): { label: string; color: stri
   if (avg >= 80 && spread <= 20) return { label: "Legendary", color: "#FBBF24", bg: "rgba(251, 191, 36, 0.1)" }
   if (avg >= 75 || max >= 95) return { label: "Epic", color: "#A855F7", bg: "rgba(168, 85, 247, 0.1)" }
   if (avg >= 60 || max >= 85) return { label: "Rare", color: "#3B82F6", bg: "rgba(59, 130, 246, 0.1)" }
-  if (avg >= 40) return { label: "Uncommon", color: "#10B981", bg: "rgba(16, 185, 129, 0.1)" }
+  if (avg >= 40) return { label: "Uncommon", color: "#F97316", bg: "rgba(16, 185, 129, 0.1)" }
   return { label: "Common", color: "#6B7280", bg: "rgba(107, 114, 128, 0.1)" }
 }
 
@@ -219,7 +219,7 @@ export function AgentCard({
               </div>
             )}
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1"><Badge variant="outline" style={{ borderColor: rarity.color, color: rarity.color }}>{rarity.label}</Badge>{agent.tokenId && <Badge variant="outline" className="text-[10px]" style={{ borderColor: "#10B981", color: "#10B981" }}><Link2 className="w-3 h-3" /></Badge>}</div>
+              <div className="flex items-center gap-1"><Badge variant="outline" style={{ borderColor: rarity.color, color: rarity.color }}>{rarity.label}</Badge>{agent.tokenId && <Badge variant="outline" className="text-[10px]" style={{ borderColor: "#F97316", color: "#F97316" }}><Link2 className="w-3 h-3" /></Badge>}</div>
               <span className="text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">{agent.fitness.toFixed(1)}</span>
             </div>
             {agent.isActive && (
@@ -266,7 +266,7 @@ export function AgentCard({
               {agent.isActive ? labels.active : labels.inactive}
             </Badge>
             {agent.tokenId && (
-              <Badge variant="outline" className="text-[10px] sm:text-xs" style={{ borderColor: "#10B981", color: "#10B981" }}>
+              <Badge variant="outline" className="text-[10px] sm:text-xs" style={{ borderColor: "#F97316", color: "#F97316" }}>
                 <Link2 className="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-1" />On-Chain
               </Badge>
             )}

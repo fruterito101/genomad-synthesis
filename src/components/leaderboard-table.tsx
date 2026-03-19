@@ -37,7 +37,7 @@ const traitConfig: Record<string, { icon: React.ElementType; color: string; labe
   social: { icon: MessageSquare, color: "#8B5CF6", label: "Social" },
   analysis: { icon: Brain, color: "#06B6D4", label: "Analysis" },
   empathy: { icon: Heart, color: "#EF4444", label: "Empathy" },
-  trading: { icon: TrendingUp, color: "#10B981", label: "Trading" },
+  trading: { icon: TrendingUp, color: "#F97316", label: "Trading" },
   teaching: { icon: GraduationCap, color: "#F59E0B", label: "Teaching" },
   leadership: { icon: Crown, color: "#F97316", label: "Leadership" },
 }
@@ -129,7 +129,7 @@ export function LeaderboardTable({ agents, onAgentClick }: LeaderboardTableProps
                       <Badge 
                         variant="outline" 
                         className="text-[10px] px-1.5 py-0 ml-1"
-                        style={{ borderColor: "#10B981", color: "#10B981" }}
+                        style={{ borderColor: "#F97316", color: "#F97316" }}
                       >
                         <Link2 className="w-3 h-3 mr-0.5" />
                         On-Chain
