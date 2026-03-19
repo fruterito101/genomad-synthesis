@@ -68,26 +68,44 @@ export default function AgentsPage() {
   const { i18n } = useTranslation();
   const [agents, setAgents] = useState<Agent[]>([]);
   const [loading, setLoading] = useState(true);
+  const [mounted, setMounted] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterTrait, setFilterTrait] = useState<string | null>(null);
   const [showFilterMenu, setShowFilterMenu] = useState(false);
+  const [fetchError, setFetchError] = useState<string | null>(null);
+
+  // Prevent hydration mismatch
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
+    if (!mounted) return;
+    
     const fetchAgents = async () => {
       try {
-        const res = await fetch("/api/leaderboard?limit=50");
+        setFetchError(null);
+        const res = await fetch("/api/leaderboard?limit=50", {
+          cache: "no-store",
+          headers: { "Cache-Control": "no-cache" }
+        });
         if (res.ok) {
           const data = await res.json();
+          console.log("[AgentsPage] Loaded agents:", data.agents?.length || 0);
           setAgents(data.agents || []);
+        } else {
+          console.error("[AgentsPage] API error:", res.status);
+          setFetchError(`API error: ${res.status}`);
         }
       } catch (err) {
-        console.error(err);
+        console.error("[AgentsPage] Fetch error:", err);
+        setFetchError(err instanceof Error ? err.message : "Unknown error");
       } finally {
         setLoading(false);
       }
     };
     fetchAgents();
-  }, []);
+  }, [mounted]);
 
   // Filter and sort agents
   const filteredAgents = useMemo(() => {
@@ -113,6 +131,20 @@ export default function AgentsPage() {
     
     return result;
   }, [agents, searchQuery, filterTrait]);
+
+  // Show nothing until mounted (prevents hydration mismatch)
+  if (!mounted) {
+    return (
+      <div className="min-h-screen" style={{ backgroundColor: "var(--color-bg-primary)" }}>
+        <AppHeader />
+        <main className="max-w-7xl mx-auto px-4 pt-20 sm:pt-24 pb-8 sm:pb-12">
+          <div className="text-center py-12">
+            <Dna className="w-12 h-12 mx-auto animate-pulse" style={{ color: "var(--color-primary)" }} />
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: "var(--color-bg-primary)" }}>
@@ -171,7 +203,7 @@ export default function AgentsPage() {
                 }}
               >
                 <Filter className="w-4 h-4" />
-                {filterTrait ? traitConfig[filterTrait]?.label : "Tipo de Agente"}
+                {filterTrait ? traitConfig[filterTrait]?.label : "Todas"}
                 <ChevronDown className="w-4 h-4" />
               </button>
               
@@ -211,11 +243,10 @@ export default function AgentsPage() {
               </AnimatePresence>
             </div>
 
-            {/* Visit Button */}
+            {/* Breeding Button */}
             <Link href="/breeding">
               <Button variant="primary" size="md" className="w-full sm:w-auto">
-                <Sparkles className="w-4 h-4" />
-                Iniciar Breeding
+                Ver Todos
               </Button>
             </Link>
           </div>
@@ -242,10 +273,18 @@ export default function AgentsPage() {
           </div>
         </motion.div>
 
+        {/* Error Message */}
+        {fetchError && (
+          <div className="text-center py-4 mb-4 rounded-lg" style={{ backgroundColor: "rgba(239, 68, 68, 0.1)" }}>
+            <p className="text-red-400 text-sm">Error: {fetchError}</p>
+          </div>
+        )}
+
         {/* Agents Grid */}
         {loading ? (
           <div className="text-center py-12">
             <Dna className="w-12 h-12 mx-auto animate-pulse" style={{ color: "var(--color-primary)" }} />
+            <p className="mt-4 text-sm" style={{ color: "var(--color-text-muted)" }}>Cargando agentes...</p>
           </div>
         ) : filteredAgents.length === 0 ? (
           <div className="text-center py-12">

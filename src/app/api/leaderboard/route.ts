@@ -4,6 +4,10 @@ import { getDb } from "@/lib/db/client";
 import { agents, users } from "@/lib/db/schema";
 import { desc, eq } from "drizzle-orm";
 
+// Disable static caching for this route
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export async function GET(request: NextRequest) {
   try {
     const db = getDb();
@@ -50,13 +54,20 @@ export async function GET(request: NextRequest) {
       owner: agent.ownerId ? { wallet: ownerMap.get(agent.ownerId) || null } : null,
     }));
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       agents: agentsWithOwners,
       total: agentsWithOwners.length,
       updatedAt: new Date().toISOString(),
     });
+    
+    // Prevent caching
+    response.headers.set("Cache-Control", "no-store, no-cache, must-revalidate");
+    
+    return response;
   } catch (error) {
     console.error("Leaderboard error:", error);
-    return NextResponse.json({ agents: [], total: 0, updatedAt: new Date().toISOString() });
+    const response = NextResponse.json({ agents: [], total: 0, updatedAt: new Date().toISOString() });
+    response.headers.set("Cache-Control", "no-store");
+    return response;
   }
 }
