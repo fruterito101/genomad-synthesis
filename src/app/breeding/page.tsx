@@ -134,6 +134,7 @@ function BreedingContent() {
         const execData = await execRes.json();
         if (!execRes.ok) { setError(execData.error || "Breeding execution failed"); return; }
         setResult({ id: breedingCheck.requestId, status: "COMPLETED", createdAt: new Date().toISOString(), child: execData.child, breeding: execData.breeding, executed: true });
+        setBreedingCheck(null); // Limpiar para requerir nueva solicitud
         setShowSuccessModal(true);
         fetchAgents();
         return;
@@ -148,6 +149,7 @@ function BreedingContent() {
         const execData = await execRes.json();
         if (!execRes.ok) { setError(execData.error || "Breeding execution failed"); return; }
         setResult({ ...data.request, child: execData.child, breeding: execData.breeding, executed: true });
+        setBreedingCheck(null); // Limpiar para requerir nueva solicitud
         setShowSuccessModal(true);
       } else {
         setResult(data.request);
