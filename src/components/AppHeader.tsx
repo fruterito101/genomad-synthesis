@@ -8,34 +8,29 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { usePrivy } from "@privy-io/react-auth";
 import { useGMDBalance } from "@/hooks/useGMDBalance";
-import { 
-  Dna, 
-  LayoutDashboard, 
-  User, 
-  LogOut, 
-  Wallet,
-  Coins,
-  RefreshCw,
-  Menu,
-  X
-} from "lucide-react";
-
-const navItems = [
-  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { label: "Profile", href: "/profile", icon: User },
-  { label: "Breeding", href: "/breeding", icon: Dna },
-];
+import { useTranslation } from "react-i18next";
+import { Dna, LayoutDashboard, User, LogOut, Wallet, Coins, RefreshCw, Menu, X } from "lucide-react";
 
 export function AppHeader() {
+  const { t, i18n } = useTranslation();
   const pathname = usePathname();
   const { user, logout, authenticated } = usePrivy();
   const { formatted: gmdBalance, isLoading: gmdLoading, refetch: refetchGMD } = useGMDBalance();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  const navItems = [
+    { label: t("header.nav.dashboard"), href: "/dashboard", icon: LayoutDashboard },
+    { label: t("header.nav.profile"), href: "/profile", icon: User },
+    { label: t("breeding.title"), href: "/breeding", icon: Dna },
+  ];
+
   const walletAddress = user?.wallet?.address;
-  const shortWallet = walletAddress 
-    ? `${walletAddress.slice(0, 4)}...${walletAddress.slice(-4)}` 
-    : "";
+  const shortWallet = walletAddress ? `${walletAddress.slice(0, 4)}...${walletAddress.slice(-4)}` : "";
+
+  const toggleLanguage = () => {
+    const newLang = i18n.language === "es" ? "en" : "es";
+    i18n.changeLanguage(newLang);
+  };
 
   return (
     <motion.header
@@ -49,14 +44,7 @@ export function AppHeader() {
         <div className="flex items-center justify-between h-14 sm:h-16 md:h-20">
           {/* Logo */}
           <Link href="/dashboard" className="flex items-center">
-            <Image 
-              src="/logo.png" 
-              alt="Genomad" 
-              width={140} 
-              height={40} 
-              className="h-8 sm:h-10 w-auto"
-              priority
-            />
+            <Image src="/logo.png" alt="Genomad" width={140} height={40} className="h-8 sm:h-10 w-auto" priority />
           </Link>
 
           {/* Desktop Navigation */}
@@ -64,10 +52,9 @@ export function AppHeader() {
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = pathname === item.href;
-              
               return (
                 <Link
-                  key={item.label}
+                  key={`${item.href}-${i18n.language}`}
                   href={item.href}
                   className="relative px-3 lg:px-4 py-2 rounded-lg flex items-center gap-2 transition-all duration-200"
                   style={{
@@ -85,38 +72,32 @@ export function AppHeader() {
           {/* Desktop Right Side */}
           {authenticated && (
             <div className="hidden md:flex items-center gap-2 lg:gap-3">
+              {/* Language Switcher */}
+              <button
+                onClick={toggleLanguage}
+                className="px-2 lg:px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 hover:opacity-80"
+                style={{ backgroundColor: "var(--color-bg-tertiary)", color: "var(--color-text-secondary)", border: "1px solid var(--color-border)" }}
+              >
+                {i18n.language === "es" ? "EN" : "ES"}
+              </button>
+
               {/* GMD Balance */}
               <motion.button
                 onClick={() => refetchGMD()}
                 className="flex items-center gap-1.5 lg:gap-2 px-2 lg:px-3 py-1.5 rounded-lg"
-                style={{
-                  background: "linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(234, 179, 8, 0.1) 100%)",
-                  border: "1px solid rgba(245, 158, 11, 0.3)",
-                }}
+                style={{ background: "linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(234, 179, 8, 0.1) 100%)", border: "1px solid rgba(245, 158, 11, 0.3)" }}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
                 <Coins className="w-4 h-4 text-yellow-400" />
-                {gmdLoading ? (
-                  <RefreshCw className="w-3 h-3 text-yellow-300 animate-spin" />
-                ) : (
-                  <span className="font-mono font-bold text-yellow-300 text-sm">{gmdBalance}</span>
-                )}
+                {gmdLoading ? <RefreshCw className="w-3 h-3 text-yellow-300 animate-spin" /> : <span className="font-mono font-bold text-yellow-300 text-sm">{gmdBalance}</span>}
                 <span className="text-yellow-400/70 text-xs hidden lg:inline">GMD</span>
               </motion.button>
 
               {/* Wallet */}
-              <div 
-                className="flex items-center gap-1.5 px-2 lg:px-3 py-1.5 rounded-lg"
-                style={{
-                  backgroundColor: "var(--color-bg-tertiary)",
-                  border: "1px solid var(--color-border)",
-                }}
-              >
+              <div className="flex items-center gap-1.5 px-2 lg:px-3 py-1.5 rounded-lg" style={{ backgroundColor: "var(--color-bg-tertiary)", border: "1px solid var(--color-border)" }}>
                 <Wallet className="w-3 h-3 lg:w-4 lg:h-4" style={{ color: "var(--color-success)" }} />
-                <code className="text-xs lg:text-sm" style={{ color: "var(--color-text-secondary)" }}>
-                  {shortWallet}
-                </code>
+                <code className="text-xs lg:text-sm" style={{ color: "var(--color-text-secondary)" }}>{shortWallet}</code>
               </div>
 
               {/* Logout */}
@@ -126,6 +107,7 @@ export function AppHeader() {
                 style={{ color: "var(--color-error)" }}
                 whileHover={{ backgroundColor: "rgba(239, 68, 68, 0.1)" }}
                 whileTap={{ scale: 0.95 }}
+                title={i18n.language === "es" ? "Cerrar sesión" : "Logout"}
               >
                 <LogOut className="w-4 h-4" />
               </motion.button>
@@ -159,7 +141,7 @@ export function AppHeader() {
                 const isActive = pathname === item.href;
                 return (
                   <Link
-                    key={item.label}
+                    key={`mobile-${item.href}-${i18n.language}`}
                     href={item.href}
                     onClick={() => setMobileMenuOpen(false)}
                     className="flex items-center gap-3 px-4 py-3 rounded-lg transition-all"
@@ -176,14 +158,23 @@ export function AppHeader() {
 
               {authenticated && (
                 <div className="pt-4 mt-4" style={{ borderTop: "1px solid var(--color-border)" }}>
-                  <div className="flex items-center justify-between mb-4">
+                  {/* Mobile Language Switcher */}
+                  <button
+                    onClick={toggleLanguage}
+                    className="w-full flex items-center gap-3 px-4 py-3 rounded-lg mb-2"
+                    style={{ color: "var(--color-text-secondary)" }}
+                  >
+                    🌐 {i18n.language === "es" ? "Switch to English" : "Cambiar a Español"}
+                  </button>
+
+                  <div className="flex items-center justify-between mb-4 px-4">
                     <div className="flex items-center gap-2">
                       <Coins className="w-5 h-5 text-yellow-400" />
                       <span style={{ color: "var(--color-text-secondary)" }}>Balance:</span>
                       <span className="font-mono font-bold text-yellow-300">{gmdBalance} GMD</span>
                     </div>
                   </div>
-                  <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center justify-between mb-4 px-4">
                     <div className="flex items-center gap-2">
                       <Wallet className="w-5 h-5" style={{ color: "var(--color-success)" }} />
                       <code className="text-sm" style={{ color: "var(--color-text-secondary)" }}>
@@ -194,13 +185,10 @@ export function AppHeader() {
                   <button
                     onClick={() => { logout(); setMobileMenuOpen(false); }}
                     className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg"
-                    style={{
-                      backgroundColor: "rgba(239, 68, 68, 0.1)",
-                      color: "var(--color-error)",
-                    }}
+                    style={{ backgroundColor: "rgba(239, 68, 68, 0.1)", color: "var(--color-error)" }}
                   >
                     <LogOut className="w-5 h-5" />
-                    Logout
+                    {i18n.language === "es" ? "Cerrar sesión" : "Logout"}
                   </button>
                 </div>
               )}
