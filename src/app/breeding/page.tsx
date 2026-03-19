@@ -13,9 +13,10 @@ import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/s
 import { Button } from "@/components/ui";
 import { Dna, Plus, Loader2, ArrowRight, Sparkles, Check, Clock, Shield, Zap, Crown, Activity, RefreshCw, AlertCircle, ChevronDown, Cpu, Palette, MessageSquare, Brain, Heart, TrendingUp, GraduationCap } from "lucide-react";
 import { SuccessModal } from "@/components/SuccessModal";
+import { useBreedingFlow, useBreedingFee } from "@/hooks";
 import { NetworkSwitcher } from "@/components/NetworkSwitcher";
 
-interface Agent { id: string; name: string; botUsername: string | null; traits: { technical: number; creativity: number; social: number; analysis: number; empathy: number; trading: number; teaching: number; leadership: number; }; fitness: number; generation: number; isActive: boolean; ownerId: string; isMine?: boolean; ownerDisplay?: string; }
+interface Agent { id: string; name: string; tokenId?: string; botUsername: string | null; traits: { technical: number; creativity: number; social: number; analysis: number; empathy: number; trading: number; teaching: number; leadership: number; }; fitness: number; generation: number; isActive: boolean; ownerId: string; isMine?: boolean; ownerDisplay?: string; }
 interface BreedingRequest { 
   id: string; 
   status: string; 
@@ -46,6 +47,8 @@ function safeTraits(traits: any): typeof defaultTraits {
 
 function BreedingContent() {
   const { authenticated, ready, getAccessToken } = usePrivy();
+  const { state: breedingState, requestBreeding: requestBreedingOnChain, reset: resetBreedingState } = useBreedingFlow();
+  const { fee: breedingFee } = useBreedingFee();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [allAgents, setAllAgents] = useState<Agent[]>([]);
@@ -122,9 +125,16 @@ function BreedingContent() {
   const startBreeding = async () => {
     if (!parentA || !parentB) return;
     setBreeding(true); setError(null); setResult(null);
+    resetBreedingState();
+    
     try {
       const token = await getAccessToken();
       if (!token) return;
+      
+      // Verificar si los agentes tienen tokenId on-chain
+      const parentATokenId = parentA.tokenId ? BigInt(parentA.tokenId) : undefined;
+      const parentBTokenId = parentB.tokenId ? BigInt(parentB.tokenId) : undefined;
+      const canUseOnChain = !!parentATokenId && !!parentBTokenId && !!breedingFee;
       
       // Si ya existe una solicitud aprobada, ejecutar directamente
       if (breedingCheck?.canBreed && breedingCheck?.requestId) {
@@ -135,29 +145,55 @@ function BreedingContent() {
         const execData = await execRes.json();
         if (!execRes.ok) { setError(execData.error || "Breeding execution failed"); return; }
         setResult({ id: breedingCheck.requestId, status: "COMPLETED", createdAt: new Date().toISOString(), child: execData.child, breeding: execData.breeding, executed: true });
-        setBreedingCheck(null); // Limpiar para requerir nueva solicitud
+        setBreedingCheck(null);
         setShowSuccessModal(true);
         fetchAgents();
         return;
       }
       
-      // Si no hay solicitud aprobada, crear nueva
-      const res = await fetch("/api/breeding/request", { method: "POST", headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" }, body: JSON.stringify({ parentAId: parentA.id, parentBId: parentB.id, crossoverType, childName: childName || undefined }) });
-      const data = await res.json();
-      if (!res.ok) { setError(data.error || "Breeding failed"); return; }
-      if (data.autoApproved && data.request?.id) {
-        const execRes = await fetch(`/api/breeding/${data.request.id}/execute`, { method: "POST", headers: { Authorization: `Bearer ${token}` } });
-        const execData = await execRes.json();
-        if (!execRes.ok) { setError(execData.error || "Breeding execution failed"); return; }
-        setResult({ ...data.request, child: execData.child, breeding: execData.breeding, executed: true });
-        setBreedingCheck(null); // Limpiar para requerir nueva solicitud
-        setShowSuccessModal(true);
-      } else {
-        setResult(data.request);
+      // Crear nueva solicitud usando el hook on-chain
+      const requestResult = await requestBreedingOnChain({
+        parentAId: parentA.id,
+        parentBId: parentB.id,
+        childName: childName || undefined,
+        crossoverType: crossoverType as "uniform" | "single" | "weighted",
+        parentATokenId,
+        parentBTokenId,
+        useOnChain: canUseOnChain,
+      });
+      
+      if (!requestResult.success) {
+        setError(requestResult.error || "Breeding request failed");
+        return;
       }
+      
+      // Verificar si fue auto-aprobado
+      const checkRes = await fetch(
+        `/api/breeding/check?parentAId=${parentA.id}&parentBId=${parentB.id}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      const checkData = await checkRes.json();
+      
+      if (checkData.canBreed && checkData.requestId) {
+        // Ejecutar automáticamente
+        const execRes = await fetch(`/api/breeding/${checkData.requestId}/execute`, { 
+          method: "POST", 
+          headers: { Authorization: `Bearer ${token}` } 
+        });
+        const execData = await execRes.json();
+        if (execRes.ok) {
+          setResult({ id: checkData.requestId, status: "COMPLETED", createdAt: new Date().toISOString(), child: execData.child, breeding: execData.breeding, executed: true });
+          setShowSuccessModal(true);
+        }
+      } else {
+        setResult({ id: requestResult.requestId || "", status: "PENDING", createdAt: new Date().toISOString() });
+      }
+      
+      setBreedingCheck(null);
       fetchAgents();
     } catch (err) { setError(String(err)); } finally { setBreeding(false); }
   };
+
 
   const predictedTraits = parentA && parentB ? Object.keys(defaultTraits).map(trait => { const key = trait as keyof typeof defaultTraits; const tA = safeTraits(parentA.traits); const tB = safeTraits(parentB.traits); const avg = Math.round((tA[key] + tB[key]) / 2); return { trait: key, avg }; }) : [];
   const predictedFitness = parentA && parentB ? ((parentA.fitness + parentB.fitness) / 2).toFixed(1) : "?";
