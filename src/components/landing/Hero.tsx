@@ -5,6 +5,13 @@ import { motion } from "framer-motion";
 import { Button, Card, Badge } from "@/components/ui";
 import { Check, Sparkles, Dna } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import dynamic from "next/dynamic";
+
+// Dynamic import para SSR safety
+const DNAScene = dynamic(
+  () => import("@/components/three/DNAScene").then((mod) => mod.DNAScene),
+  { ssr: false, loading: () => <div className="w-full h-full bg-card/50 animate-pulse" /> }
+);
 
 export function Hero() {
   const { t, i18n } = useTranslation();
@@ -105,26 +112,15 @@ export function Hero() {
             </motion.div>
           </motion.div>
 
-          {/* Video Section */}
+          {/* 3D DNA Scene */}
           <motion.div
             className="relative order-1 lg:order-2"
             initial={{ opacity: 0, x: 30 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.3 }}
           >
-            <Card className="aspect-video overflow-hidden p-0">
-              <video
-                autoPlay
-                loop
-                muted
-                playsInline
-                className="w-full h-full object-cover"
-              >
-                <source 
-                  src="https://res.cloudinary.com/ddejtxqjq/video/upload/v1771212418/GMD_zqv1gd.mp4" 
-                  type="video/mp4" 
-                />
-              </video>
+            <Card className="aspect-video overflow-hidden p-0 bg-black/20">
+              <DNAScene className="w-full h-full" />
             </Card>
 
             {/* Floating stats */}
