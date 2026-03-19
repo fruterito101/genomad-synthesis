@@ -119,12 +119,6 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {!authenticated && (
-          <div className="mb-8 bg-gray-800 border border-gray-700 rounded-xl p-8 text-center">
-            <p className="text-gray-300 mb-4 text-lg">🔐 Connect your wallet to access Profile & Breeding</p>
-            <LoginButton />
-          </div>
-        )}
 
         {error && <div className="bg-red-900 border border-red-500 rounded p-4 mb-8">Error: {error}</div>}
 
