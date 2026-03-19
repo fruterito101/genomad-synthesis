@@ -6,6 +6,7 @@ import { Card } from "@/components/ui";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { EmptyState, AgentCardSkeleton } from "@/components/FallbackUI";
 import { LeaderboardTable } from "@/components/leaderboard-table";
+import { AgentDetailModal } from "@/components/AgentDetailModal";
 import { 
   Search, Filter, Star, Crown, Cpu, Palette, 
   MessageSquare, Brain, Heart, TrendingUp, GraduationCap,
@@ -45,7 +46,7 @@ function getSpecialization(traits: unknown) {
 }
 
 // Agent Card Component
-function AgentCard({ agent }: { agent: Agent }) {
+function AgentCard({ agent, onClick }: { agent: Agent; onClick: () => void }) {
   const name = safeName(agent.name);
   const _traits = safeTraits(agent.traits);
   const fitness = safeFitness(agent.fitness);
@@ -56,7 +57,10 @@ function AgentCard({ agent }: { agent: Agent }) {
     : ["#7B3FE4", "#00AA93"];
   
   return (
-    <Card className="p-4 hover:border-primary/50 transition cursor-pointer group">
+    <Card 
+      className="p-4 hover:border-primary/50 transition cursor-pointer group"
+      onClick={onClick}
+    >
       <div 
         className="w-20 h-20 mx-auto rounded-full flex items-center justify-center mb-4 transition-transform group-hover:scale-105"
         style={{ background: `linear-gradient(135deg, ${gradientColors[0]}, ${gradientColors[1]})` }}
@@ -78,6 +82,16 @@ function AgentCard({ agent }: { agent: Agent }) {
   );
 }
 
+// Table Agent type for LeaderboardTable
+interface TableAgent {
+  id: string;
+  name: string;
+  fitness: number;
+  generation: number;
+  traits: Record<string, number>;
+  isActive?: boolean;
+}
+
 // Main Component
 function AgentsCatalogContent({ initialAgents }: Props) {
   const sanitizedAgents = useMemo(() => sanitizeAgentList(initialAgents), [initialAgents]);
@@ -85,6 +99,8 @@ function AgentsCatalogContent({ initialAgents }: Props) {
   const [filterTrait, setFilterTrait] = useState<string | null>(null);
   const [showFilterMenu, setShowFilterMenu] = useState(false);
   const [viewMode, setViewMode] = useState<"grid" | "table">("table");
+  const [selectedAgent, setSelectedAgent] = useState<TableAgent | null>(null);
+  const [showDetailModal, setShowDetailModal] = useState(false);
 
   const filteredAgents = useMemo(() => {
     let result = [...sanitizedAgents];
@@ -109,6 +125,24 @@ function AgentsCatalogContent({ initialAgents }: Props) {
   })), [filteredAgents]);
 
   const clearFilters = useCallback(() => { setSearchQuery(""); setFilterTrait(null); }, []);
+
+  const handleAgentClick = useCallback((agent: TableAgent) => {
+    setSelectedAgent(agent);
+    setShowDetailModal(true);
+  }, []);
+
+  const handleGridAgentClick = useCallback((agent: Agent) => {
+    const tableAgent: TableAgent = {
+      id: agent.id,
+      name: safeName(agent.name),
+      fitness: safeFitness(agent.fitness),
+      generation: agent.generation || 1,
+      traits: safeTraits(agent.traits) as unknown as Record<string, number>,
+      isActive: agent.isActive,
+    };
+    setSelectedAgent(tableAgent);
+    setShowDetailModal(true);
+  }, []);
 
   return (
     <div className="min-h-screen bg-background">
@@ -193,13 +227,19 @@ function AgentsCatalogContent({ initialAgents }: Props) {
         {filteredAgents.length > 0 ? (
           viewMode === "table" ? (
             <Card className="p-0 overflow-hidden">
-              <LeaderboardTable agents={tableAgents} />
+              <LeaderboardTable 
+                agents={tableAgents} 
+                onAgentClick={handleAgentClick}
+              />
             </Card>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {filteredAgents.map((agent) => (
                 <ErrorBoundary key={agent.id} fallback={<AgentCardSkeleton />}>
-                  <AgentCard agent={agent} />
+                  <AgentCard 
+                    agent={agent} 
+                    onClick={() => handleGridAgentClick(agent)}
+                  />
                 </ErrorBoundary>
               ))}
             </div>
@@ -211,6 +251,16 @@ function AgentsCatalogContent({ initialAgents }: Props) {
           />
         )}
       </main>
+
+      {/* Agent Detail Modal */}
+      <AgentDetailModal 
+        agent={selectedAgent}
+        isOpen={showDetailModal}
+        onClose={() => {
+          setShowDetailModal(false);
+          setSelectedAgent(null);
+        }}
+      />
     </div>
   );
 }
