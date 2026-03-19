@@ -130,23 +130,23 @@ export function Hero() {
 
             {/* Floating stats - hidden on very small screens */}
             <motion.div
-              className="hidden sm:block absolute -bottom-4 sm:-bottom-6 -left-4 sm:-left-6 p-3 sm:p-4 rounded-xl glass glow-primary"
+              className="hidden sm:block absolute bottom-4 sm:bottom-6 left-4 sm:left-6 p-4 sm:p-5 rounded-xl glass glow-primary text-center min-w-[100px]"
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.4, delay: 1 }}
             >
-              <p className="text-xl sm:text-2xl font-bold gradient-text">8</p>
-              <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>Traits únicos</p>
+              <p className="text-2xl sm:text-3xl font-bold gradient-text">8</p>
+              <p className="text-sm whitespace-nowrap" style={{ color: '#ffffff' }}>Traits únicos</p>
             </motion.div>
 
             <motion.div
-              className="hidden sm:block absolute -top-4 sm:-top-6 -right-4 sm:-right-6 p-3 sm:p-4 rounded-xl glass glow-secondary"
+              className="hidden sm:block absolute top-4 sm:top-6 right-4 sm:right-6 p-4 sm:p-5 rounded-xl glass glow-secondary text-center min-w-[130px]"
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.4, delay: 1.2 }}
             >
-              <p className="text-xl sm:text-2xl font-bold" style={{ color: 'var(--color-secondary)' }}>∞</p>
-              <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>Combinaciones</p>
+              <p className="text-2xl sm:text-3xl font-bold rotate-90" style={{ color: 'var(--color-secondary)' }}>∞</p>
+              <p className="text-sm whitespace-nowrap" style={{ color: '#ffffff' }}>Combinaciones</p>
             </motion.div>
           </motion.div>
         </div>
