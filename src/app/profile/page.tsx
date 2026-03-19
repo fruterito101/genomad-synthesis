@@ -9,6 +9,7 @@ import Link from "next/link";
 import { LoginButton } from "@/components/LoginButton";
 import { AppHeader } from "@/components/AppHeader";
 import { AgentDetailModal } from "@/components/AgentDetailModal";
+import { PendingApprovals } from "@/components/PendingApprovals";
 import { Button } from "@/components/ui";
 import { useGMDBalance } from "@/hooks/useGMDBalance";
 import { useTranslation } from "react-i18next";
@@ -101,6 +102,8 @@ export default function ProfilePage() {
           </div>
         </motion.div>
 
+        {/* Pending Approvals */}
+        <PendingApprovals getAccessToken={getAccessToken} onActionComplete={fetchProfile} />
         {/* Quick Actions */}
         <motion.div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-6 sm:mb-8" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
           <Link href="/breeding">
