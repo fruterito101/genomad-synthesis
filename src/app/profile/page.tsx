@@ -81,7 +81,7 @@ export default function ProfilePage() {
 
       <main className="max-w-7xl mx-auto px-4 pt-20 sm:pt-24 pb-8 sm:pb-12">
         {/* Profile Card */}
-        <motion.div key={`profile-${i18n.language}`} className="rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 mb-6 sm:mb-8 gradient-border" style={{ backgroundColor: "var(--color-bg-secondary)" }} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+        <motion.div  className="rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 mb-6 sm:mb-8 gradient-border" style={{ backgroundColor: "var(--color-bg-secondary)" }} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6">
             <div className="relative">
               <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full flex items-center justify-center" style={{ background: "linear-gradient(135deg, var(--color-primary), var(--color-accent-1))" }}><Zap className="w-8 h-8 sm:w-10 sm:h-10 text-white" /></div>

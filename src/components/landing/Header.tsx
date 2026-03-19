@@ -97,7 +97,7 @@ export function Header() {
               
               return (
                 <button
-                  key={`${item.label}-${i18n.language}`}
+                  key={item.href}
                   onClick={() => handleNavClick(item.href)}
                   className="text-sm font-medium transition-all duration-200 relative focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 rounded px-2 py-1"
                   style={{ 
@@ -187,7 +187,7 @@ export function Header() {
                 
                 return (
                   <button
-                    key={`mobile-${item.label}-${i18n.language}`}
+                    key={`mobile-${item.href}`}
                     onClick={() => handleNavClick(item.href)}
                     className="text-base font-medium py-2 text-left transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 rounded px-2"
                     style={{ 

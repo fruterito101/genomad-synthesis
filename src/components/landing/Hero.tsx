@@ -26,7 +26,7 @@ export function Hero() {
         <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
           {/* Content */}
           <motion.div
-            key={`hero-content-${i18n.language}`}
+            
             initial={{ opacity: 0, x: -30 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6 }}
@@ -68,7 +68,7 @@ export function Hero() {
             >
               {features.map((feature, index) => (
                 <motion.li
-                  key={`feature-${index}-${i18n.language}`}
+                  key={index}
                   className="flex items-start gap-2 sm:gap-3 text-sm sm:text-base"
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}

@@ -44,7 +44,7 @@ export function HowToStart() {
           {/* Connection Line (desktop) */}
           <div className="hidden md:block absolute top-10 left-1/2 -translate-x-1/2 w-2/3 h-0.5">
             <motion.div
-              key={`line-${i18n.language}`}
+              
               className="h-full"
               style={{ 
                 background: 'linear-gradient(90deg, var(--color-primary), var(--color-secondary), var(--color-accent-1))'
@@ -60,7 +60,7 @@ export function HowToStart() {
           <div className="grid md:grid-cols-3 gap-12 md:gap-8">
             {steps.map((step, index) => (
               <StepCircle
-                key={`step-${step.number}-${i18n.language}`}
+                key={step.number}
                 number={step.number}
                 title={step.title}
                 description={step.description}

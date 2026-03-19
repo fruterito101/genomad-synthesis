@@ -58,7 +58,7 @@ export function Breeding() {
           
           {/* Left: Visual Representation */}
           <motion.div
-            key={`breeding-visual-${i18n.language}`}
+            
             className="relative"
             initial={{ opacity: 0, x: -30 }}
             whileInView={{ opacity: 1, x: 0 }}
@@ -154,7 +154,7 @@ export function Breeding() {
               const Icon = feature.icon;
               return (
                 <motion.div
-                  key={`feature-${index}-${i18n.language}`}
+                  key={index}
                   className="flex gap-4 p-4 rounded-xl"
                   style={{ 
                     backgroundColor: 'var(--color-bg-secondary)',

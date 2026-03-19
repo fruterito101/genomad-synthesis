@@ -22,7 +22,7 @@ export function WhatIsGenomad() {
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           {/* Content */}
           <motion.div
-            key={`whatis-content-${i18n.language}`}
+            
             initial={{ opacity: 0, x: -30 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
@@ -71,7 +71,7 @@ export function WhatIsGenomad() {
             const Icon = pillarIcons[index];
             return (
               <motion.div
-                key={`pillar-${key}-${i18n.language}`}
+                key={key}
                 className="p-6 rounded-xl text-center"
                 style={{ 
                   backgroundColor: 'var(--color-bg-primary)',

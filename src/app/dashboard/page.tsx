@@ -104,7 +104,7 @@ export default function DashboardPage() {
     return (
       <div className="min-h-screen" style={{ backgroundColor: "var(--color-bg-primary)" }}>
         <div className="max-w-7xl mx-auto px-4 py-12 sm:py-16 md:py-20">
-          <motion.div key={`hero-${i18n.language}`} className="text-center mb-10 sm:mb-12 md:mb-16" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+          <motion.div  className="text-center mb-10 sm:mb-12 md:mb-16" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             <motion.div className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full mb-4 sm:mb-6" style={{ backgroundColor: "var(--color-bg-secondary)", border: "1px solid var(--color-border)" }} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2 }}>
               <Zap className="w-3 h-3 sm:w-4 sm:h-4" style={{ color: "var(--color-primary)" }} />
               <span className="text-xs sm:text-sm" style={{ color: "var(--color-text-secondary)" }}>Built on Monad</span>
@@ -123,7 +123,7 @@ export default function DashboardPage() {
             {features.map((feature, index) => {
               const Icon = feature.icon;
               return (
-                <motion.div key={`${feature.title}-${i18n.language}`} className="p-5 sm:p-6 rounded-xl card-hover" style={{ backgroundColor: "var(--color-bg-secondary)", border: "1px solid var(--color-border)" }} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 + index * 0.1 }}>
+                <motion.div key={feature.title} className="p-5 sm:p-6 rounded-xl card-hover" style={{ backgroundColor: "var(--color-bg-secondary)", border: "1px solid var(--color-border)" }} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 + index * 0.1 }}>
                   <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center mb-3 sm:mb-4" style={{ backgroundColor: `${feature.color}20` }}>
                     <Icon className="w-5 h-5 sm:w-6 sm:h-6" style={{ color: feature.color }} />
                   </div>
@@ -201,7 +201,7 @@ export default function DashboardPage() {
     <div className="min-h-screen" style={{ backgroundColor: "var(--color-bg-primary)" }}>
       <AppHeader />
       <main className="max-w-7xl mx-auto px-4 pt-20 sm:pt-24 pb-8 sm:pb-12">
-        <motion.div key={`welcome-${i18n.language}`} className="mb-6 sm:mb-8" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+        <motion.div  className="mb-6 sm:mb-8" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           <h1 className="text-2xl sm:text-3xl font-bold mb-1 sm:mb-2" style={{ color: "var(--color-text-primary)" }}>
             {t("dashboard.welcome")} <span className="gradient-text">Genomad</span>
           </h1>

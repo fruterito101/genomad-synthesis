@@ -23,7 +23,7 @@ export function AgentsCatalogue() {
 
         {/* Dashboard Preview Placeholder */}
         <motion.div
-          key={`catalogue-preview-${i18n.language}`}
+          
           className="relative mt-8 sm:mt-12"
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
