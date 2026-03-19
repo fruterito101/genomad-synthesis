@@ -1,16 +1,18 @@
 // ============================================
-// CONTRACT ADDRESSES - Testnet & Mainnet
+// CONTRACT ADDRESSES - Deployed 2026-03-01
 // ============================================
 
 export const CONTRACTS = {
   testnet: {
-    genomadNFT: process.env.NEXT_PUBLIC_TESTNET_GENOMAD_NFT || "0x9f20494A0FbC929adAC553f4A2FCFa7D2b448Cf0",
-    breedingFactory: process.env.NEXT_PUBLIC_TESTNET_BREEDING_FACTORY || "0x72D60f32185B67606a533dc28DeC3f88E05788De",
-    gmdToken: process.env.NEXT_PUBLIC_TESTNET_GMD_TOKEN || "0x03DD45bA22F57b715a2F30C3C945E57DA0AC7777",
+    genomadNFT: "0x190fd355ED38e82a2390C07222C4BcB4DbC4cD20",
+    breedingFactory: "0x2703fb336139292c7ED854061072e316727ED7fA",
+    traitVerifier: "0xaccaE8B19AD67df4Ce91638855c9B41A5Da90be3",
+    gmdToken: process.env.NEXT_PUBLIC_TESTNET_GMD_TOKEN || "",
   },
   mainnet: {
     genomadNFT: process.env.NEXT_PUBLIC_MAINNET_GENOMAD_NFT || "",
     breedingFactory: process.env.NEXT_PUBLIC_MAINNET_BREEDING_FACTORY || "",
+    traitVerifier: process.env.NEXT_PUBLIC_MAINNET_TRAIT_VERIFIER || "",
     gmdToken: process.env.NEXT_PUBLIC_MAINNET_GMD_TOKEN || "",
   },
 } as const;
