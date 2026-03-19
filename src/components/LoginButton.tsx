@@ -34,7 +34,7 @@ export function LoginButton() {
         onClick={login}
         className="flex h-12 items-center justify-center gap-2 rounded-full bg-emerald-600 px-6 text-white font-medium transition-colors hover:bg-emerald-500"
       >
-        🧬 Login with Telegram
+        🔗 Connect Wallet
       </button>
     );
   }
