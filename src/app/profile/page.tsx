@@ -20,7 +20,7 @@ import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/s
 import { Button } from "@/components/ui";
 import { useGMDBalance } from "@/hooks/useGMDBalance";
 import { useTranslation } from "react-i18next";
-import { Dna, Link2, Copy, Check, Clock, Sparkles, Store, Coins, ExternalLink, Activity, Cpu, Heart, Brain, TrendingUp, MessageSquare, GraduationCap, Crown, Palette, ChevronRight, RefreshCw, Star, Zap, Shield, Eye } from "lucide-react";
+import { Dna, Link2, Copy, Check, Clock, Sparkles, Store, Coins, ExternalLink, Activity, Cpu, Heart, Brain, TrendingUp, MessageSquare, GraduationCap, Crown, Palette, ChevronRight, RefreshCw, Star, Zap, Shield, Eye, Download, Terminal } from "lucide-react";
 
 interface Agent {
   id: string; name: string; botUsername: string | null; dnaHash: string;
@@ -39,7 +39,8 @@ export default function ProfilePage() {
   const [verificationCode, setVerificationCode] = useState<string | null>(null);
   const [codeExpiry, setCodeExpiry] = useState<Date | null>(null);
   const [codeError, setCodeError] = useState<string | null>(null);
-  const [copied, setCopied] = useState(false);
+  const [copied, setCopied] = useState(false)
+  const [skillCopied, setSkillCopied] = useState<string | null>(null);
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
 
 
@@ -54,6 +55,13 @@ export default function ProfilePage() {
     setGeneratingCode(true); setCodeError(null); setVerificationCode(null);
     try { const token = await getAccessToken(); if (!token) { setCodeError(i18n.language === "es" ? "Por favor inicia sesión" : "Please login first"); return; } const res = await fetch("/api/codes/generate", { method: "POST", headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" } }); const data = await res.json(); if (!res.ok) { setCodeError(data.error || "Failed"); return; } setVerificationCode(data.code); setCodeExpiry(new Date(data.expiresAt)); } catch (err) { setCodeError(String(err)); } finally { setGeneratingCode(false); }
   };
+
+
+  const copySkillCommand = (cmd: string) => {
+    navigator.clipboard.writeText(cmd)
+    setSkillCopied(cmd)
+    setTimeout(() => setSkillCopied(null), 2000)
+  }
 
   const copyCode = () => { if (verificationCode) { navigator.clipboard.writeText(verificationCode); setCopied(true); setTimeout(() => setCopied(false), 2000); } };
   const formatTimeLeft = () => { if (!codeExpiry) return ""; const diff = codeExpiry.getTime() - Date.now(); if (diff <= 0) return i18n.language === "es" ? "Expirado" : "Expired"; return `${Math.floor(diff / 60000)}:${String(Math.floor((diff % 60000) / 1000)).padStart(2, "0")}`; };
@@ -122,9 +130,80 @@ export default function ProfilePage() {
             </motion.div>
           </motion.div>
 
+
+          {/* Skill Installation Section */}
+          <motion.div className="mb-6 sm:mb-8 rounded-xl p-4 sm:p-6 bg-gradient-to-r from-primary/10 to-accent/10 border border-primary" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.15 }}>
+            <h2 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4 flex items-center gap-2">
+              <Download className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+              {i18n.language === "es" ? "1. Instala el Skill" : "1. Install the Skill"}
+            </h2>
+            <p className="text-sm mb-4 text-muted-foreground">
+              {i18n.language === "es" 
+                ? "Primero, instala el skill de Genomad en tu agente OpenClaw:" 
+                : "First, install the Genomad skill on your OpenClaw agent:"}
+            </p>
+            
+            {/* ClawHub command */}
+            <div className="space-y-3">
+              <div className="rounded-lg p-3 sm:p-4 bg-muted">
+                <p className="text-xs sm:text-sm text-muted-foreground mb-2 flex items-center gap-2">
+                  <Terminal className="w-3 h-3 sm:w-4 sm:h-4" />
+                  {i18n.language === "es" ? "Dile a tu agente:" : "Tell your agent:"}
+                </p>
+                <div className="flex items-center gap-2">
+                  <code className="flex-1 block px-3 py-2 rounded text-xs sm:text-sm bg-background text-primary font-mono overflow-x-auto">
+                    Instala el skill genomad-verify de ClawHub
+                  </code>
+                  <motion.button 
+                    onClick={() => copySkillCommand("Instala el skill genomad-verify de ClawHub")}
+                    className="p-2 rounded-lg bg-background flex-shrink-0"
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    {skillCopied === "Instala el skill genomad-verify de ClawHub" 
+                      ? <Check className="w-4 h-4 text-emerald-500" /> 
+                      : <Copy className="w-4 h-4 text-muted-foreground" />}
+                  </motion.button>
+                </div>
+              </div>
+
+              <p className="text-xs text-muted-foreground">
+                {i18n.language === "es" ? "O alternativamente:" : "Or alternatively:"}
+              </p>
+              
+              <div className="rounded-lg p-3 sm:p-4 bg-muted">
+                <div className="flex items-center gap-2">
+                  <code className="flex-1 block px-3 py-2 rounded text-xs sm:text-sm bg-background text-secondary font-mono overflow-x-auto">
+                    clawhub install fruterito101/genomad-verify
+                  </code>
+                  <motion.button 
+                    onClick={() => copySkillCommand("clawhub install fruterito101/genomad-verify")}
+                    className="p-2 rounded-lg bg-background flex-shrink-0"
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    {skillCopied === "clawhub install fruterito101/genomad-verify" 
+                      ? <Check className="w-4 h-4 text-emerald-500" /> 
+                      : <Copy className="w-4 h-4 text-muted-foreground" />}
+                  </motion.button>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-4 pt-4 border-t border-border">
+              <a 
+                href="https://github.com/fruterito101/genomad-verify-skill" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-xs sm:text-sm text-primary hover:underline flex items-center gap-1"
+              >
+                <ExternalLink className="w-3 h-3" />
+                {i18n.language === "es" ? "Ver código fuente en GitHub" : "View source code on GitHub"}
+              </a>
+            </div>
+          </motion.div>
+
           {/* Link Agent Section */}
           <motion.div className="mb-6 sm:mb-8 rounded-xl p-4 sm:p-6 bg-gradient-to-r from-secondary/10 to-primary/10 border border-secondary" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
-            <h2 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4 flex items-center gap-2"><Link2 className="w-4 h-4 sm:w-5 sm:h-5 text-secondary" />{i18n.language === "es" ? "Vincula tu Agente" : "Link Your Agent"}</h2>
+            <h2 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4 flex items-center gap-2"><Link2 className="w-4 h-4 sm:w-5 sm:h-5 text-secondary" />{i18n.language === "es" ? "2. Vincula tu Agente" : "2. Link Your Agent"}</h2>
             <AnimatePresence mode="wait">
               {!verificationCode ? (
                 <motion.div key="generate" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
