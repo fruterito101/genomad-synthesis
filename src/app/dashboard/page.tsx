@@ -18,6 +18,7 @@ interface Agent {
     teaching: number;
     leadership: number;
   };
+  skillCount?: number;
   fitness: number;
   generation: number;
   isActive: boolean;
@@ -113,13 +114,18 @@ export default function DashboardPage() {
                   </div>
                 </div>
 
-                <div className="mb-4">
+                <div className="mb-4 flex flex-wrap gap-2">
                   <span className="text-xs bg-gray-700 px-2 py-1 rounded">
                     Gen {agent.generation}
                   </span>
-                  <span className={`text-xs ml-2 px-2 py-1 rounded ${agent.isActive ? "bg-green-900 text-green-300" : "bg-red-900 text-red-300"}`}>
+                  <span className={`text-xs px-2 py-1 rounded ${agent.isActive ? "bg-green-900 text-green-300" : "bg-red-900 text-red-300"}`}>
                     {agent.isActive ? "Active" : "Inactive"}
                   </span>
+                  {agent.skillCount !== undefined && agent.skillCount > 0 && (
+                    <span className="text-xs bg-blue-900 text-blue-300 px-2 py-1 rounded">
+                      🔧 {agent.skillCount} Skills
+                    </span>
+                  )}
                 </div>
 
                 <div className="space-y-2 text-sm">

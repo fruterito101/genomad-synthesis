@@ -16,6 +16,7 @@ export async function POST(request: NextRequest) {
       name, 
       traits, 
       dnaHash, 
+      skillCount = 0,
       generation = 0,
       botUsername,
       telegramId,
@@ -59,6 +60,7 @@ export async function POST(request: NextRequest) {
 
     if (existing) {
       // Actualizar si ya existe
+      const existingTraits = existing.traits as any;
       return NextResponse.json({
         success: true,
         action: "updated",
@@ -66,7 +68,8 @@ export async function POST(request: NextRequest) {
           id: existing.id,
           name: existing.name,
           dnaHash: existing.dnaHash,
-          traits: existing.traits,
+          traits: existingTraits,
+          skillCount: existingTraits?.skillCount || 0,
           fitness: existing.fitness,
           generation: existing.generation,
           createdAt: existing.createdAt,
@@ -78,6 +81,12 @@ export async function POST(request: NextRequest) {
     // Calcular fitness
     const fitness = calculateTotalFitness(traits);
 
+    // Guardar skillCount dentro de traits (para no modificar schema)
+    const traitsWithSkills = {
+      ...traits,
+      skillCount: skillCount || 0,
+    };
+
     // Crear nuevo agente (sin owner por ahora - se vincula después)
     const newAgent = {
       id: uuidv4(),
@@ -85,7 +94,7 @@ export async function POST(request: NextRequest) {
       name,
       botUsername: botUsername || null,
       dnaHash,
-      traits,
+      traits: traitsWithSkills,
       fitness,
       generation,
       lineage: [],
@@ -96,7 +105,7 @@ export async function POST(request: NextRequest) {
 
     await db.insert(agents).values(newAgent);
 
-    console.log(`✅ New agent registered: ${name} (${dnaHash.slice(0, 8)}...)`);
+    console.log(`✅ New agent registered: ${name} (skills: ${skillCount}, fitness: ${fitness.toFixed(1)})`);
 
     return NextResponse.json({
       success: true,
@@ -105,7 +114,8 @@ export async function POST(request: NextRequest) {
         id: newAgent.id,
         name: newAgent.name,
         dnaHash: newAgent.dnaHash,
-        traits: newAgent.traits,
+        traits: traits,
+        skillCount: skillCount,
         fitness: newAgent.fitness,
         generation: newAgent.generation,
         createdAt: newAgent.createdAt,
@@ -142,9 +152,20 @@ export async function GET(_request: NextRequest) {
       .from(agents)
       .orderBy(agents.createdAt);
 
+    // Extraer skillCount del JSON de traits para cada agente
+    const agentsWithSkills = allAgents.map(agent => {
+      const traitsObj = agent.traits as any;
+      const { skillCount, ...pureTraits } = traitsObj || {};
+      return {
+        ...agent,
+        traits: pureTraits,
+        skillCount: skillCount || 0,
+      };
+    });
+
     return NextResponse.json({
-      total: allAgents.length,
-      agents: allAgents,
+      total: agentsWithSkills.length,
+      agents: agentsWithSkills,
     });
 
   } catch (error) {
