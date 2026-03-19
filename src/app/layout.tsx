@@ -53,7 +53,7 @@ export const metadata: Metadata = {
   },
   manifest: "/manifest.json",
   icons: {
-    icon: "/favicon.ico",
+    icon: "/logo-icon.png",
     apple: "/apple-touch-icon.png",
   },
 };

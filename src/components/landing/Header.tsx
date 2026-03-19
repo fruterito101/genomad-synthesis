@@ -4,6 +4,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
+import Image from "next/image";
 import { Button } from "@/components/ui";
 
 const navItems = [
@@ -68,14 +69,17 @@ export function Header() {
           {/* Logo */}
           <Link 
             href="/" 
-            className="flex items-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 rounded-lg"
+            className="flex items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 rounded-lg"
             aria-label="Genomad - Ir al inicio"
           >
-            <span className="text-2xl" role="img" aria-hidden="true">🧬</span>
-            <span className="text-xl font-bold">
-              <span className="gradient-text">Geno</span>
-              <span style={{ color: 'var(--color-text-primary)' }}>mad</span>
-            </span>
+            <Image 
+              src="/logo.png" 
+              alt="Genomad" 
+              width={140} 
+              height={40} 
+              className="h-8 sm:h-10 w-auto"
+              priority
+            />
           </Link>
 
           {/* Desktop Navigation */}
@@ -90,9 +94,7 @@ export function Header() {
                   onClick={() => handleNavClick(item.href)}
                   className="text-sm font-medium transition-all duration-200 relative focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 rounded px-2 py-1"
                   style={{ 
-                    color: isActive 
-                      ? 'var(--color-primary)' 
-                      : 'var(--color-text-secondary)' 
+                    color: isActive ? "var(--color-primary)" : "var(--color-text-secondary)"
                   }}
                   aria-label={item.ariaLabel}
                   aria-current={isActive ? "page" : undefined}
@@ -101,7 +103,7 @@ export function Header() {
                   {isActive && (
                     <motion.div
                       className="absolute -bottom-1 left-0 right-0 h-0.5"
-                      style={{ backgroundColor: 'var(--color-primary)' }}
+                      style={{ backgroundColor: "var(--color-primary)" }}
                       layoutId="activeNav"
                       transition={{ type: "spring", stiffness: 300, damping: 30 }}
                     />
@@ -125,17 +127,17 @@ export function Header() {
             <div className="w-6 h-5 relative flex flex-col justify-between">
               <motion.span
                 className="w-full h-0.5 rounded"
-                style={{ backgroundColor: 'var(--color-text-primary)' }}
+                style={{ backgroundColor: "var(--color-text-primary)" }}
                 animate={isMenuOpen ? { rotate: 45, y: 9 } : { rotate: 0, y: 0 }}
               />
               <motion.span
                 className="w-full h-0.5 rounded"
-                style={{ backgroundColor: 'var(--color-text-primary)' }}
+                style={{ backgroundColor: "var(--color-text-primary)" }}
                 animate={isMenuOpen ? { opacity: 0 } : { opacity: 1 }}
               />
               <motion.span
                 className="w-full h-0.5 rounded"
-                style={{ backgroundColor: 'var(--color-text-primary)' }}
+                style={{ backgroundColor: "var(--color-text-primary)" }}
                 animate={isMenuOpen ? { rotate: -45, y: -9 } : { rotate: 0, y: 0 }}
               />
             </div>
@@ -167,9 +169,7 @@ export function Header() {
                     onClick={() => handleNavClick(item.href)}
                     className="text-base font-medium py-2 text-left transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 rounded px-2"
                     style={{ 
-                      color: isActive 
-                        ? 'var(--color-primary)' 
-                        : 'var(--color-text-secondary)' 
+                      color: isActive ? "var(--color-primary)" : "var(--color-text-secondary)"
                     }}
                     aria-label={item.ariaLabel}
                     aria-current={isActive ? "page" : undefined}

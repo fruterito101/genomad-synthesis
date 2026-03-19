@@ -4,6 +4,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { usePrivy } from "@privy-io/react-auth";
 import { useGMDBalance } from "@/hooks/useGMDBalance";
@@ -47,12 +48,15 @@ export function AppHeader() {
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex items-center justify-between h-14 sm:h-16 md:h-20">
           {/* Logo */}
-          <Link href="/dashboard" className="flex items-center gap-2">
-            <Dna className="w-6 h-6 sm:w-7 sm:h-7" style={{ color: "var(--color-primary)" }} />
-            <span className="text-lg sm:text-xl font-bold">
-              <span className="gradient-text">Geno</span>
-              <span style={{ color: "var(--color-text-primary)" }}>mad</span>
-            </span>
+          <Link href="/dashboard" className="flex items-center">
+            <Image 
+              src="/logo.png" 
+              alt="Genomad" 
+              width={140} 
+              height={40} 
+              className="h-8 sm:h-10 w-auto"
+              priority
+            />
           </Link>
 
           {/* Desktop Navigation */}
@@ -150,7 +154,6 @@ export function AppHeader() {
             exit={{ opacity: 0, height: 0 }}
           >
             <div className="px-4 py-4 space-y-2">
-              {/* Mobile Nav */}
               {navItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = pathname === item.href;
@@ -171,7 +174,6 @@ export function AppHeader() {
                 );
               })}
 
-              {/* Mobile Stats */}
               {authenticated && (
                 <div className="pt-4 mt-4" style={{ borderTop: "1px solid var(--color-border)" }}>
                   <div className="flex items-center justify-between mb-4">
