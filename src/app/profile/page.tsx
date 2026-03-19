@@ -10,6 +10,7 @@ import { LoginButton } from "@/components/LoginButton";
 import { AppHeader } from "@/components/AppHeader";
 import { AgentDetailModal } from "@/components/AgentDetailModal";
 import { PendingApprovals } from "@/components/PendingApprovals";
+import { CoOwnersDisplay } from "@/components/CoOwnersDisplay";
 import { Button } from "@/components/ui";
 import { useGMDBalance } from "@/hooks/useGMDBalance";
 import { useTranslation } from "react-i18next";
@@ -177,6 +178,8 @@ export default function ProfilePage() {
                       <span className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded" style={{ backgroundColor: "var(--color-bg-tertiary)", color: "var(--color-text-secondary)" }}>Gen {agent.generation}</span>
                       <span className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded flex items-center gap-1" style={{ backgroundColor: agent.isActive ? "rgba(16, 185, 129, 0.1)" : "rgba(239, 68, 68, 0.1)", color: agent.isActive ? "var(--color-success)" : "var(--color-error)" }}><span className={`w-1.5 h-1.5 rounded-full ${agent.isActive ? "bg-green-500" : "bg-red-500"}`} />{agent.isActive ? (i18n.language === "es" ? "Activo" : "Active") : "Off"}</span>
                     </div>
+                    {/* Co-owners */}
+                    <div className="mb-3 sm:mb-4"><CoOwnersDisplay agentId={agent.id} variant="full" getAccessToken={getAccessToken} /></div>
                     <div className="mb-3 sm:mb-4"><p className="text-[10px] sm:text-xs mb-1.5 sm:mb-2" style={{ color: "var(--color-text-muted)" }}>{i18n.language === "es" ? "TOP TRAITS" : "TOP TRAITS"}</p><div className="flex flex-wrap gap-1.5 sm:gap-2">{topTraits.map((trait) => { const Icon = traitIcons[trait.key]; const color = traitColors[trait.key]; return (<span key={trait.key} className="text-[10px] sm:text-sm px-1.5 sm:px-2 py-0.5 sm:py-1 rounded flex items-center gap-1" style={{ backgroundColor: `${color}15`, color }}><Icon className="w-2.5 h-2.5 sm:w-3 sm:h-3" />{trait.value}</span>);})}</div></div>
                     <div className="pt-3 sm:pt-4" style={{ borderTop: "1px solid var(--color-border)" }}><code className="text-[10px] sm:text-xs font-mono" style={{ color: "var(--color-text-muted)" }}>{(agent.commitment || agent.dnaHash).slice(0, 20)}...</code></div>
                     <div className="mt-3 sm:mt-4 flex gap-2">

@@ -3,6 +3,7 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Dna, Shield, Clock, Crown, Cpu, Palette, MessageSquare, Brain, Heart, TrendingUp, GraduationCap, Star, ExternalLink, Copy, Check, Activity, Trash2, Unlink, Power, AlertTriangle, Loader2 } from "lucide-react";
+import { CoOwnersDisplay } from "@/components/CoOwnersDisplay";
 import { useState, useMemo } from "react";
 import { Button } from "@/components/ui";
 import Link from "next/link";
@@ -193,6 +194,8 @@ export function AgentDetailModal({ agent, isOpen, onClose, onAgentUpdated, getAc
                 </div>
               </div>
 
+              {/* Co-owners Section */}
+              {agent.id && <CoOwnersDisplay agentId={agent.id} variant="full" getAccessToken={getAccessToken} />}
               {/* All 8 Traits */}
               <div>
                 <h3 className="text-sm font-medium mb-3 flex items-center gap-2" style={{ color: "var(--color-text-muted)" }}><Activity className="w-4 h-4" /> {t("agentDetail.traits")}</h3>
