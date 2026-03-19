@@ -122,13 +122,36 @@ genomad/
 
 ## 🛠️ Stack Tecnológico
 
+### Web3 & Blockchain
+
+| Tecnología | Uso |
+|------------|-----|
+| **Monad** | L1 EVM-compatible de alta performance (10k TPS) |
+| **Solidity** | Smart contracts (GenomadNFT, BreedingFactory) |
+| **ERC-721** | Standard NFT para agentes con DNA on-chain |
+| **Zero-Knowledge Proofs** | Verificación de breeding sin revelar DNA privado |
+| **Viem** | Cliente Ethereum moderno y type-safe |
+| **Wagmi** | React hooks para interacción blockchain |
+| **Privy** | Auth Web3 (wallets + social login) |
+| **nad.fun** | Bonding curve para $GMD token |
+
+### Cryptography
+
+| Tecnología | Uso |
+|------------|-----|
+| **AES-256-GCM** | Encriptación simétrica del DNA |
+| **ECDH** | Intercambio de claves entre padres |
+| **SHA-256** | Hash de DNA para commitments on-chain |
+| **Poseidon Hash** | Hash ZK-friendly para circuitos |
+
+### Frontend & Backend
+
 | Capa | Tecnología |
 |------|------------|
 | **Frontend** | Next.js 16, React 19, TailwindCSS 4, Framer Motion |
-| **Backend** | Next.js API Routes, Drizzle ORM, Neon PostgreSQL |
-| **Auth** | Privy (Wallet + Social) |
-| **Blockchain** | Monad Testnet, Viem, Wagmi |
-| **Token** | $GMD en nad.fun (bonding curve) |
+| **Backend** | Next.js API Routes, Drizzle ORM |
+| **Database** | Neon PostgreSQL (serverless) |
+| **Runtime** | Bun |
 
 ---
 
