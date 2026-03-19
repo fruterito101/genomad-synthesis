@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 // src/app/profile/page.tsx
 "use client";
 
