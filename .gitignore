@@ -44,3 +44,5 @@ contracts/lib/
 contracts/out/
 contracts/cache/
 contracts/zk/target/
+circuits/node_modules/
+circuits/pot12_final.ptau

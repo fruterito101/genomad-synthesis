@@ -1,0 +1,22 @@
+{
+  "name": "genomad-circuits",
+  "version": "1.0.0",
+  "description": "ZK circuits for Genomad trait verification and breeding",
+  "scripts": {
+    "compile:trait": "circom trait-proof/trait.circom --r1cs --wasm --sym -o build/trait",
+    "compile:breed": "circom breed-proof/breed.circom --r1cs --wasm --sym -o build/breed",
+    "compile:custody": "circom custody-proof/custody.circom --r1cs --wasm --sym -o build/custody",
+    "compile:all": "npm run compile:trait && npm run compile:breed && npm run compile:custody",
+    "setup:trait": "snarkjs groth16 setup build/trait/trait.r1cs pot12_final.ptau build/trait/trait_0000.zkey",
+    "setup:breed": "snarkjs groth16 setup build/breed/breed.r1cs pot12_final.ptau build/breed/breed_0000.zkey",
+    "setup:custody": "snarkjs groth16 setup build/custody/custody.r1cs pot12_final.ptau build/custody/custody_0000.zkey",
+    "verify:trait": "snarkjs zkey export verificationkey build/trait/trait_0000.zkey build/trait/verification_key.json",
+    "solidity:trait": "snarkjs zkey export solidityverifier build/trait/trait_0000.zkey contracts/TraitVerifier.sol",
+    "test": "node scripts/test-circuits.js"
+  },
+  "dependencies": {
+    "snarkjs": "^0.7.4",
+    "circomlib": "^2.0.5"
+  },
+  "devDependencies": {}
+}
