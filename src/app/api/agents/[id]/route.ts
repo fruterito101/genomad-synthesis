@@ -41,7 +41,7 @@ export async function GET(
     const canManage = isOwner || isCoOwner;
 
     // Buscar padres
-    let parents: { parentA?: typeof agent; parentB?: typeof agent } = {};
+    const parents: { parentA?: typeof agent; parentB?: typeof agent } = {};
     if (agent.parentAId) {
       const [parentA] = await db.select().from(agents).where(eq(agents.id, agent.parentAId)).limit(1);
       if (parentA) parents.parentA = parentA;

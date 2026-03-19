@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
     
     const db = getDb();
     
-    let conditions = [eq(agents.isSuspicious, true)];
+    const conditions = [eq(agents.isSuspicious, true)];
     
     if (status === "pending") {
       conditions.push(isNull(agents.reviewedAt));
@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
     
     // Obtener info de owners
     const ownerIds = [...new Set(suspiciousAgents.map(a => a.ownerId))];
-    let ownersMap: Record<string, any> = {};
+    const ownersMap: Record<string, any> = {};
     
     if (ownerIds.length > 0) {
       const owners = await db

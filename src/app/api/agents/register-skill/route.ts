@@ -320,7 +320,7 @@ export async function GET(request: NextRequest) {
 
     const ownerIds = [...new Set(allAgents.map(a => a.ownerId).filter(id => id !== UNLINKED_OWNER))];
     
-    let ownersMap: Record<string, { walletAddress: string | null; displayName: string | null; telegramUsername: string | null }> = {};
+    const ownersMap: Record<string, { walletAddress: string | null; displayName: string | null; telegramUsername: string | null }> = {};
     
     if (ownerIds.length > 0) {
       const owners = await db

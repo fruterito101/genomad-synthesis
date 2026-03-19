@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useCallback } from "react";
 import { AppHeader } from "@/components/AppHeader";
-import { Button, Card } from "@/components/ui";
+import { Card } from "@/components/ui";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { EmptyState, AgentCardSkeleton } from "@/components/FallbackUI";
 import { LeaderboardTable } from "@/components/leaderboard-table";
@@ -47,7 +47,7 @@ function getSpecialization(traits: unknown) {
 // Agent Card Component
 function AgentCard({ agent }: { agent: Agent }) {
   const name = safeName(agent.name);
-  const traits = safeTraits(agent.traits);
+  const _traits = safeTraits(agent.traits);
   const fitness = safeFitness(agent.fitness);
   const rarity = safeRarity(agent.traits);
   const topTraits = safeTopTraits(agent.traits, 2);

@@ -1,6 +1,6 @@
 import { getDb } from './src/lib/db/client';
 import { agents, users } from './src/lib/db/schema';
-import { eq } from 'drizzle-orm';
+import { eq as _eq } from 'drizzle-orm';
 
 async function check() {
   const db = getDb();
