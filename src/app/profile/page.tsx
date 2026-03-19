@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { LoginButton } from "@/components/LoginButton";
 import { AgentDetailModal } from "@/components/AgentDetailModal";
+import { AgentCard } from "@/components/agent-card";
 import { PendingApprovals } from "@/components/PendingApprovals";
 import { CoOwnersDisplay } from "@/components/CoOwnersDisplay";
 import { AppSidebar } from "@/components/app-sidebar";
@@ -21,13 +22,6 @@ interface Agent {
   id: string; name: string; botUsername: string | null; dnaHash: string;
   traits: { technical: number; creativity: number; social: number; analysis: number; empathy: number; trading: number; teaching: number; leadership: number; };
   fitness: number; generation: number; isActive: boolean; createdAt: string; commitment: string | null; tokenId: string | null;
-}
-
-const traitIcons: Record<string, React.ElementType> = { technical: Cpu, creativity: Palette, social: MessageSquare, analysis: Brain, empathy: Heart, trading: TrendingUp, teaching: GraduationCap, leadership: Crown };
-const traitColors: Record<string, string> = { technical: "#3B82F6", creativity: "#EC4899", social: "#8B5CF6", analysis: "#06B6D4", empathy: "#EF4444", trading: "#10B981", teaching: "#F59E0B", leadership: "#F97316" };
-
-function getTopTraits(traits: Agent["traits"]): { key: string; value: number }[] {
-  return Object.entries(traits).sort(([, a], [, b]) => b - a).slice(0, 3).map(([key, value]) => ({ key, value }));
 }
 
 export default function ProfilePage() {
@@ -44,17 +38,6 @@ export default function ProfilePage() {
   const [copied, setCopied] = useState(false);
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
 
-  function calculateRarity(traits: Agent["traits"]): { label: string; color: string; bg: string } {
-    const values = Object.values(traits);
-    const avg = values.reduce((a, b) => a + b, 0) / values.length;
-    const max = Math.max(...values);
-    const spread = max - Math.min(...values);
-    if (avg >= 80 && spread <= 20) return { label: t("dashboard.rarity.legendary"), color: "#FBBF24", bg: "rgba(251, 191, 36, 0.1)" };
-    if (avg >= 75 || max >= 95) return { label: t("dashboard.rarity.epic"), color: "#A855F7", bg: "rgba(168, 85, 247, 0.1)" };
-    if (avg >= 60 || max >= 85) return { label: t("dashboard.rarity.rare"), color: "#3B82F6", bg: "rgba(59, 130, 246, 0.1)" };
-    if (avg >= 40) return { label: t("dashboard.rarity.uncommon"), color: "#10B981", bg: "rgba(16, 185, 129, 0.1)" };
-    return { label: t("dashboard.rarity.common"), color: "#6B7280", bg: "rgba(107, 114, 128, 0.1)" };
-  }
 
   const fetchProfile = useCallback(async () => {
     if (!authenticated) return;
@@ -171,33 +154,28 @@ export default function ProfilePage() {
             {loading ? (<div className="text-center py-8 sm:py-12"><Dna className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-4 animate-pulse text-primary" /><p className="text-sm text-muted-foreground">{t("common.loading")}</p></div>
             ) : agents.length === 0 ? (<div className="text-center py-8 sm:py-12 rounded-xl bg-card border border-border"><Star className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-4 text-muted-foreground" /><h3 className="text-lg sm:text-xl mb-2">{t("profile.empty.title")}</h3><p className="text-sm px-4 text-muted-foreground">{t("profile.empty.description")}</p></div>
             ) : (
-              <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-                {agents.map((agent, index) => {
-                  const rarity = calculateRarity(agent.traits);
-                  const topTraits = getTopTraits(agent.traits);
-                  return (
-                    <motion.div key={agent.id} className="rounded-xl p-4 sm:p-6 cursor-pointer bg-card border border-border hover:border-primary/50 transition-colors" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 * index }} onClick={() => setSelectedAgent(agent)}>
-                      <div className="flex justify-between items-start mb-3 sm:mb-4">
-                        <div className="min-w-0"><h3 className="text-lg sm:text-xl font-bold truncate">{agent.name}</h3>{agent.botUsername && <p className="text-xs sm:text-sm truncate text-muted-foreground">@{agent.botUsername}</p>}</div>
-                        <div className="text-right flex-shrink-0 ml-2"><div className="text-xl sm:text-2xl font-bold gradient-text">{agent.fitness.toFixed(1)}</div><div className="text-[10px] sm:text-xs text-muted-foreground">FITNESS</div></div>
-                      </div>
-                      <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-3 sm:mb-4">
-                        <span className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded font-medium flex items-center gap-1" style={{ backgroundColor: rarity.bg, color: rarity.color }}><Star className="w-2.5 h-2.5 sm:w-3 sm:h-3" />{rarity.label}</span>
-                        <span className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded bg-muted text-muted-foreground">Gen {agent.generation}</span>
-                        <span className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded flex items-center gap-1" style={{ backgroundColor: agent.isActive ? "rgba(16, 185, 129, 0.1)" : "rgba(239, 68, 68, 0.1)", color: agent.isActive ? "#10B981" : "#EF4444" }}><span className={`w-1.5 h-1.5 rounded-full ${agent.isActive ? "bg-emerald-500" : "bg-red-500"}`} />{agent.isActive ? (i18n.language === "es" ? "Activo" : "Active") : "Off"}</span>
-                      </div>
-                      <div className="mb-3 sm:mb-4"><CoOwnersDisplay agentId={agent.id} variant="full" getAccessToken={getAccessToken} /></div>
-                      <div className="mb-3 sm:mb-4"><p className="text-[10px] sm:text-xs mb-1.5 sm:mb-2 text-muted-foreground">{i18n.language === "es" ? "TOP TRAITS" : "TOP TRAITS"}</p><div className="flex flex-wrap gap-1.5 sm:gap-2">{topTraits.map((trait) => { const Icon = traitIcons[trait.key]; const color = traitColors[trait.key]; return (<span key={trait.key} className="text-[10px] sm:text-sm px-1.5 sm:px-2 py-0.5 sm:py-1 rounded flex items-center gap-1" style={{ backgroundColor: `${color}15`, color }}><Icon className="w-2.5 h-2.5 sm:w-3 sm:h-3" />{trait.value}</span>);})}</div></div>
-                      <div className="pt-3 sm:pt-4 border-t border-border"><code className="text-[10px] sm:text-xs font-mono text-muted-foreground">{(agent.commitment || agent.dnaHash).slice(0, 20)}...</code></div>
-                      <div className="mt-3 sm:mt-4 flex gap-2">
-                        <button className="flex-1 text-xs sm:text-sm px-3 py-2 rounded-lg bg-primary text-primary-foreground font-semibold flex items-center justify-center gap-1" onClick={(e) => { e.stopPropagation(); setSelectedAgent(agent); }}><Eye className="w-3 h-3 sm:w-4 sm:h-4" />{t("dashboard.actions.viewDetails")}</button>
-                        <Link href={`/breeding?parentA=${agent.id}`} className="flex-1" onClick={(e) => e.stopPropagation()}>
-                          <Button variant="secondary" size="sm" className="w-full text-xs sm:text-sm"><Dna className="w-3 h-3 sm:w-4 sm:h-4" />{i18n.language === "es" ? "Criar" : "Breed"}</Button>
-                        </Link>
-                      </div>
-                    </motion.div>
-                  );
-                })}
+<div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+                {agents.map((agent, index) => (
+                  <AgentCard
+                    key={agent.id}
+                    agent={agent}
+                    isMine
+                    variant="full"
+                    index={index}
+                    showActions
+                    showCoOwners
+                    showTopTraits
+                    getAccessToken={getAccessToken}
+                    onClick={() => setSelectedAgent(agent)}
+                    onViewDetails={() => setSelectedAgent(agent)}
+                    labels={{
+                      breed: i18n.language === "es" ? "Criar" : "Breed",
+                      viewDetails: t("dashboard.actions.viewDetails"),
+                      active: i18n.language === "es" ? "Activo" : "Active",
+                      inactive: "Off",
+                    }}
+                  />
+                ))}
               </div>
             )}
           </motion.div>
