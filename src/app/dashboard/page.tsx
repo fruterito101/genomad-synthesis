@@ -2,6 +2,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePrivy } from "@privy-io/react-auth";
+import { LoginButton } from "@/components/LoginButton";
 
 interface Agent {
   id: string;
@@ -23,16 +25,33 @@ interface Agent {
   generation: number;
   isActive: boolean;
   createdAt: string;
+  ownerId?: string;
 }
 
 export default function DashboardPage() {
+  const { authenticated, ready, getAccessToken, user } = usePrivy();
   const [agents, setAgents] = useState<Agent[]>([]);
+  const [myAgents, setMyAgents] = useState<Agent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // Code generation state
+  const [generatingCode, setGeneratingCode] = useState(false);
+  const [verificationCode, setVerificationCode] = useState<string | null>(null);
+  const [codeExpiry, setCodeExpiry] = useState<Date | null>(null);
+  const [codeError, setCodeError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchAgents();
   }, []);
+
+  // Filter my agents when user or agents change
+  useEffect(() => {
+    if (user?.id && agents.length > 0) {
+      const mine = agents.filter(a => a.ownerId === user.id);
+      setMyAgents(mine);
+    }
+  }, [user, agents]);
 
   const fetchAgents = async () => {
     try {
@@ -48,6 +67,48 @@ export default function DashboardPage() {
     }
   };
 
+  const generateCode = async () => {
+    setGeneratingCode(true);
+    setCodeError(null);
+    setVerificationCode(null);
+    
+    try {
+      const token = await getAccessToken();
+      if (!token) {
+        setCodeError("No auth token - please login first");
+        return;
+      }
+      
+      const res = await fetch("/api/codes/generate", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
+      });
+      
+      const data = await res.json();
+      
+      if (!res.ok) {
+        setCodeError(data.error || "Failed to generate code");
+        return;
+      }
+      
+      setVerificationCode(data.code);
+      setCodeExpiry(new Date(data.expiresAt));
+    } catch (err) {
+      setCodeError(String(err));
+    } finally {
+      setGeneratingCode(false);
+    }
+  };
+
+  const copyCode = () => {
+    if (verificationCode) {
+      navigator.clipboard.writeText(verificationCode);
+    }
+  };
+
   const getTraitBar = (value: number) => {
     const width = Math.min(100, Math.max(0, value));
     const color = value >= 80 ? "bg-green-500" : value >= 50 ? "bg-yellow-500" : "bg-red-500";
@@ -58,10 +119,20 @@ export default function DashboardPage() {
     );
   };
 
-  if (loading) {
+  const formatTimeLeft = () => {
+    if (!codeExpiry) return "";
+    const now = new Date();
+    const diff = codeExpiry.getTime() - now.getTime();
+    if (diff <= 0) return "Expired";
+    const mins = Math.floor(diff / 60000);
+    const secs = Math.floor((diff % 60000) / 1000);
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
+  };
+
+  if (!ready) {
     return (
       <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">
-        <div className="text-2xl">🧬 Loading agents...</div>
+        <div className="text-2xl">⏳ Loading...</div>
       </div>
     );
   }
@@ -69,16 +140,104 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-gray-900 text-white p-8">
       <div className="max-w-7xl mx-auto">
-        <header className="mb-8">
-          <h1 className="text-4xl font-bold mb-2">🧬 Genomad Dashboard</h1>
-          <p className="text-gray-400">Registered Agents: {agents.length}</p>
-          <button 
-            onClick={fetchAgents}
-            className="mt-4 px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded"
-          >
-            🔄 Refresh
-          </button>
+        {/* Header */}
+        <header className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h1 className="text-4xl font-bold mb-2">🧬 Genomad Dashboard</h1>
+            <p className="text-gray-400">
+              All Agents: {agents.length} | My Agents: {myAgents.length}
+            </p>
+          </div>
+          <div className="flex items-center gap-4">
+            <button 
+              onClick={fetchAgents}
+              className="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded transition"
+            >
+              🔄 Refresh
+            </button>
+            <LoginButton />
+          </div>
         </header>
+
+        {/* Code Generation Card */}
+        {authenticated && (
+          <div className="mb-8 bg-gradient-to-r from-purple-900/50 to-blue-900/50 border border-purple-500/30 rounded-xl p-6">
+            <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+              🔗 Link Your Agent
+            </h2>
+            
+            {!verificationCode ? (
+              <div>
+                <p className="text-gray-300 mb-4">
+                  Generate a verification code to link your AI agent to your account.
+                  Then tell your bot: <code className="bg-gray-800 px-2 py-1 rounded">/genomad-verify CODE</code>
+                </p>
+                <button
+                  onClick={generateCode}
+                  disabled={generatingCode}
+                  className="px-6 py-3 bg-emerald-600 hover:bg-emerald-500 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-lg font-medium transition flex items-center gap-2"
+                >
+                  {generatingCode ? (
+                    <>⏳ Generating...</>
+                  ) : (
+                    <>🎫 Generate Verification Code</>
+                  )}
+                </button>
+                {codeError && (
+                  <p className="mt-3 text-red-400">❌ {codeError}</p>
+                )}
+              </div>
+            ) : (
+              <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
+                <div className="flex-1">
+                  <p className="text-sm text-gray-400 mb-2">Your verification code:</p>
+                  <div className="flex items-center gap-3">
+                    <code className="text-4xl font-mono font-bold tracking-widest bg-gray-800 px-6 py-3 rounded-lg border-2 border-emerald-500">
+                      {verificationCode}
+                    </code>
+                    <button
+                      onClick={copyCode}
+                      className="p-3 bg-gray-700 hover:bg-gray-600 rounded-lg transition"
+                      title="Copy to clipboard"
+                    >
+                      📋
+                    </button>
+                  </div>
+                  <p className="mt-2 text-sm text-yellow-400">
+                    ⏱️ Expires in: {formatTimeLeft()}
+                  </p>
+                </div>
+                <div className="bg-gray-800/50 rounded-lg p-4 max-w-sm">
+                  <p className="text-sm text-gray-300">
+                    <strong>Next step:</strong> Tell your AI agent:
+                  </p>
+                  <code className="block mt-2 bg-gray-900 px-3 py-2 rounded text-emerald-400">
+                    /genomad-verify {verificationCode}
+                  </code>
+                </div>
+                <button
+                  onClick={() => {
+                    setVerificationCode(null);
+                    setCodeExpiry(null);
+                  }}
+                  className="text-gray-400 hover:text-white text-sm"
+                >
+                  Generate new code
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Not authenticated prompt */}
+        {!authenticated && (
+          <div className="mb-8 bg-gray-800 border border-gray-700 rounded-xl p-6 text-center">
+            <p className="text-gray-300 mb-4">
+              🔐 Login to generate verification codes and link your agents
+            </p>
+            <LoginButton />
+          </div>
+        )}
 
         {error && (
           <div className="bg-red-900 border border-red-500 rounded p-4 mb-8">
@@ -86,103 +245,155 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {agents.length === 0 ? (
-          <div className="text-center py-20">
-            <div className="text-6xl mb-4">🥚</div>
-            <h2 className="text-2xl mb-2">No agents registered yet</h2>
-            <p className="text-gray-400">Use the genomad-verify skill to register your first agent!</p>
-          </div>
-        ) : (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {agents.map((agent) => (
-              <div 
-                key={agent.id} 
-                className="bg-gray-800 rounded-lg p-6 border border-gray-700 hover:border-purple-500 transition"
-              >
-                <div className="flex justify-between items-start mb-4">
-                  <div>
-                    <h2 className="text-xl font-bold">{agent.name}</h2>
-                    {agent.botUsername && (
-                      <p className="text-gray-400 text-sm">@{agent.botUsername}</p>
-                    )}
-                  </div>
-                  <div className="text-right">
-                    <div className="text-2xl font-bold text-purple-400">
-                      {agent.fitness.toFixed(1)}
-                    </div>
-                    <div className="text-xs text-gray-500">FITNESS</div>
-                  </div>
-                </div>
-
-                <div className="mb-4 flex flex-wrap gap-2">
-                  <span className="text-xs bg-gray-700 px-2 py-1 rounded">
-                    Gen {agent.generation}
-                  </span>
-                  <span className={`text-xs px-2 py-1 rounded ${agent.isActive ? "bg-green-900 text-green-300" : "bg-red-900 text-red-300"}`}>
-                    {agent.isActive ? "Active" : "Inactive"}
-                  </span>
-                  {agent.skillCount !== undefined && agent.skillCount > 0 && (
-                    <span className="text-xs bg-blue-900 text-blue-300 px-2 py-1 rounded">
-                      🔧 {agent.skillCount} Skills
-                    </span>
-                  )}
-                </div>
-
-                <div className="space-y-2 text-sm">
-                  <div className="flex items-center gap-2">
-                    <span className="w-20">🔧 Tech</span>
-                    {getTraitBar(agent.traits.technical)}
-                    <span className="w-8 text-right">{agent.traits.technical}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="w-20">🎨 Create</span>
-                    {getTraitBar(agent.traits.creativity)}
-                    <span className="w-8 text-right">{agent.traits.creativity}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="w-20">💬 Social</span>
-                    {getTraitBar(agent.traits.social)}
-                    <span className="w-8 text-right">{agent.traits.social}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="w-20">📊 Analysis</span>
-                    {getTraitBar(agent.traits.analysis)}
-                    <span className="w-8 text-right">{agent.traits.analysis}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="w-20">❤️ Empathy</span>
-                    {getTraitBar(agent.traits.empathy)}
-                    <span className="w-8 text-right">{agent.traits.empathy}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="w-20">📈 Trading</span>
-                    {getTraitBar(agent.traits.trading)}
-                    <span className="w-8 text-right">{agent.traits.trading}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="w-20">📚 Teach</span>
-                    {getTraitBar(agent.traits.teaching)}
-                    <span className="w-8 text-right">{agent.traits.teaching}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="w-20">👑 Lead</span>
-                    {getTraitBar(agent.traits.leadership)}
-                    <span className="w-8 text-right">{agent.traits.leadership}</span>
-                  </div>
-                </div>
-
-                <div className="mt-4 pt-4 border-t border-gray-700">
-                  <p className="text-xs text-gray-500 font-mono truncate">
-                    DNA: {agent.dnaHash.slice(0, 16)}...
-                  </p>
-                  <p className="text-xs text-gray-600">
-                    {new Date(agent.createdAt).toLocaleString()}
-                  </p>
-                </div>
-              </div>
-            ))}
+        {/* My Agents Section */}
+        {authenticated && myAgents.length > 0 && (
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+              👤 My Agents
+            </h2>
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {myAgents.map((agent) => (
+                <AgentCard key={agent.id} agent={agent} getTraitBar={getTraitBar} isOwned />
+              ))}
+            </div>
           </div>
         )}
+
+        {/* All Agents Section */}
+        <div>
+          <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+            🌍 All Registered Agents
+          </h2>
+          
+          {loading ? (
+            <div className="text-center py-20">
+              <div className="text-4xl mb-4">🧬</div>
+              <p className="text-xl">Loading agents...</p>
+            </div>
+          ) : agents.length === 0 ? (
+            <div className="text-center py-20">
+              <div className="text-6xl mb-4">🥚</div>
+              <h2 className="text-2xl mb-2">No agents registered yet</h2>
+              <p className="text-gray-400">Use the genomad-verify skill to register your first agent!</p>
+            </div>
+          ) : (
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {agents.map((agent) => (
+                <AgentCard 
+                  key={agent.id} 
+                  agent={agent} 
+                  getTraitBar={getTraitBar}
+                  isOwned={myAgents.some(a => a.id === agent.id)}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Agent Card Component
+function AgentCard({ 
+  agent, 
+  getTraitBar, 
+  isOwned = false 
+}: { 
+  agent: Agent; 
+  getTraitBar: (value: number) => React.ReactNode;
+  isOwned?: boolean;
+}) {
+  return (
+    <div 
+      className={`bg-gray-800 rounded-lg p-6 border transition ${
+        isOwned 
+          ? "border-emerald-500 ring-2 ring-emerald-500/20" 
+          : "border-gray-700 hover:border-purple-500"
+      }`}
+    >
+      <div className="flex justify-between items-start mb-4">
+        <div>
+          <h2 className="text-xl font-bold flex items-center gap-2">
+            {agent.name}
+            {isOwned && <span className="text-emerald-400 text-sm">✓ Yours</span>}
+          </h2>
+          {agent.botUsername && (
+            <p className="text-gray-400 text-sm">@{agent.botUsername}</p>
+          )}
+        </div>
+        <div className="text-right">
+          <div className="text-2xl font-bold text-purple-400">
+            {agent.fitness.toFixed(1)}
+          </div>
+          <div className="text-xs text-gray-500">FITNESS</div>
+        </div>
+      </div>
+
+      <div className="mb-4 flex flex-wrap gap-2">
+        <span className="text-xs bg-gray-700 px-2 py-1 rounded">
+          Gen {agent.generation}
+        </span>
+        <span className={`text-xs px-2 py-1 rounded ${agent.isActive ? "bg-green-900 text-green-300" : "bg-red-900 text-red-300"}`}>
+          {agent.isActive ? "Active" : "Inactive"}
+        </span>
+        {agent.skillCount !== undefined && agent.skillCount > 0 && (
+          <span className="text-xs bg-blue-900 text-blue-300 px-2 py-1 rounded">
+            🔧 {agent.skillCount} Skills
+          </span>
+        )}
+      </div>
+
+      <div className="space-y-2 text-sm">
+        <div className="flex items-center gap-2">
+          <span className="w-20">🔧 Tech</span>
+          {getTraitBar(agent.traits.technical)}
+          <span className="w-8 text-right">{agent.traits.technical}</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="w-20">🎨 Create</span>
+          {getTraitBar(agent.traits.creativity)}
+          <span className="w-8 text-right">{agent.traits.creativity}</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="w-20">💬 Social</span>
+          {getTraitBar(agent.traits.social)}
+          <span className="w-8 text-right">{agent.traits.social}</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="w-20">📊 Analysis</span>
+          {getTraitBar(agent.traits.analysis)}
+          <span className="w-8 text-right">{agent.traits.analysis}</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="w-20">❤️ Empathy</span>
+          {getTraitBar(agent.traits.empathy)}
+          <span className="w-8 text-right">{agent.traits.empathy}</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="w-20">📈 Trading</span>
+          {getTraitBar(agent.traits.trading)}
+          <span className="w-8 text-right">{agent.traits.trading}</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="w-20">📚 Teach</span>
+          {getTraitBar(agent.traits.teaching)}
+          <span className="w-8 text-right">{agent.traits.teaching}</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="w-20">👑 Lead</span>
+          {getTraitBar(agent.traits.leadership)}
+          <span className="w-8 text-right">{agent.traits.leadership}</span>
+        </div>
+      </div>
+
+      <div className="mt-4 pt-4 border-t border-gray-700">
+        <p className="text-xs text-gray-500 font-mono truncate">
+          DNA: {agent.dnaHash.slice(0, 16)}...
+        </p>
+        <p className="text-xs text-gray-600">
+          {new Date(agent.createdAt).toLocaleString()}
+        </p>
       </div>
     </div>
   );
