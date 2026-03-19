@@ -1,5 +1,5 @@
-// src/app/breeding/page.tsx
 "use client";
+export const dynamic = "force-dynamic";
 
 import { Suspense, useEffect, useState, useCallback } from "react";
 import { usePrivy } from "@privy-io/react-auth";
