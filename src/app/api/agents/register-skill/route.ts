@@ -1,10 +1,14 @@
 // src/app/api/agents/register-skill/route.ts
+// Registro de agentes con vinculación opcional por código
+
 import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/db/client";
-import { agents } from "@/lib/db/schema";
+import { agents, verificationCodes } from "@/lib/db/schema";
 import { calculateTotalFitness } from "@/lib/genetic";
-import { eq, or, sql } from "drizzle-orm";
+import { eq, or, sql, and, gt } from "drizzle-orm";
 import { v4 as uuidv4 } from "uuid";
+
+const UNLINKED_OWNER = "00000000-0000-0000-0000-000000000000";
 
 export async function POST(request: NextRequest) {
   try {
@@ -17,12 +21,14 @@ export async function POST(request: NextRequest) {
       generation = 0,
       botUsername,
       telegramId,
+      code,  // Código de vinculación opcional
       source = "genomad-verify-skill"
     } = body;
 
     // Limpiar espacios
     name = name?.trim();
     botUsername = botUsername?.trim();
+    code = code?.trim()?.toUpperCase();
 
     if (!name) {
       return NextResponse.json({ error: "Agent name is required" }, { status: 400 });
@@ -40,8 +46,45 @@ export async function POST(request: NextRequest) {
     }
 
     const db = getDb();
+    let ownerId = UNLINKED_OWNER;
+    let linkedToOwner = false;
 
-    // Buscar por nombre (con trim) O botUsername O dnaHash
+    // Si hay código, verificarlo y obtener el owner
+    if (code) {
+      const [codeRecord] = await db
+        .select()
+        .from(verificationCodes)
+        .where(
+          and(
+            eq(verificationCodes.code, code),
+            eq(verificationCodes.used, false),
+            gt(verificationCodes.expiresAt, new Date())
+          )
+        )
+        .limit(1);
+
+      if (!codeRecord) {
+        return NextResponse.json({ 
+          error: "INVALID_CODE", 
+          message: "Código inválido, expirado o ya usado. Genera uno nuevo en genomad.vercel.app" 
+        }, { status: 400 });
+      }
+
+      // Marcar código como usado
+      await db
+        .update(verificationCodes)
+        .set({ 
+          used: true, 
+          usedAt: new Date() 
+        })
+        .where(eq(verificationCodes.id, codeRecord.id));
+
+      ownerId = codeRecord.userId;
+      linkedToOwner = true;
+      console.log(`🔗 Code ${code} validated, linking to owner ${ownerId}`);
+    }
+
+    // Buscar agente existente
     const [existing] = await db
       .select()
       .from(agents)
@@ -60,24 +103,39 @@ export async function POST(request: NextRequest) {
     const traitsWithSkills = { ...traits, skillCount: skillCount || 0 };
 
     if (existing) {
-      // ACTUALIZAR el agente existente
+      // Determinar nuevo ownerId (si se vincula, actualizar; si no, mantener)
+      const newOwnerId = linkedToOwner ? ownerId : existing.ownerId;
+
+      // ACTUALIZAR agente existente
       await db
         .update(agents)
         .set({
-          name,  // Guardar nombre limpio
+          name,
           dnaHash,
           traits: traitsWithSkills,
           fitness,
           botUsername: botUsername || existing.botUsername,
+          ownerId: newOwnerId,
           updatedAt: new Date(),
         })
         .where(eq(agents.id, existing.id));
 
-      console.log(`🔄 Agent updated: ${name} (skills: ${skillCount}, fitness: ${fitness.toFixed(1)})`);
+      // Actualizar código con el agentId
+      if (code && linkedToOwner) {
+        await db
+          .update(verificationCodes)
+          .set({ agentId: existing.id })
+          .where(eq(verificationCodes.code, code));
+      }
+
+      const isNowLinked = newOwnerId !== UNLINKED_OWNER;
+
+      console.log(`🔄 Agent updated: ${name} (linked: ${isNowLinked}, fitness: ${fitness.toFixed(1)})`);
 
       return NextResponse.json({
         success: true,
         action: "updated",
+        linked: isNowLinked,
         agent: {
           id: existing.id,
           name: name,
@@ -87,16 +145,20 @@ export async function POST(request: NextRequest) {
           skillCount: skillCount,
           fitness: fitness,
           generation: existing.generation,
+          ownerId: newOwnerId,
           createdAt: existing.createdAt,
         },
-        message: "Agent DNA updated! Your agent has evolved.",
+        message: isNowLinked 
+          ? "✅ Agente actualizado y vinculado a tu cuenta!"
+          : "✅ Agente actualizado. Usa un código para vincularlo a tu cuenta.",
       });
     }
 
     // Crear nuevo agente
+    const newAgentId = uuidv4();
     const newAgent = {
-      id: uuidv4(),
-      ownerId: "00000000-0000-0000-0000-000000000000",
+      id: newAgentId,
+      ownerId,
       name,
       botUsername: botUsername || null,
       dnaHash,
@@ -111,11 +173,22 @@ export async function POST(request: NextRequest) {
 
     await db.insert(agents).values(newAgent);
 
-    console.log(`✅ New agent: ${name} @${botUsername} (skills: ${skillCount}, fitness: ${fitness.toFixed(1)})`);
+    // Actualizar código con el agentId si existe
+    if (code && linkedToOwner) {
+      await db
+        .update(verificationCodes)
+        .set({ agentId: newAgentId })
+        .where(eq(verificationCodes.code, code));
+    }
+
+    const isLinked = ownerId !== UNLINKED_OWNER;
+
+    console.log(`✅ New agent: ${name} (linked: ${isLinked}, fitness: ${fitness.toFixed(1)})`);
 
     return NextResponse.json({
       success: true,
       action: "created",
+      linked: isLinked,
       agent: {
         id: newAgent.id,
         name: newAgent.name,
@@ -125,9 +198,12 @@ export async function POST(request: NextRequest) {
         skillCount: skillCount,
         fitness: newAgent.fitness,
         generation: newAgent.generation,
+        ownerId: newAgent.ownerId,
         createdAt: newAgent.createdAt,
       },
-      message: "Agent registered successfully!",
+      message: isLinked
+        ? "✅ Agente registrado y vinculado a tu cuenta!"
+        : "✅ Agente registrado. Ve a genomad.vercel.app para vincularlo a tu cuenta.",
     });
 
   } catch (error) {
@@ -149,6 +225,7 @@ export async function GET(_request: NextRequest) {
         traits: agents.traits,
         fitness: agents.fitness,
         generation: agents.generation,
+        ownerId: agents.ownerId,
         isActive: agents.isActive,
         createdAt: agents.createdAt,
       })
@@ -163,6 +240,7 @@ export async function GET(_request: NextRequest) {
         name: agent.name?.trim(),
         traits: pureTraits,
         skillCount: skillCount || 0,
+        isLinked: agent.ownerId !== UNLINKED_OWNER,
       };
     });
 
