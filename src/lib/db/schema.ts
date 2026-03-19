@@ -360,3 +360,32 @@ export const suspiciousAlerts = pgTable("suspicious_alerts", {
   index("suspicious_alerts_reviewed_idx").on(table.reviewed),
   index("suspicious_alerts_created_idx").on(table.createdAt),
 ]);
+
+// ============================================
+// AGENT AUDIT LOG - Historial de cambios
+// ============================================
+export const agentAuditLog = pgTable("agent_audit_log", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  
+  // Agente afectado
+  agentId: uuid("agent_id").notNull(),
+  
+  // Tipo de acción: INSERT | UPDATE | DELETE | FLAG | REVIEW
+  action: text("action").notNull(),
+  
+  // Datos antes/después
+  oldData: jsonb("old_data"),
+  newData: jsonb("new_data"),
+  
+  // Quién hizo el cambio
+  changedBy: uuid("changed_by"),
+  
+  // Metadata
+  changedAt: timestamp("changed_at").defaultNow().notNull(),
+  ipAddress: text("ip_address"),
+  reason: text("reason"),
+}, (table) => [
+  index("idx_audit_agent").on(table.agentId),
+  index("idx_audit_action").on(table.action),
+  index("idx_audit_time").on(table.changedAt),
+]);
