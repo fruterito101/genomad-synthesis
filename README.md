@@ -308,3 +308,23 @@ MIT
 🧬 Built by Team Genomad 🧬
 
 </div>
+
+---
+
+## 📚 Documentación Técnica
+
+### Arquitectura Backend
+
+Para conocer la arquitectura completa del backend, flujos técnicos, smart contracts, y plan de implementación:
+
+👉 **[Ver BACKEND-SPEC.md](./src/backend/BACKEND-SPEC.md)**
+
+Incluye:
+- Arquitectura descentralizada (DNA on-chain)
+- Token Economy ($GENO en nad.fun)
+- 5 Flujos detallados (Registro, Breeding, Activación, Renta, Independencia)
+- Smart Contracts (AgentDNA, BreedingFactory, RentalManager)
+- API Endpoints
+- Plan de implementación por fases
+
+---
