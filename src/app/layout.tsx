@@ -4,6 +4,7 @@ import "./globals.css";
 import { Providers } from "./providers";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ClarityAnalytics } from "@/components/ClarityAnalytics";
+import { ToastProvider } from "@/components/Toast";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -81,7 +82,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <ClarityAnalytics />
-          <Providers>{children}</Providers>
+          <ToastProvider><Providers>{children}</Providers></ToastProvider>
         </ThemeProvider>
       </body>
     </html>
