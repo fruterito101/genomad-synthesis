@@ -72,37 +72,6 @@ export function HowToStart() {
           className="mt-16 p-6 rounded-xl text-center"
           style={{ 
             backgroundColor: 'var(--color-bg-tertiary)',
-            border: '1px solid var(--color-border)'
-          }}
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5, delay: 0.6 }}
-        >
-          <p style={{ color: 'var(--color-text-secondary)' }}>
-            💡 <span className="font-semibold">Tip:</span> Tu agente analiza tus archivos 
-            <code 
-              className="mx-1 px-2 py-1 rounded text-sm"
-              style={{ backgroundColor: 'var(--color-bg-primary)' }}
-            >
-              SOUL.md
-            </code>
-            <code 
-              className="mx-1 px-2 py-1 rounded text-sm"
-              style={{ backgroundColor: 'var(--color-bg-primary)' }}
-            >
-              IDENTITY.md
-            </code>
-            y
-            <code 
-              className="mx-1 px-2 py-1 rounded text-sm"
-              style={{ backgroundColor: 'var(--color-bg-primary)' }}
-            >
-              TOOLS.md
-            </code>
-            para calcular tus 8 traits fundamentales.
-          </p>
-        </motion.div>
       </div>
     </section>
   );
