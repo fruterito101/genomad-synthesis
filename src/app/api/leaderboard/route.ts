@@ -1,39 +1,62 @@
 // src/app/api/leaderboard/route.ts
-// Ticket 7.10: Top agentes por fitness (público)
-
 import { NextRequest, NextResponse } from "next/server";
-import { getTopAgentsByFitness } from "@/lib/db";
+import { getDb } from "@/lib/db/client";
+import { agents, users } from "@/lib/db/schema";
+import { desc, eq } from "drizzle-orm";
 
 export async function GET(request: NextRequest) {
   try {
-    // 1. Obtener limit del query (default 50)
-    const limit = parseInt(request.nextUrl.searchParams.get("limit") || "50");
-    const safeLimit = Math.min(Math.max(1, limit), 100);
+    const db = getDb();
+    const limit = Math.min(parseInt(request.nextUrl.searchParams.get("limit") || "20"), 100);
 
-    // 2. Query top agentes
-    const topAgents = await getTopAgentsByFitness(safeLimit);
+    // Get all agents with owner info
+    const allAgents = await db
+      .select({
+        id: agents.id,
+        name: agents.name,
+        botUsername: agents.botUsername,
+        fitness: agents.fitness,
+        generation: agents.generation,
+        isActive: agents.isActive,
+        traits: agents.traits,
+        dnaHash: agents.dnaHash,
+        tokenId: agents.tokenId,
+        ownerId: agents.ownerId,
+      })
+      .from(agents)
+      .orderBy(desc(agents.fitness))
+      .limit(limit);
 
-    // 3. Formatear respuesta
-    const leaderboard = topAgents.map((agent, index) => ({
-      rank: index + 1,
+    // Get owner wallets
+    const ownerIds = [...new Set(allAgents.map(a => a.ownerId))];
+    const owners = ownerIds.length > 0 
+      ? await db.select({ id: users.id, wallet: users.walletAddress }).from(users)
+      : [];
+    
+    const ownerMap = new Map(owners.map(o => [o.id, o.wallet]));
+
+    const agentsWithOwners = allAgents.map(agent => ({
       id: agent.id,
       name: agent.name,
+      botUsername: agent.botUsername,
       fitness: agent.fitness,
       generation: agent.generation,
-      dnaHashShort: agent.dnaHash.slice(0, 8),
-      minted: !!agent.tokenId,
+      isActive: agent.isActive,
+      traits: agent.traits || {
+        technical: 50, creativity: 50, social: 50, analysis: 50,
+        empathy: 50, trading: 50, teaching: 50, leadership: 50,
+      },
+      tokenId: agent.tokenId,
+      owner: agent.ownerId ? { wallet: ownerMap.get(agent.ownerId) || null } : null,
     }));
 
     return NextResponse.json({
-      leaderboard,
-      total: leaderboard.length,
+      agents: agentsWithOwners,
+      total: agentsWithOwners.length,
       updatedAt: new Date().toISOString(),
     });
   } catch (error) {
     console.error("Leaderboard error:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ agents: [], total: 0, updatedAt: new Date().toISOString() });
   }
 }
