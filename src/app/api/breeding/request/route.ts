@@ -7,6 +7,7 @@ import { getUserByPrivyId, createBreedingRequest } from "@/lib/db";
 import { getDb } from "@/lib/db/client";
 import { agents } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
+import { notifyBreedingRequest } from "@/lib/notifications";
 
 export async function POST(request: NextRequest) {
   try {
@@ -95,6 +96,20 @@ export async function POST(request: NextRequest) {
 
     // Si ambos padres son del mismo owner, auto-aprobar
     const autoApproved = ownsA && ownsB;
+
+    // Enviar notificación al dueño del otro agente
+    if (!autoApproved) {
+      const otherOwnerId = ownsA ? parentB.ownerId : parentA.ownerId;
+      const otherAgentName = ownsA ? parentB.name : parentA.name;
+      const initiatorName = user.displayName || user.telegramUsername || "Un usuario";
+      
+      await notifyBreedingRequest(
+        otherOwnerId,
+        initiatorName,
+        otherAgentName,
+        breedingRequest.id
+      );
+    }
 
     return NextResponse.json({
       success: true,

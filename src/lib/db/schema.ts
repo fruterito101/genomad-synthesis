@@ -389,3 +389,39 @@ export const agentAuditLog = pgTable("agent_audit_log", {
   index("idx_audit_action").on(table.action),
   index("idx_audit_time").on(table.changedAt),
 ]);
+
+// ============================================
+// NOTIFICATIONS - Sistema de notificaciones
+// ============================================
+export const notifications = pgTable("notifications", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  
+  // Destinatario
+  userId: uuid("user_id").notNull(),
+  
+  // Tipo y contenido
+  type: text("type").notNull(), // breeding_request, breeding_approved, breeding_rejected, etc.
+  title: text("title").notNull(),
+  message: text("message").notNull(),
+  
+  // Metadata (JSON con datos extra como agentId, requestId, etc.)
+  metadata: jsonb("metadata"),
+  
+  // Estado
+  read: boolean("read").default(false).notNull(),
+  readAt: timestamp("read_at"),
+  
+  // Timestamps
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => [
+  index("notifications_user_idx").on(table.userId),
+  index("notifications_read_idx").on(table.read),
+  index("notifications_created_idx").on(table.createdAt),
+]);
+
+export const notificationsRelations = relations(notifications, ({ one }) => ({
+  user: one(users, {
+    fields: [notifications.userId],
+    references: [users.id],
+  }),
+}));
