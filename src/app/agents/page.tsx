@@ -45,12 +45,12 @@ async function getAgents() {
 
 function LoadingState() {
   return (
-    <div className="min-h-screen" style={{ backgroundColor: "var(--color-bg-primary)" }}>
+    <div className="min-h-screen bg-background">
       <AppHeader />
       <main className="max-w-7xl mx-auto px-4 pt-20 sm:pt-24 pb-8 sm:pb-12">
         <div className="text-center mb-8">
           <Dna className="w-12 h-12 mx-auto animate-pulse" style={{ color: "var(--color-primary)" }} />
-          <p className="mt-4 text-sm" style={{ color: "var(--color-text-muted)" }}>
+          <p className="mt-4 text-sm text-muted-foreground">
             Cargando agentes...
           </p>
         </div>

@@ -1,85 +1,76 @@
 // src/components/LanguageSwitcher.tsx
 "use client";
 
+import { useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { motion } from "framer-motion";
-import { Globe } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Globe, ChevronDown, Check } from "lucide-react";
 
-interface LanguageSwitcherProps {
-  variant?: "button" | "dropdown" | "text";
-  showLabel?: boolean;
-  className?: string;
-}
+const languages = [
+  { code: "en", label: "English", flag: "🇺🇸" },
+  { code: "es", label: "Español", flag: "🇲🇽" },
+];
 
-export function LanguageSwitcher({ 
-  variant = "button", 
-  showLabel = false,
-  className = "" 
-}: LanguageSwitcherProps) {
-  const { i18n, t } = useTranslation();
+export function LanguageSwitcher() {
+  const { i18n } = useTranslation();
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const toggleLanguage = () => {
-    const newLang = i18n.language === "es" ? "en" : "es";
-    i18n.changeLanguage(newLang);
+  const currentLang = languages.find((l) => l.code === i18n.language) || languages[0];
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleLanguageChange = (langCode: string) => {
+    i18n.changeLanguage(langCode);
+    setIsOpen(false);
   };
 
-  const currentLang = i18n.language === "es" ? "ES" : "EN";
-  const nextLang = i18n.language === "es" ? "EN" : "ES";
-
-  if (variant === "text") {
-    return (
-      <button
-        onClick={toggleLanguage}
-        className={`flex items-center gap-2 text-sm transition-opacity hover:opacity-80 ${className}`}
-        style={{ color: "var(--color-text-secondary)" }}
-        aria-label={t("languageSwitcher.label")}
+  return (
+    <div className="relative" ref={dropdownRef}>
+      <motion.button
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-200 text-muted-foreground border border-border bg-card hover:bg-muted"
+        whileTap={{ scale: 0.95 }}
       >
         <Globe className="w-4 h-4" />
-        {i18n.language === "es" ? "Switch to English" : "Cambiar a Español"}
-      </button>
-    );
-  }
+        <span className="text-sm font-medium">{currentLang.flag}</span>
+        <ChevronDown className={`w-3 h-3 transition-transform ${isOpen ? "rotate-180" : ""}`} />
+      </motion.button>
 
-  if (variant === "dropdown") {
-    return (
-      <div className={`relative ${className}`}>
-        <motion.button
-          onClick={toggleLanguage}
-          className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all"
-          style={{ 
-            backgroundColor: "var(--color-bg-secondary)",
-            color: "var(--color-text-secondary)",
-            border: "1px solid var(--color-border)"
-          }}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          aria-label={t("languageSwitcher.label")}
-        >
-          <Globe className="w-4 h-4" style={{ color: "var(--color-primary)" }} />
-          <span>{currentLang}</span>
-          <span className="text-xs opacity-50">→ {nextLang}</span>
-        </motion.button>
-      </div>
-    );
-  }
-
-  // Default: button variant
-  return (
-    <motion.button
-      onClick={toggleLanguage}
-      className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 hover:opacity-80 ${className}`}
-      style={{ 
-        backgroundColor: "var(--color-bg-tertiary)",
-        color: "var(--color-text-secondary)",
-        border: "1px solid var(--color-border)"
-      }}
-      whileHover={{ scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
-      aria-label={t("languageSwitcher.label")}
-    >
-      {showLabel && <Globe className="w-4 h-4 inline mr-1.5" />}
-      {nextLang}
-    </motion.button>
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            className="absolute top-full right-0 mt-2 py-1 rounded-lg shadow-lg min-w-[150px] z-50 bg-card border border-border"
+            initial={{ opacity: 0, y: -10, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -10, scale: 0.95 }}
+            transition={{ duration: 0.15 }}
+          >
+            {languages.map((lang) => (
+              <button
+                key={lang.code}
+                onClick={() => handleLanguageChange(lang.code)}
+                className={`w-full flex items-center gap-3 px-4 py-2 text-sm transition-colors text-muted-foreground hover:bg-muted hover:text-foreground ${
+                  currentLang.code === lang.code ? "bg-primary/10 text-primary" : ""
+                }`}
+              >
+                <span>{lang.flag}</span>
+                <span>{lang.label}</span>
+                {currentLang.code === lang.code && <Check className="w-4 h-4 ml-auto text-primary" />}
+              </button>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 }
 

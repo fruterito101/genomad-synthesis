@@ -1,8 +1,7 @@
 @import "tailwindcss";
 
 /* ============================================
-   TAILWIND V4 THEME CONFIGURATION
-   Usando @theme para registrar colores custom
+   TAILWIND V4 THEME - SINGLE SOURCE OF TRUTH
    ============================================ */
 
 @theme {
@@ -16,7 +15,7 @@
   --radius-lg: 0.75rem;
   --radius-xl: 1rem;
   
-  /* Colors - Dark theme (Genomad default) */
+  /* Colors - Dark theme */
   --color-background: oklch(0.145 0.02 265);
   --color-foreground: oklch(0.985 0 0);
   
@@ -62,7 +61,7 @@
   --color-sidebar-border: oklch(0.25 0.02 265);
   --color-sidebar-ring: oklch(0.628 0.258 292);
   
-  /* Success/Warning */
+  /* Status colors */
   --color-success: oklch(0.65 0.2 160);
   --color-warning: oklch(0.8 0.18 85);
 }
@@ -82,7 +81,6 @@
     font-feature-settings: "rlig" 1, "calt" 1;
   }
   
-  /* Cursor pointer for buttons */
   button:not(:disabled),
   [role="button"]:not(:disabled) {
     cursor: pointer;
@@ -90,86 +88,14 @@
 }
 
 /* ============================================
-   GENOMAD LEGACY DESIGN TOKENS (for compatibility)
+   UTILITY CLASSES (using theme colors)
    ============================================ */
-
-:root {
-  /* Primary Colors */
-  --color-primary-legacy: #7B3FE4;
-  --color-primary-hover: #8B4FFF;
-  --color-primary-dark: #6B2FD4;
-  
-  /* Secondary Colors */
-  --color-secondary-legacy: #00AA93;
-  --color-secondary-hover: #00BBAA;
-  --color-secondary-dark: #009983;
-  
-  /* Accent Colors */
-  --color-accent-1: #C026FF;
-  --color-accent-2: #0B0F2F;
-  
-  /* Background */
-  --color-bg-primary: #0B0F2F;
-  --color-bg-secondary: #12173D;
-  --color-bg-tertiary: #1A1F4D;
-  
-  /* Text */
-  --color-text-primary: #FFFFFF;
-  --color-text-secondary: #A1A1AA;
-  --color-text-muted: #71717A;
-  
-  /* Borders */
-  --color-border-legacy: #2A2F5F;
-  --color-border-hover: #3A3F7F;
-  
-  /* Status */
-  --color-error: #EF4444;
-}
-
-/* ============================================
-   UTILITY CLASSES
-   ============================================ */
-
-/* Gradients */
-.gradient-primary {
-  background: linear-gradient(135deg, var(--color-primary-legacy) 0%, var(--color-accent-1) 100%);
-}
-
-.gradient-secondary {
-  background: linear-gradient(135deg, var(--color-secondary-legacy) 0%, var(--color-primary-legacy) 100%);
-}
 
 .gradient-text {
-  background: linear-gradient(135deg, var(--color-primary-legacy) 0%, var(--color-accent-1) 100%);
+  background: linear-gradient(135deg, hsl(270 70% 55%) 0%, hsl(300 80% 60%) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-}
-
-.gradient-border {
-  border: 2px solid transparent;
-  background: linear-gradient(var(--color-bg-primary), var(--color-bg-primary)) padding-box,
-              linear-gradient(135deg, var(--color-primary-legacy), var(--color-secondary-legacy)) border-box;
-}
-
-/* Glows */
-.glow-primary {
-  box-shadow: 0 0 20px rgba(123, 63, 228, 0.4);
-}
-
-.glow-secondary {
-  box-shadow: 0 0 20px rgba(0, 170, 147, 0.4);
-}
-
-.glow-accent {
-  box-shadow: 0 0 20px rgba(192, 38, 255, 0.4);
-}
-
-/* Glass effect */
-.glass {
-  background: rgba(11, 15, 47, 0.8);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
 }
 
 /* ============================================
@@ -182,25 +108,8 @@
 }
 
 @keyframes slideUp {
-  from { 
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to { 
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes slideDown {
-  from { 
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-  to { 
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes pulse {
@@ -208,146 +117,27 @@
   50% { opacity: 0.7; }
 }
 
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
-}
-
-/* Animation utilities */
-.animate-fade-in {
-  animation: fadeIn 0.5s ease-out forwards;
-}
-
-.animate-slide-up {
-  animation: slideUp 0.5s ease-out forwards;
-}
-
-.animate-slide-down {
-  animation: slideDown 0.5s ease-out forwards;
-}
-
-.animate-pulse-slow {
-  animation: pulse 2s ease-in-out infinite;
-}
-
-.animate-float {
-  animation: float 3s ease-in-out infinite;
-}
+.animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
+.animate-slide-up { animation: slideUp 0.5s ease-out forwards; }
 
 /* Stagger delays */
 .delay-100 { animation-delay: 100ms; }
 .delay-200 { animation-delay: 200ms; }
 .delay-300 { animation-delay: 300ms; }
-.delay-400 { animation-delay: 400ms; }
-.delay-500 { animation-delay: 500ms; }
 
 /* ============================================
    SCROLLBAR
    ============================================ */
 
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: var(--color-bg-secondary);
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--color-border-legacy);
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--color-border-hover);
-}
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--color-muted); }
+::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-muted-foreground); }
 
 /* ============================================
-   SMOOTH SCROLL & MISC
+   MISC
    ============================================ */
 
-html {
-  scroll-behavior: smooth;
-}
-
-::selection {
-  background: var(--color-primary-legacy);
-  color: white;
-}
-
-/* Focus states for accessibility */
-*:focus-visible {
-  outline: 2px solid var(--color-primary-legacy);
-  outline-offset: 2px;
-}
-
-/* ============================================
-   HOVER EFFECTS & POLISH
-   ============================================ */
-
-/* Button glow on hover */
-.btn-glow:hover {
-  box-shadow: 0 0 30px rgba(123, 63, 228, 0.6);
-}
-
-/* Card hover elevation */
-.card-hover {
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.card-hover:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
-}
-
-/* Link underline animation */
-.link-animated {
-  position: relative;
-}
-
-.link-animated::after {
-  content: '';
-  position: absolute;
-  bottom: -2px;
-  left: 0;
-  width: 0;
-  height: 2px;
-  background: var(--color-primary-legacy);
-  transition: width 0.3s ease;
-}
-
-.link-animated:hover::after {
-  width: 100%;
-}
-
-/* Pulse animation for CTAs */
-@keyframes pulse-glow {
-  0%, 100% {
-    box-shadow: 0 0 20px rgba(123, 63, 228, 0.4);
-  }
-  50% {
-    box-shadow: 0 0 40px rgba(123, 63, 228, 0.6);
-  }
-}
-
-.pulse-glow {
-  animation: pulse-glow 2s ease-in-out infinite;
-}
-
-/* Shimmer effect for loading */
-.shimmer {
-  background: linear-gradient(
-    90deg,
-    var(--color-bg-secondary) 0%,
-    var(--color-bg-tertiary) 50%,
-    var(--color-bg-secondary) 100%
-  );
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
-}
+html { scroll-behavior: smooth; }
+::selection { background: var(--color-primary); color: white; }
+*:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }

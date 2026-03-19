@@ -127,12 +127,10 @@ export function PendingApprovals({ getAccessToken, onActionComplete }: PendingAp
   if (loading && approvals.length === 0) {
     return (
       <div 
-        className="rounded-xl p-4 sm:p-6 mb-6"
-        style={{ backgroundColor: "var(--color-bg-secondary)" }}
       >
         <div className="flex items-center gap-2 animate-pulse">
-          <Clock className="w-5 h-5" style={{ color: "var(--color-text-muted)" }} />
-          <span style={{ color: "var(--color-text-muted)" }}>Cargando solicitudes...</span>
+          <Clock className="w-5 h-5 text-muted-foreground" />
+          <span className="text-muted-foreground">Cargando solicitudes...</span>
         </div>
       </div>
     );
@@ -144,8 +142,7 @@ export function PendingApprovals({ getAccessToken, onActionComplete }: PendingAp
 
   return (
     <motion.div
-      className="rounded-xl sm:rounded-2xl p-4 sm:p-6 mb-6 gradient-border"
-      style={{ backgroundColor: "var(--color-bg-secondary)" }}
+      className="rounded-xl sm:rounded-2xl p-4 sm:p-6 mb-6 gradient-border bg-card"
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
     >
@@ -157,8 +154,7 @@ export function PendingApprovals({ getAccessToken, onActionComplete }: PendingAp
         <div className="flex items-center gap-2">
           <AlertCircle className="w-5 h-5" style={{ color: "#F59E0B" }} />
           <h2 
-            className="text-lg font-semibold"
-            style={{ color: "var(--color-text-primary)" }}
+            className="text-lg font-semibold text-foreground"
           >
             Solicitudes Pendientes
           </h2>
@@ -178,18 +174,16 @@ export function PendingApprovals({ getAccessToken, onActionComplete }: PendingAp
               e.stopPropagation();
               fetchApprovals();
             }}
-            className="p-1.5 rounded-lg hover:opacity-80 transition-opacity"
-            style={{ backgroundColor: "var(--color-bg-tertiary)" }}
+            className="p-1.5 rounded-lg hover:opacity-80 transition-opacity bg-muted"
           >
             <RefreshCw 
-              className={`w-4 h-4 ${loading ? "animate-spin" : ""}`}
-              style={{ color: "var(--color-text-muted)" }}
+              className={`w-4 h-4 ${loading ? "animate-spin" : ""} text-muted-foreground`}
             />
           </button>
           {expanded ? (
-            <ChevronUp className="w-5 h-5" style={{ color: "var(--color-text-muted)" }} />
+            <ChevronUp className="w-5 h-5 text-muted-foreground" />
           ) : (
-            <ChevronDown className="w-5 h-5" style={{ color: "var(--color-text-muted)" }} />
+            <ChevronDown className="w-5 h-5 text-muted-foreground" />
           )}
         </div>
       </button>
@@ -216,8 +210,7 @@ export function PendingApprovals({ getAccessToken, onActionComplete }: PendingAp
             {approvals.map((approval) => (
               <motion.div
                 key={approval.id}
-                className="p-4 rounded-xl"
-                style={{ backgroundColor: "var(--color-bg-tertiary)" }}
+                className="p-4 rounded-xl bg-muted"
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 20 }}
@@ -230,21 +223,18 @@ export function PendingApprovals({ getAccessToken, onActionComplete }: PendingAp
                     </span>
                     <div>
                       <div 
-                        className="font-medium"
-                        style={{ color: "var(--color-text-primary)" }}
+                        className="font-medium text-foreground"
                       >
                         {ACTION_LABELS[approval.actionType]?.es || approval.actionType}
                       </div>
                       {approval.agent && (
                         <div 
-                          className="text-sm flex items-center gap-1"
-                          style={{ color: "var(--color-text-secondary)" }}
+                          className="text-sm flex items-center gap-1 text-muted-foreground"
                         >
                           <Dna className="w-3 h-3" />
                           {approval.agent.name}
                           <span 
-                            className="text-xs px-1.5 rounded"
-                            style={{ backgroundColor: "var(--color-bg-secondary)" }}
+                            className="text-xs px-1.5 rounded bg-card"
                           >
                             Gen {approval.agent.generation}
                           </span>
@@ -257,8 +247,8 @@ export function PendingApprovals({ getAccessToken, onActionComplete }: PendingAp
                   <div 
                     className="text-xs flex items-center gap-1 px-2 py-1 rounded-lg"
                     style={{ 
-                      backgroundColor: "var(--color-bg-secondary)",
-                      color: "var(--color-text-muted)" 
+                      backgroundColor: "hsl(var(--card))",
+                      color: "hsl(var(--muted-foreground))" 
                     }}
                   >
                     <Clock className="w-3 h-3" />
@@ -269,20 +259,18 @@ export function PendingApprovals({ getAccessToken, onActionComplete }: PendingAp
                 {/* Progress */}
                 <div className="mb-3">
                   <div className="flex items-center justify-between text-xs mb-1">
-                    <span style={{ color: "var(--color-text-muted)" }}>
+                    <span className="text-muted-foreground">
                       Aprobación: {approval.currentPercentage.toFixed(0)}% / {approval.requiredPercentage}%
                     </span>
                     <span 
-                      className="flex items-center gap-1"
-                      style={{ color: "var(--color-text-secondary)" }}
+                      className="flex items-center gap-1 text-muted-foreground"
                     >
                       <Users className="w-3 h-3" />
                       {approval.approvedBy.length} aprobado(s)
                     </span>
                   </div>
                   <div 
-                    className="h-2 rounded-full overflow-hidden"
-                    style={{ backgroundColor: "var(--color-bg-secondary)" }}
+                    className="h-2 rounded-full overflow-hidden bg-card"
                   >
                     <motion.div
                       className="h-full rounded-full"
