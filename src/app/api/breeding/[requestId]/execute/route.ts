@@ -1,5 +1,5 @@
 // src/app/api/breeding/[requestId]/execute/route.ts
-// Ticket 7.7: Ejecutar breeding aprobado
+// Ticket 7.7: Ejecutar breeding con ZK proof
 
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth/middleware";
@@ -7,8 +7,20 @@ import { getUserByPrivyId, getBreedingRequestById, createAgent } from "@/lib/db"
 import { getDb } from "@/lib/db/client";
 import { agents, breedingRequests } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
-import { GeneticEngine, calculateDNAHash } from "@/lib/genetic";
+import { GeneticEngine } from "@/lib/genetic";
 import type { AgentDNA, Traits } from "@/lib/genetic/types";
+
+// Trait order for ZK proof
+const TRAIT_ORDER = [
+  "social",
+  "technical",
+  "creativity",
+  "analysis",
+  "trading",
+  "empathy",
+  "teaching",
+  "leadership",
+] as const;
 
 export async function POST(
   request: NextRequest,
@@ -51,7 +63,7 @@ export async function POST(
       );
     }
 
-    // 5. Verificar que el usuario puede ejecutar
+    // 5. Verificar permisos
     const canExecute =
       breedingRequest.initiatorId === user.id ||
       breedingRequest.parentAOwnerId === user.id ||
@@ -107,14 +119,77 @@ export async function POST(
     // 8. Ejecutar breeding con GeneticEngine
     const engine = new GeneticEngine();
     const result = engine.breed(parentADNA, parentBDNA, {
-      crossoverType: (breedingRequest.crossoverType as "uniform" | "single" | "weighted") || "weighted",
+      crossoverType:
+        (breedingRequest.crossoverType as "uniform" | "single" | "weighted") ||
+        "weighted",
       childName: breedingRequest.childName || `child-${Date.now()}`,
     });
 
-    // 9. Guardar hijo en DB
+    // 9. Convertir traits a array para ZK proof
+    const traitsToArray = (traits: Traits): number[] =>
+      TRAIT_ORDER.map((t) => traits[t]);
+
+    const parentATraits = traitsToArray(parentA.traits as Traits);
+    const parentBTraits = traitsToArray(parentB.traits as Traits);
+    const childTraits = traitsToArray(result.child.traits);
+
+    // 10. Generar ZK proof
+    console.log("[ZK] Generating breeding proof...");
+    const zkResponse = await fetch(
+      new URL("/api/zk/prove", request.url).toString(),
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          parentA: {
+            traits: parentATraits,
+            generation: parentA.generation,
+            id: 1, // Placeholder, could use tokenId
+          },
+          parentB: {
+            traits: parentBTraits,
+            generation: parentB.generation,
+            id: 2,
+          },
+          child: {
+            traits: childTraits,
+            generation: result.child.generation,
+          },
+        }),
+      }
+    );
+
+    if (!zkResponse.ok) {
+      console.error("[ZK] Proof generation failed");
+      return NextResponse.json(
+        { error: "Failed to generate ZK proof" },
+        { status: 500 }
+      );
+    }
+
+    const zkProof = await zkResponse.json();
+    console.log("[ZK] Proof generated:", {
+      valid: zkProof.proof.isValid,
+      commitment: zkProof.proof.commitment.slice(0, 20) + "...",
+    });
+
+    if (!zkProof.proof.isValid) {
+      return NextResponse.json(
+        {
+          error: "Breeding verification failed",
+          details: "Child traits outside valid mutation range",
+        },
+        { status: 400 }
+      );
+    }
+
+    // 11. Guardar hijo en DB con commitment
     const child = await createAgent({
       ownerId: breedingRequest.initiatorId,
-      name: result.child.name || breedingRequest.childName || `child-${Date.now()}`,
+      name:
+        result.child.name ||
+        breedingRequest.childName ||
+        `child-${Date.now()}`,
       dnaHash: result.child.hash,
       traits: result.child.traits,
       generation: result.child.generation,
@@ -122,9 +197,10 @@ export async function POST(
       fitness: result.childFitness,
       parentAId: parentA.id,
       parentBId: parentB.id,
+      commitment: zkProof.proof.commitment,
     });
 
-    // 10. Actualizar breeding request status
+    // 12. Actualizar breeding request status
     await db
       .update(breedingRequests)
       .set({
@@ -143,6 +219,7 @@ export async function POST(
         traits: child.traits,
         fitness: child.fitness,
         generation: child.generation,
+        commitment: zkProof.proof.commitment,
       },
       breeding: {
         parentAFitness: result.parentAFitness,
@@ -150,6 +227,25 @@ export async function POST(
         childFitness: result.childFitness,
         improved: result.improved,
         mutationsApplied: result.mutationsApplied,
+      },
+      zkProof: {
+        isValid: zkProof.proof.isValid,
+        commitment: zkProof.proof.commitment,
+        parentIds: [zkProof.proof.parentAId, zkProof.proof.parentBId],
+        childGeneration: zkProof.proof.childGeneration,
+        mutationCount: zkProof.proof.mutationCount,
+        // Note: seal and journal available for on-chain verification
+        // sealHex: zkProof.proof.seal,
+        // journalHex: zkProof.proof.journal,
+      },
+      // Instructions for on-chain minting
+      onChain: {
+        contract: process.env.NEXT_PUBLIC_BREEDING_FACTORY_ADDRESS,
+        method: "executeBreeding(uint256 requestId, bytes32 dnaCommitment)",
+        args: {
+          dnaCommitment: zkProof.proof.commitment,
+        },
+        note: "Call this contract method to mint the child NFT on-chain",
       },
     });
   } catch (error) {
