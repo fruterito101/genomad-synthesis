@@ -6,3 +6,4 @@ export * from "./types";
 export * from "./soul-generator";
 export * from "./workspace-provisioner";
 export * from "./config-manager";
+export * from "./gateway-reload";

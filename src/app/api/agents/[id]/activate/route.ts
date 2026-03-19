@@ -16,8 +16,12 @@ import {
 import { 
   addAgentToConfig, 
   removeAgentFromConfig,
-  updateAgentBindings,
 } from "@/lib/multiagent/config-manager";
+import {
+  reloadGateway,
+  getGatewayStatus,
+  isOpenClawAvailable,
+} from "@/lib/multiagent/gateway-reload";
 import type { ActivationResult, ActivationStep, AgentChild } from "@/lib/multiagent/types";
 
 // ═══════════════════════════════════════════════════════════════════
@@ -130,7 +134,7 @@ export async function POST(
         fitness: 50,
         generation: 0,
       },
-      crossoverMask: [true, false, true, false, true, false, true, false], // Default
+      crossoverMask: [true, false, true, false, true, false, true, false],
       mutations: [0, 0, 0, 0, 0, 0, 0, 0],
     };
     
@@ -171,10 +175,36 @@ export async function POST(
     
     updateStep(step4, "success");
     
-    // Step 5: Update DB status
-    const step5 = createStep("Update database");
+    // Step 5: Reload Gateway (if available)
+    const step5 = createStep("Reload OpenClaw gateway");
     steps.push(step5);
     updateStep(step5, "running");
+    
+    const openclawAvailable = await isOpenClawAvailable();
+    
+    if (openclawAvailable) {
+      const gatewayStatus = await getGatewayStatus();
+      
+      if (gatewayStatus.running) {
+        const reloadResult = await reloadGateway();
+        
+        if (reloadResult.success) {
+          updateStep(step5, "success", reloadResult.message);
+        } else {
+          updateStep(step5, "failed", reloadResult.error);
+          // Don't fail activation - gateway reload is optional
+        }
+      } else {
+        updateStep(step5, "success", "Gateway not running - skip reload");
+      }
+    } else {
+      updateStep(step5, "success", "OpenClaw CLI not available - skip reload");
+    }
+    
+    // Step 6: Update DB status
+    const step6 = createStep("Update database");
+    steps.push(step6);
+    updateStep(step6, "running");
     
     await db
       .update(agents)
@@ -184,7 +214,7 @@ export async function POST(
       })
       .where(eq(agents.id, id));
     
-    updateStep(step5, "success");
+    updateStep(step6, "success");
     
     // Return success
     const result: ActivationResult = {
@@ -250,28 +280,49 @@ export async function DELETE(
     
     if (!configResult.success) {
       updateStep(step2, "failed", configResult.error);
-      // Continue anyway - workspace removal is more important
+      // Continue anyway
     } else {
       updateStep(step2, "success");
     }
     
-    // Step 3: Deprovision workspace
-    const step3 = createStep("Remove workspace");
+    // Step 3: Reload Gateway
+    const step3 = createStep("Reload OpenClaw gateway");
     steps.push(step3);
     updateStep(step3, "running");
+    
+    const openclawAvailable = await isOpenClawAvailable();
+    
+    if (openclawAvailable) {
+      const gatewayStatus = await getGatewayStatus();
+      
+      if (gatewayStatus.running) {
+        const reloadResult = await reloadGateway();
+        updateStep(step3, reloadResult.success ? "success" : "failed", 
+          reloadResult.success ? reloadResult.message : reloadResult.error);
+      } else {
+        updateStep(step3, "success", "Gateway not running");
+      }
+    } else {
+      updateStep(step3, "success", "OpenClaw CLI not available");
+    }
+    
+    // Step 4: Deprovision workspace
+    const step4 = createStep("Remove workspace");
+    steps.push(step4);
+    updateStep(step4, "running");
     
     const deprovisionResult = deprovisionWorkspace(id);
     
     if (!deprovisionResult.success) {
-      updateStep(step3, "failed", deprovisionResult.error);
+      updateStep(step4, "failed", deprovisionResult.error);
     } else {
-      updateStep(step3, "success");
+      updateStep(step4, "success");
     }
     
-    // Step 4: Update DB
-    const step4 = createStep("Update database");
-    steps.push(step4);
-    updateStep(step4, "running");
+    // Step 5: Update DB
+    const step5 = createStep("Update database");
+    steps.push(step5);
+    updateStep(step5, "running");
     
     await db
       .update(agents)
@@ -281,7 +332,7 @@ export async function DELETE(
       })
       .where(eq(agents.id, id));
     
-    updateStep(step4, "success");
+    updateStep(step5, "success");
     
     return NextResponse.json({
       success: true,
