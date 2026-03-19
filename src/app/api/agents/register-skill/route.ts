@@ -1,5 +1,5 @@
 // src/app/api/agents/register-skill/route.ts
-// Registro de agentes con vinculación opcional por código
+// Registro de agentes con validaciones de seguridad reforzadas (v2.0)
 
 import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/db/client";
@@ -8,43 +8,100 @@ import { calculateTotalFitness } from "@/lib/genetic";
 import { eq, or, sql, and, gt } from "drizzle-orm";
 import { v4 as uuidv4 } from "uuid";
 import { PrivyClient } from "@privy-io/server-auth";
+import { 
+  validateAgentRegistration, 
+  FITNESS_MAX, 
+  TRAIT_AVERAGE_MAX, 
+  TRAIT_EXTREME_THRESHOLD,
+  MAX_EXTREME_TRAITS 
+} from "@/lib/validations/agent";
+import { checkRateLimit, getClientIP } from "@/lib/rate-limit";
 
 const UNLINKED_OWNER = "00000000-0000-0000-0000-000000000000";
 
 export async function POST(request: NextRequest) {
   try {
+    // ═══════════════════════════════════════════════════════════
+    // 1. RATE LIMITING
+    // ═══════════════════════════════════════════════════════════
+    const ip = getClientIP(request);
+    const rateCheck = checkRateLimit(ip, "register");
+    
+    if (!rateCheck.allowed) {
+      console.warn(`🚫 Rate limited: ${ip}`);
+      return NextResponse.json({ 
+        error: "RATE_LIMITED",
+        message: `Demasiadas solicitudes. Intenta en ${Math.ceil(rateCheck.resetIn / 1000)} segundos.`,
+      }, { status: 429 });
+    }
+    
     const body = await request.json();
-    let { 
-      name, 
-      traits, 
-      dnaHash, 
-      skillCount = 0,
-      generation = 0,
-      botUsername,
-      telegramId,
-      code,
-      source = "genomad-verify-skill"
-    } = body;
-
+    
+    // ═══════════════════════════════════════════════════════════
+    // 2. VALIDACIÓN CON ZOD
+    // ═══════════════════════════════════════════════════════════
+    const validation = validateAgentRegistration(body);
+    
+    if (!validation.valid) {
+      console.warn(`❌ Validation failed:`, validation.errors);
+      return NextResponse.json({ 
+        error: "VALIDATION_ERROR",
+        message: "Datos inválidos",
+        details: validation.errors,
+      }, { status: 400 });
+    }
+    
+    let { name, traits, dnaHash, skillCount, generation, botUsername, code, source } = validation.data;
+    
+    // Limpiar datos
     name = name?.trim();
-    botUsername = botUsername?.trim();
-    code = code?.trim()?.toUpperCase();
-
-    if (!name) {
-      return NextResponse.json({ error: "Agent name is required" }, { status: 400 });
+    botUsername = botUsername?.trim() || null;
+    code = code?.trim()?.toUpperCase() || null;
+    
+    // ═══════════════════════════════════════════════════════════
+    // 3. VALIDACIÓN DE SEGURIDAD (ANTI-FORESTCITO)
+    // ═══════════════════════════════════════════════════════════
+    const traitValues = Object.values(traits).filter((v): v is number => typeof v === "number");
+    const avgTrait = traitValues.reduce((a, b) => a + b, 0) / traitValues.length;
+    const extremeTraits = traitValues.filter(v => v > TRAIT_EXTREME_THRESHOLD).length;
+    const calculatedFitness = calculateTotalFitness(traits);
+    
+    // Check 1: Fitness demasiado alto
+    if (calculatedFitness > FITNESS_MAX) {
+      console.warn(`🚨 BLOCKED: Fitness ${calculatedFitness.toFixed(1)} > ${FITNESS_MAX} for "${name}"`);
+      return NextResponse.json({ 
+        error: "SUSPICIOUS_FITNESS",
+        message: `Fitness ${calculatedFitness.toFixed(1)} excede el máximo permitido (${FITNESS_MAX}). Registro bloqueado.`,
+        blocked: true,
+        reason: "fitness_too_high",
+      }, { status: 400 });
     }
-
-    if (!traits || !dnaHash) {
-      return NextResponse.json({ error: "Traits and dnaHash are required" }, { status: 400 });
+    
+    // Check 2: Promedio de traits demasiado alto
+    if (avgTrait > TRAIT_AVERAGE_MAX) {
+      console.warn(`🚨 BLOCKED: Trait avg ${avgTrait.toFixed(1)} > ${TRAIT_AVERAGE_MAX} for "${name}"`);
+      return NextResponse.json({ 
+        error: "SUSPICIOUS_TRAITS",
+        message: `Promedio de traits (${avgTrait.toFixed(1)}) es sospechosamente alto. Registro bloqueado.`,
+        blocked: true,
+        reason: "traits_average_too_high",
+      }, { status: 400 });
     }
-
-    const requiredTraits = ["technical", "creativity", "social", "analysis", "empathy", "trading", "teaching", "leadership"];
-    for (const trait of requiredTraits) {
-      if (typeof traits[trait] !== "number") {
-        return NextResponse.json({ error: `Missing or invalid trait: ${trait}` }, { status: 400 });
-      }
+    
+    // Check 3: Demasiados traits extremos
+    if (extremeTraits > MAX_EXTREME_TRAITS) {
+      console.warn(`🚨 BLOCKED: ${extremeTraits} extreme traits for "${name}"`);
+      return NextResponse.json({ 
+        error: "MANIPULATED_TRAITS",
+        message: `Datos manipulados detectados (${extremeTraits} traits >${TRAIT_EXTREME_THRESHOLD}). Registro bloqueado.`,
+        blocked: true,
+        reason: "too_many_extreme_traits",
+      }, { status: 400 });
     }
-
+    
+    // ═══════════════════════════════════════════════════════════
+    // 4. PROCESAR CÓDIGO DE VINCULACIÓN
+    // ═══════════════════════════════════════════════════════════
     const db = getDb();
     let ownerId = UNLINKED_OWNER;
     let linkedToOwner = false;
@@ -76,9 +133,12 @@ export async function POST(request: NextRequest) {
 
       ownerId = codeRecord.userId;
       linkedToOwner = true;
-      console.log(`🔗 Code ${code} validated, linking to owner ${ownerId}`);
+      console.log(`🔗 Code ${code} validated, linking to owner ${ownerId.slice(0,8)}...`);
     }
 
+    // ═══════════════════════════════════════════════════════════
+    // 5. BUSCAR AGENTE EXISTENTE
+    // ═══════════════════════════════════════════════════════════
     const [existing] = await db
       .select()
       .from(agents)
@@ -92,9 +152,12 @@ export async function POST(request: NextRequest) {
       )
       .limit(1);
 
-    const fitness = calculateTotalFitness(traits);
+    const fitness = calculatedFitness;
     const traitsWithSkills = { ...traits, skillCount: skillCount || 0 };
 
+    // ═══════════════════════════════════════════════════════════
+    // 6. ACTUALIZAR O CREAR AGENTE
+    // ═══════════════════════════════════════════════════════════
     if (existing) {
       const newOwnerId = linkedToOwner ? ownerId : existing.ownerId;
 
@@ -108,6 +171,10 @@ export async function POST(request: NextRequest) {
           botUsername: botUsername || existing.botUsername,
           ownerId: newOwnerId,
           updatedAt: new Date(),
+          // Reset suspicious flag on update (new analysis)
+          isSuspicious: false,
+          suspiciousReason: null,
+          flaggedAt: null,
         })
         .where(eq(agents.id, existing.id));
 
@@ -143,18 +210,20 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    // Crear nuevo agente
     const newAgentId = uuidv4();
     const newAgent = {
       id: newAgentId,
       ownerId,
       name,
-      botUsername: botUsername || null,
+      botUsername,
       dnaHash,
       traits: traitsWithSkills,
       fitness,
       generation,
       lineage: [],
       isActive: true,
+      isSuspicious: false,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -194,15 +263,19 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error("Register skill error:", error);
-    return NextResponse.json({ error: "Internal server error", details: String(error) }, { status: 500 });
+    return NextResponse.json({ 
+      error: "INTERNAL_ERROR", 
+      message: "Error interno del servidor",
+      details: process.env.NODE_ENV === "development" ? String(error) : undefined,
+    }, { status: 500 });
   }
 }
 
+// GET endpoint se mantiene igual...
 export async function GET(request: NextRequest) {
   try {
     const db = getDb();
     
-    // Verificar auth opcional para isMine
     let currentUserId: string | null = null;
     const authHeader = request.headers.get("authorization");
     if (authHeader?.startsWith("Bearer ")) {
@@ -224,12 +297,9 @@ export async function GET(request: NextRequest) {
         if (user) {
           currentUserId = user.id;
         }
-      } catch (e) {
-        // Token inválido, ignorar
-      }
+      } catch (e) {}
     }
     
-    // Obtener agentes
     const allAgents = await db
       .select({
         id: agents.id,
@@ -241,12 +311,13 @@ export async function GET(request: NextRequest) {
         generation: agents.generation,
         ownerId: agents.ownerId,
         isActive: agents.isActive,
+        isSuspicious: agents.isSuspicious,
         createdAt: agents.createdAt,
       })
       .from(agents)
+      .where(eq(agents.isSuspicious, false)) // No mostrar sospechosos
       .orderBy(agents.createdAt);
 
-    // Obtener info de owners
     const ownerIds = [...new Set(allAgents.map(a => a.ownerId).filter(id => id !== UNLINKED_OWNER))];
     
     let ownersMap: Record<string, { walletAddress: string | null; displayName: string | null; telegramUsername: string | null }> = {};

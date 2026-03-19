@@ -86,6 +86,13 @@ export const agents = pgTable("agents", {
   // Status
   isActive: boolean("is_active").default(false).notNull(),
   activeHost: text("active_host"),
+
+  // Security flags
+  isSuspicious: boolean("is_suspicious").default(false).notNull(),
+  suspiciousReason: text("suspicious_reason"),
+  flaggedAt: timestamp("flagged_at"),
+  reviewedAt: timestamp("reviewed_at"),
+  reviewedBy: uuid("reviewed_by"),
   
   // Timestamps
   createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -320,3 +327,36 @@ export const actionApprovalsRelations = relations(actionApprovals, ({ one }) => 
     references: [users.id],
   }),
 }));
+
+// ============================================
+// SUSPICIOUS ALERTS - Alertas de agentes sospechosos
+// ============================================
+export const suspiciousAlerts = pgTable("suspicious_alerts", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  
+  // Datos del agente sospechoso
+  agentName: text("agent_name").notNull(),
+  reason: text("reason").notNull(),
+  
+  // Datos técnicos
+  traits: jsonb("traits"),
+  fitness: real("fitness"),
+  fileStats: jsonb("file_stats"),
+  
+  // Metadata
+  reportedAt: timestamp("reported_at").notNull(),
+  sourceIp: text("source_ip"),
+  source: text("source").default("genomad-verify-skill"),
+  
+  // Review status
+  reviewed: boolean("reviewed").default(false).notNull(),
+  reviewedBy: uuid("reviewed_by"),
+  reviewedAt: timestamp("reviewed_at"),
+  reviewNotes: text("review_notes"),
+  
+  // Timestamps
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => [
+  index("suspicious_alerts_reviewed_idx").on(table.reviewed),
+  index("suspicious_alerts_created_idx").on(table.createdAt),
+]);
