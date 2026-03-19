@@ -8,32 +8,13 @@ import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { LoginButton } from "@/components/LoginButton";
 import { AppHeader } from "@/components/AppHeader";
+import { AgentDetailModal } from "@/components/AgentDetailModal";
 import { Button } from "@/components/ui";
 import { useGMDBalance } from "@/hooks/useGMDBalance";
 import {
-  Dna,
-  Link2,
-  Copy,
-  Check,
-  Clock,
-  Sparkles,
-  Store,
-  Coins,
-  ExternalLink,
-  Activity,
-  Cpu,
-  Heart,
-  Brain,
-  TrendingUp,
-  MessageSquare,
-  GraduationCap,
-  Crown,
-  Palette,
-  ChevronRight,
-  RefreshCw,
-  Star,
-  Zap,
-  Shield,
+  Dna, Link2, Copy, Check, Clock, Sparkles, Store, Coins, ExternalLink,
+  Activity, Cpu, Heart, Brain, TrendingUp, MessageSquare, GraduationCap,
+  Crown, Palette, ChevronRight, RefreshCw, Star, Zap, Shield, Eye,
 } from "lucide-react";
 
 interface Agent {
@@ -96,6 +77,7 @@ export default function ProfilePage() {
   const [codeExpiry, setCodeExpiry] = useState<Date | null>(null);
   const [codeError, setCodeError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
 
   const fetchProfile = useCallback(async () => {
     if (!authenticated) return;
@@ -143,6 +125,14 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen" style={{ backgroundColor: "var(--color-bg-primary)" }}>
       <AppHeader />
+      
+      {/* Agent Detail Modal */}
+      <AgentDetailModal 
+        agent={selectedAgent} 
+        isOpen={!!selectedAgent} 
+        onClose={() => setSelectedAgent(null)} 
+      />
+
       <main className="max-w-7xl mx-auto px-4 pt-20 sm:pt-24 pb-8 sm:pb-12">
         {/* Profile Card */}
         <motion.div className="rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 mb-6 sm:mb-8 gradient-border" style={{ backgroundColor: "var(--color-bg-secondary)" }} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
@@ -228,7 +218,16 @@ export default function ProfilePage() {
                 const rarity = calculateRarity(agent.traits);
                 const topTraits = getTopTraits(agent.traits);
                 return (
-                  <motion.div key={agent.id} className="rounded-xl p-4 sm:p-6 card-hover" style={{ backgroundColor: "var(--color-bg-secondary)", border: "1px solid var(--color-border)" }} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 * index }} whileHover={{ borderColor: "var(--color-primary)" }}>
+                  <motion.div 
+                    key={agent.id} 
+                    className="rounded-xl p-4 sm:p-6 card-hover cursor-pointer" 
+                    style={{ backgroundColor: "var(--color-bg-secondary)", border: "1px solid var(--color-border)" }} 
+                    initial={{ opacity: 0, y: 20 }} 
+                    animate={{ opacity: 1, y: 0 }} 
+                    transition={{ delay: 0.1 * index }} 
+                    whileHover={{ borderColor: "var(--color-primary)" }}
+                    onClick={() => setSelectedAgent(agent)}
+                  >
                     <div className="flex justify-between items-start mb-3 sm:mb-4">
                       <div className="min-w-0"><h3 className="text-lg sm:text-xl font-bold truncate" style={{ color: "var(--color-text-primary)" }}>{agent.name}</h3>{agent.botUsername && <p className="text-xs sm:text-sm truncate" style={{ color: "var(--color-text-muted)" }}>@{agent.botUsername}</p>}</div>
                       <div className="text-right flex-shrink-0 ml-2"><div className="text-xl sm:text-2xl font-bold gradient-text">{agent.fitness.toFixed(1)}</div><div className="text-[10px] sm:text-xs" style={{ color: "var(--color-text-muted)" }}>FITNESS</div></div>
@@ -240,7 +239,12 @@ export default function ProfilePage() {
                     </div>
                     <div className="mb-3 sm:mb-4"><p className="text-[10px] sm:text-xs mb-1.5 sm:mb-2" style={{ color: "var(--color-text-muted)" }}>TOP TRAITS</p><div className="flex flex-wrap gap-1.5 sm:gap-2">{topTraits.map((trait) => { const Icon = traitIcons[trait.key]; const color = traitColors[trait.key]; return (<span key={trait.key} className="text-[10px] sm:text-sm px-1.5 sm:px-2 py-0.5 sm:py-1 rounded flex items-center gap-1" style={{ backgroundColor: `${color}15`, color }}><Icon className="w-2.5 h-2.5 sm:w-3 sm:h-3" />{trait.value}</span>);})}</div></div>
                     <div className="pt-3 sm:pt-4" style={{ borderTop: "1px solid var(--color-border)" }}><code className="text-[10px] sm:text-xs font-mono" style={{ color: "var(--color-text-muted)" }}>{(agent.commitment || agent.dnaHash).slice(0, 20)}...</code></div>
-                    <div className="mt-3 sm:mt-4 flex gap-2"><Link href={`/breeding?parentA=${agent.id}`} className="flex-1"><Button variant="primary" size="sm" className="w-full text-xs sm:text-sm"><Dna className="w-3 h-3 sm:w-4 sm:h-4" />Breed</Button></Link><Button variant="secondary" size="sm" className="text-xs sm:text-sm"><Activity className="w-3 h-3 sm:w-4 sm:h-4" /></Button></div>
+                    <div className="mt-3 sm:mt-4 flex gap-2">
+                      <button className="flex-1 text-xs sm:text-sm px-3 py-2 rounded-lg gradient-primary text-white font-semibold flex items-center justify-center gap-1" onClick={(e) => { e.stopPropagation(); setSelectedAgent(agent); }}><Eye className="w-3 h-3 sm:w-4 sm:h-4" />Details</button>
+                      <Link href={`/breeding?parentA=${agent.id}`} className="flex-1" onClick={(e) => e.stopPropagation()}>
+                        <Button variant="secondary" size="sm" className="w-full text-xs sm:text-sm"><Dna className="w-3 h-3 sm:w-4 sm:h-4" />Breed</Button>
+                      </Link>
+                    </div>
                   </motion.div>
                 );
               })}
