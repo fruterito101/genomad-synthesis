@@ -14,6 +14,7 @@ const AgentDetailModal = dynamicImport(
 );
 import { AgentCard } from "@/components/agent-card";
 import { PendingApprovals } from "@/components/PendingApprovals";
+import { BreedingRequests } from "@/components/BreedingRequests";
 import { CoOwnersDisplay } from "@/components/CoOwnersDisplay";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
@@ -107,6 +108,9 @@ export default function ProfilePage() {
 
           {/* Pending Approvals */}
           <PendingApprovals getAccessToken={getAccessToken} onActionComplete={fetchProfile} />
+          
+          {/* Breeding Requests - Aceptar/Rechazar */}
+          <BreedingRequests onUpdate={fetchProfile} />
 
           {/* Quick Actions */}
           <motion.div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-6 sm:mb-8" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
