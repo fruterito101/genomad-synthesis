@@ -74,7 +74,7 @@ export function Hero() {
                     className="mt-0.5 shrink-0"
                     style={{ color: 'var(--color-secondary)' }}
                   >
-<Check className="w-4 h-4" />
+<Check className="w-4 h-4" style={{ color: "var(--color-secondary)" }} />
                   </span>
                   <span style={{ color: '#ffffff' }}>
                     {feature}

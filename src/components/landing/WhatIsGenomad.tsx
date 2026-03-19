@@ -112,7 +112,7 @@ export function WhatIsGenomad() {
                   className="w-16 h-16 mx-auto mb-4 rounded-xl flex items-center justify-center"
                   style={{ backgroundColor: 'var(--color-bg-secondary)' }}
                 >
-                  <Icon className="w-8 h-8" style={{ color: 'var(--color-primary)' }} />
+                  <Icon className="w-8 h-8" style={{ color: 'var(--color-secondary)' }} />
                 </div>
                 <h3 className="text-lg font-bold mb-2" style={{ color: 'var(--color-text-primary)' }}>
                   {pillar.title}
