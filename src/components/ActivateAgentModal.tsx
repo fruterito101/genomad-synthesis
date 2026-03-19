@@ -8,12 +8,12 @@ import { usePrivy } from "@privy-io/react-auth";
 import { useAccount } from "wagmi";
 import { 
   Zap, Loader2, Check, AlertCircle, Shield, Lock, 
-  Dna, Sparkles, X, ChevronRight 
+  Dna, Sparkles, X
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { generateTraitProof, ProofResponse } from "@/lib/zk/client";
 import { prepareAgentDataForChain } from "@/lib/crypto/wallet-encryption";
-import { Traits } from "@/lib/genetic/types";
+import { Traits, TRAIT_NAMES } from "@/lib/genetic/types";
 
 interface Agent {
   id: string;
@@ -53,7 +53,6 @@ export function ActivateAgentModal({
   
   const isEs = i18n.language === "es";
 
-  // Reset cuando se abre
   useEffect(() => {
     if (isOpen) {
       setStep("ready");
@@ -62,6 +61,10 @@ export function ActivateAgentModal({
       setProgress(0);
     }
   }, [isOpen]);
+
+  const calculateFitness = (traits: Traits): number => {
+    return TRAIT_NAMES.reduce((sum, name) => sum + traits[name], 0);
+  };
 
   const handleActivate = async () => {
     if (!address || !agent.traits) {
@@ -86,7 +89,7 @@ export function ActivateAgentModal({
       setStep("encrypting");
       setProgress(50);
       
-      const encryptedData = prepareAgentDataForChain(
+      const _encryptedData = prepareAgentDataForChain(
         agent.soulContent || "# SOUL\nDefault soul content",
         agent.identityContent || "# IDENTITY\nDefault identity",
         address
@@ -97,14 +100,7 @@ export function ActivateAgentModal({
       setStep("signing");
       setProgress(75);
       
-      // TODO: Llamar al contrato con:
-      // - traits
-      // - zkProof.proof.seal
-      // - zkProof.proof.journal
-      // - encryptedData.encryptedSoul
-      // - encryptedData.encryptedIdentity
-      
-      // Por ahora simulamos
+      // TODO: Call contract with proof and encrypted data
       await new Promise(r => setTimeout(r, 1000));
       setProgress(85);
 
@@ -117,15 +113,15 @@ export function ActivateAgentModal({
       setStep("updating");
       const token = await getAccessToken();
       if (token) {
-        await fetch(\`/api/agents/\${agent.id}\`, {
+        await fetch(`/api/agents/${agent.id}`, {
           method: "PATCH",
           headers: { 
-            Authorization: \`Bearer \${token}\`, 
+            Authorization: `Bearer ${token}`, 
             "Content-Type": "application/json" 
           },
           body: JSON.stringify({ 
-            tokenId: "1", // TODO: Real tokenId
-            txHash: "0x...", // TODO: Real txHash
+            tokenId: "1",
+            txHash: "0x...",
             zkProofGenerated: true,
             encryptedOnChain: true,
           }),
@@ -145,7 +141,7 @@ export function ActivateAgentModal({
   };
 
   const getStepInfo = () => {
-    const steps = {
+    const steps: Record<Step, { icon: React.ReactNode; title: string; desc: string; color: string }> = {
       ready: {
         icon: <Zap className="w-6 h-6" />,
         title: isEs ? "Listo para Activar" : "Ready to Activate",
@@ -158,16 +154,16 @@ export function ActivateAgentModal({
         icon: <Shield className="w-6 h-6 animate-pulse" />,
         title: isEs ? "Generando Prueba ZK..." : "Generating ZK Proof...",
         desc: isEs 
-          ? "Validando traits con RISC Zero (esto prueba que tus traits son válidos sin revelar el contenido)"
-          : "Validating traits with RISC Zero (proves your traits are valid without revealing content)",
+          ? "Validando traits con RISC Zero"
+          : "Validating traits with RISC Zero",
         color: "text-blue-400",
       },
       encrypting: {
         icon: <Lock className="w-6 h-6 animate-pulse" />,
         title: isEs ? "Encriptando Datos..." : "Encrypting Data...",
         desc: isEs
-          ? "SOUL e IDENTITY se encriptan con tu wallet (solo tú podrás leerlos)"
-          : "SOUL and IDENTITY are encrypted with your wallet (only you can read them)",
+          ? "SOUL e IDENTITY se encriptan con tu wallet"
+          : "SOUL and IDENTITY are encrypted with your wallet",
         color: "text-purple-400",
       },
       signing: {
@@ -204,7 +200,7 @@ export function ActivateAgentModal({
       },
       error: {
         icon: <AlertCircle className="w-6 h-6" />,
-        title: isEs ? "Error" : "Error",
+        title: "Error",
         desc: error,
         color: "text-red-400",
       },
@@ -258,6 +254,12 @@ export function ActivateAgentModal({
                   {agent.dnaHash.slice(0, 10)}...
                 </p>
               </div>
+              {agent.traits && (
+                <div className="ml-auto text-right">
+                  <p className="text-lg font-bold text-primary">{calculateFitness(agent.traits)}</p>
+                  <p className="text-xs text-gray-400">fitness</p>
+                </div>
+              )}
             </div>
           </div>
 
@@ -268,7 +270,7 @@ export function ActivateAgentModal({
                 <motion.div
                   className="h-full bg-gradient-to-r from-primary to-accent"
                   initial={{ width: 0 }}
-                  animate={{ width: \`\${progress}%\` }}
+                  animate={{ width: `${progress}%` }}
                   transition={{ duration: 0.3 }}
                 />
               </div>
@@ -277,7 +279,7 @@ export function ActivateAgentModal({
           )}
 
           {/* Current Step */}
-          <div className={\`p-4 rounded-xl bg-black/30 border border-white/5 mb-6 \${stepInfo.color}\`}>
+          <div className={`p-4 rounded-xl bg-black/30 border border-white/5 mb-6 ${stepInfo.color}`}>
             <div className="flex items-start gap-3">
               <div className="mt-1">{stepInfo.icon}</div>
               <div>
@@ -287,12 +289,12 @@ export function ActivateAgentModal({
             </div>
           </div>
 
-          {/* ZK Proof Info (when generated) */}
-          {zkProof && step !== "ready" && (
+          {/* ZK Proof Info */}
+          {zkProof && step !== "ready" && zkProof.output && (
             <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-3 mb-6">
               <div className="flex items-center gap-2 text-emerald-400 text-sm">
                 <Check className="w-4 h-4" />
-                <span>ZK Proof: {zkProof.output?.fitness}/800 fitness, Tier {zkProof.output?.rarity}</span>
+                <span>ZK Proof: {zkProof.output.fitness}/800 fitness, Tier {zkProof.output.rarity}</span>
               </div>
             </div>
           )}
