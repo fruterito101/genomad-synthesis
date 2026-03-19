@@ -140,3 +140,12 @@ export const DEFAULT_CONFIG: Partial<RelayConfig> = {
   reconnectDelayMs: 5000,
   maxReconnectDelayMs: 60000,
 };
+
+export const RELAY_CONFIG = {
+  HEARTBEAT_INTERVAL_MS: 30000,      // Client sends heartbeat every 30s
+  HEARTBEAT_TIMEOUT_MS: 90000,       // Consider dead after 90s no heartbeat
+  MAX_CONNECTIONS_PER_USER: 3,       // Max OpenClaw instances per user
+  MAX_AGENTS_PER_CONNECTION: 10,     // Max agents per OpenClaw instance
+  RECONNECT_DELAY_MS: 5000,          // Initial reconnect delay
+  MAX_RECONNECT_DELAY_MS: 60000,     // Max reconnect delay (1 min)
+} as const;
