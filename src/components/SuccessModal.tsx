@@ -1,11 +1,19 @@
 // src/components/SuccessModal.tsx
-// Modal de celebración cuando se crea un agente
+// Modal de celebración cuando se crea un agente - Migrado a shadcn Dialog
 
 "use client";
 
-import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, X, Dna, Crown, PartyPopper, ArrowRight } from "lucide-react";
-import { Button } from "@/components/ui";
+import { motion } from "framer-motion";
+import { Sparkles, Dna, PartyPopper, ArrowRight } from "lucide-react";
+import { 
+  Button,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui";
 import Link from "next/link";
 
 interface ChildAgent {
@@ -29,6 +37,37 @@ interface SuccessModalProps {
   };
 }
 
+// Confetti component
+function Confetti() {
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      {[...Array(20)].map((_, i) => (
+        <motion.div
+          key={i}
+          className="absolute w-2 h-2 rounded-full"
+          style={{
+            backgroundColor: ["#f97316", "#8B5CF6", "#EC4899", "#10B981", "#3B82F6"][i % 5],
+            left: `${Math.random() * 100}%`,
+            top: -10,
+          }}
+          animate={{
+            y: [0, 500],
+            x: [0, (Math.random() - 0.5) * 100],
+            rotate: [0, 360 * (Math.random() > 0.5 ? 1 : -1)],
+            opacity: [1, 0],
+          }}
+          transition={{
+            duration: 2 + Math.random() * 2,
+            delay: Math.random() * 0.5,
+            repeat: Infinity,
+            repeatDelay: Math.random() * 2,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
 export function SuccessModal({ isOpen, onClose, child, breeding }: SuccessModalProps) {
   if (!child) return null;
 
@@ -39,181 +78,95 @@ export function SuccessModal({ isOpen, onClose, child, breeding }: SuccessModalP
     .slice(0, 3);
 
   return (
-    <AnimatePresence>
-      {isOpen && (
-        <>
-          {/* Backdrop */}
-          <motion.div
-            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-          />
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="sm:max-w-md bg-card overflow-hidden">
+        {/* Confetti */}
+        <Confetti />
 
-          {/* Modal */}
+        <div className="relative text-center">
+          {/* Icon */}
           <motion.div
-            className="fixed inset-0 z-50 flex items-center justify-center p-4"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            className="w-20 h-20 mx-auto mb-6 rounded-full flex items-center justify-center bg-gradient-to-br from-primary to-secondary"
+            animate={{ scale: [1, 1.1, 1], rotate: [0, 5, -5, 0] }}
+            transition={{ duration: 2, repeat: Infinity }}
           >
-            <motion.div
-              className="relative w-full max-w-md rounded-2xl overflow-hidden"
-              style={{ backgroundColor: "var(--color-bg-secondary)" }}
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.8, opacity: 0 }}
-              transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* Confetti background effect */}
-              <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                {[...Array(20)].map((_, i) => (
-                  <motion.div
-                    key={i}
-                    className="absolute w-2 h-2 rounded-full"
-                    style={{
-                      backgroundColor: ["#f97316", "#8B5CF6", "#EC4899", "#10B981", "#3B82F6"][i % 5],
-                      left: `${Math.random() * 100}%`,
-                      top: -10,
-                    }}
-                    animate={{
-                      y: [0, 500],
-                      x: [0, (Math.random() - 0.5) * 100],
-                      rotate: [0, 360 * (Math.random() > 0.5 ? 1 : -1)],
-                      opacity: [1, 0],
-                    }}
-                    transition={{
-                      duration: 2 + Math.random() * 2,
-                      delay: Math.random() * 0.5,
-                      repeat: Infinity,
-                      repeatDelay: Math.random() * 2,
-                    }}
-                  />
+            <PartyPopper className="w-10 h-10 text-white" />
+          </motion.div>
+
+          <DialogHeader className="text-center sm:text-center">
+            <DialogTitle className="text-2xl sm:text-3xl">
+              ¡Felicidades!
+            </DialogTitle>
+            <DialogDescription>
+              Tu nuevo agente ha nacido
+            </DialogDescription>
+          </DialogHeader>
+
+          {/* Agent Card */}
+          <motion.div
+            className="rounded-xl p-4 sm:p-6 my-6 bg-muted border border-border"
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.3 }}
+          >
+            <div className="flex items-center gap-4 mb-4">
+              <div className="w-14 h-14 rounded-full flex items-center justify-center bg-gradient-to-br from-primary to-accent">
+                <Dna className="w-7 h-7 text-white" />
+              </div>
+              <div className="text-left">
+                <h3 className="font-bold text-lg text-foreground">
+                  {child.name}
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  Gen {child.generation || 1}
+                </p>
+              </div>
+              <div className="ml-auto text-right">
+                <p className="text-2xl font-bold text-primary">
+                  {(child.fitness || breeding?.childFitness || 0).toFixed(1)}
+                </p>
+                <p className="text-xs text-muted-foreground">Fitness</p>
+              </div>
+            </div>
+
+            {/* Top traits */}
+            {topTraits.length > 0 && (
+              <div className="flex gap-2 flex-wrap justify-center">
+                {topTraits.map((trait) => (
+                  <span
+                    key={trait}
+                    className="px-3 py-1 rounded-full text-xs font-medium capitalize bg-background text-muted-foreground"
+                  >
+                    {trait}: {child.traits![trait]}
+                  </span>
                 ))}
               </div>
+            )}
 
-              {/* Close button */}
-              <button
-                onClick={onClose}
-                className="absolute top-4 right-4 z-10 p-2 rounded-full transition-colors"
-                style={{ color: "var(--color-text-muted)" }}
-              >
-                <X className="w-5 h-5" />
-              </button>
-
-              {/* Content */}
-              <div className="relative p-6 sm:p-8 text-center">
-                {/* Icon */}
-                <motion.div
-                  className="w-20 h-20 mx-auto mb-6 rounded-full flex items-center justify-center"
-                  style={{ background: "linear-gradient(135deg, var(--color-primary), var(--color-secondary))" }}
-                  animate={{ scale: [1, 1.1, 1], rotate: [0, 5, -5, 0] }}
-                  transition={{ duration: 2, repeat: Infinity }}
-                >
-                  <PartyPopper className="w-10 h-10 text-white" />
-                </motion.div>
-
-                {/* Title */}
-                <motion.h2
-                  className="text-2xl sm:text-3xl font-bold mb-2"
-                  style={{ color: "var(--color-text-primary)" }}
-                  initial={{ y: 20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.1 }}
-                >
-                  ¡Felicidades!
-                </motion.h2>
-
-                <motion.p
-                  className="text-sm sm:text-base mb-6"
-                  style={{ color: "var(--color-text-secondary)" }}
-                  initial={{ y: 20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.2 }}
-                >
-                  Tu nuevo agente ha nacido
-                </motion.p>
-
-                {/* Agent Card */}
-                <motion.div
-                  className="rounded-xl p-4 sm:p-6 mb-6"
-                  style={{ backgroundColor: "var(--color-bg-tertiary)", border: "1px solid var(--color-border)" }}
-                  initial={{ y: 20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.3 }}
-                >
-                  <div className="flex items-center gap-4 mb-4">
-                    <div
-                      className="w-14 h-14 rounded-full flex items-center justify-center"
-                      style={{ background: "linear-gradient(135deg, var(--color-primary), #EC4899)" }}
-                    >
-                      <Dna className="w-7 h-7 text-white" />
-                    </div>
-                    <div className="text-left">
-                      <h3 className="font-bold text-lg" style={{ color: "var(--color-text-primary)" }}>
-                        {child.name}
-                      </h3>
-                      <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>
-                        Gen {child.generation || 1}
-                      </p>
-                    </div>
-                    <div className="ml-auto text-right">
-                      <p className="text-2xl font-bold" style={{ color: "var(--color-primary)" }}>
-                        {(child.fitness || breeding?.childFitness || 0).toFixed(1)}
-                      </p>
-                      <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>Fitness</p>
-                    </div>
-                  </div>
-
-                  {/* Top traits */}
-                  {topTraits.length > 0 && (
-                    <div className="flex gap-2 flex-wrap justify-center">
-                      {topTraits.map((trait) => (
-                        <span
-                          key={trait}
-                          className="px-3 py-1 rounded-full text-xs font-medium capitalize"
-                          style={{ backgroundColor: "var(--color-bg-primary)", color: "var(--color-text-secondary)" }}
-                        >
-                          {trait}: {child.traits![trait]}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Improved badge */}
-                  {fitnessImproved && (
-                    <div className="mt-4 flex items-center justify-center gap-2">
-                      <Sparkles className="w-4 h-4" style={{ color: "#10B981" }} />
-                      <span className="text-sm font-medium" style={{ color: "#10B981" }}>
-                        ¡Fitness mejorado vs padres!
-                      </span>
-                    </div>
-                  )}
-                </motion.div>
-
-                {/* Actions */}
-                <motion.div
-                  className="flex flex-col sm:flex-row gap-3"
-                  initial={{ y: 20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.4 }}
-                >
-                  <Button variant="secondary" className="flex-1" onClick={onClose}>
-                    Seguir criando
-                  </Button>
-                  <Link href="/profile" className="flex-1">
-                    <Button variant="primary" className="w-full">
-                      Ver en Perfil <ArrowRight className="w-4 h-4 ml-2" />
-                    </Button>
-                  </Link>
-                </motion.div>
+            {/* Improved badge */}
+            {fitnessImproved && (
+              <div className="mt-4 flex items-center justify-center gap-2">
+                <Sparkles className="w-4 h-4 text-emerald-500" />
+                <span className="text-sm font-medium text-emerald-500">
+                  ¡Fitness mejorado vs padres!
+                </span>
               </div>
-            </motion.div>
+            )}
           </motion.div>
-        </>
-      )}
-    </AnimatePresence>
+
+          {/* Actions */}
+          <DialogFooter className="flex-col sm:flex-row gap-3">
+            <Button variant="outline" className="flex-1" onClick={onClose}>
+              Seguir criando
+            </Button>
+            <Link href="/profile" className="flex-1">
+              <Button className="w-full">
+                Ver en Perfil <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            </Link>
+          </DialogFooter>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
