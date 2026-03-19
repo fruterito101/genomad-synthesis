@@ -1,7 +1,10 @@
 /**
- * Pusher React Hook
+ * Pusher React Hook - v2 with Connection Management
  * 
- * Connects to Pusher and handles real-time events.
+ * Features:
+ * - Auto-disconnect on tab close
+ * - Inactivity detection
+ * - Capacity checking
  */
 
 'use client';
@@ -33,7 +36,11 @@ export interface PusherState {
   connecting: boolean;
   error: string | null;
   socketId: string | null;
+  atCapacity: boolean;
 }
+
+// Config
+const ACTIVITY_INTERVAL_MS = 5 * 60 * 1000; // Send heartbeat every 5 min
 
 // Singleton Pusher instance
 let pusherInstance: Pusher | null = null;
@@ -43,9 +50,6 @@ function getPusher(): Pusher {
     pusherInstance = new Pusher(process.env.NEXT_PUBLIC_PUSHER_KEY!, {
       cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER!,
       authEndpoint: '/api/pusher/auth',
-      auth: {
-        headers: {},
-      },
     });
   }
   return pusherInstance;
@@ -58,9 +62,11 @@ export function usePusher() {
     connecting: false,
     error: null,
     socketId: null,
+    atCapacity: false,
   });
   
   const channelRef = useRef<Channel | null>(null);
+  const activityInterval = useRef<ReturnType<typeof setInterval> | null>(null);
   const handlersRef = useRef<{
     onProvision?: (data: ProvisionAgentEvent) => void;
     onDeprovision?: (data: DeprovisionAgentEvent) => void;
@@ -69,6 +75,59 @@ export function usePusher() {
   }>({});
 
   const userId = user?.id;
+
+  // Send heartbeat to server
+  const sendHeartbeat = useCallback(async () => {
+    if (!userId) return;
+    
+    try {
+      await fetch('/api/relay/capacity', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'heartbeat', userId }),
+      });
+    } catch (error) {
+      console.error('[Pusher] Heartbeat failed:', error);
+    }
+  }, [userId]);
+
+  // Disconnect from server
+  const disconnectFromServer = useCallback(async () => {
+    if (!userId) return;
+    
+    try {
+      await fetch('/api/relay/capacity', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'disconnect', userId }),
+      });
+    } catch (error) {
+      console.error('[Pusher] Disconnect failed:', error);
+    }
+  }, [userId]);
+
+  // Register connection with server
+  const registerWithServer = useCallback(async (socketId: string) => {
+    if (!userId) return false;
+    
+    try {
+      const res = await fetch('/api/relay/capacity', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'register', userId, socketId }),
+      });
+      
+      if (res.status === 429) {
+        setState(s => ({ ...s, atCapacity: true, error: 'Platform at capacity' }));
+        return false;
+      }
+      
+      return res.ok;
+    } catch (error) {
+      console.error('[Pusher] Register failed:', error);
+      return false;
+    }
+  }, [userId]);
 
   useEffect(() => {
     if (!userId) return;
@@ -84,20 +143,40 @@ export function usePusher() {
     setState(s => ({ ...s, connecting: true }));
 
     // Connection state handlers
-    pusher.connection.bind('connected', () => {
+    pusher.connection.bind('connected', async () => {
       console.log('[Pusher] Connected');
-      setState(s => ({
-        ...s,
-        connected: true,
-        connecting: false,
-        error: null,
-        socketId: pusher.connection.socket_id,
-      }));
+      const socketId = pusher.connection.socket_id;
+      
+      // Register with our server
+      const registered = await registerWithServer(socketId);
+      
+      if (registered) {
+        setState(s => ({
+          ...s,
+          connected: true,
+          connecting: false,
+          error: null,
+          socketId,
+          atCapacity: false,
+        }));
+        
+        // Start activity heartbeat
+        activityInterval.current = setInterval(sendHeartbeat, ACTIVITY_INTERVAL_MS);
+      } else {
+        // Disconnect from Pusher if we couldn't register
+        pusher.disconnect();
+      }
     });
 
     pusher.connection.bind('disconnected', () => {
       console.log('[Pusher] Disconnected');
       setState(s => ({ ...s, connected: false }));
+      
+      // Stop activity heartbeat
+      if (activityInterval.current) {
+        clearInterval(activityInterval.current);
+        activityInterval.current = null;
+      }
     });
 
     pusher.connection.bind('error', (error: any) => {
@@ -143,13 +222,39 @@ export function usePusher() {
       handlersRef.current.onError?.(data);
     });
 
+    // Handle tab close / page unload
+    const handleBeforeUnload = () => {
+      disconnectFromServer();
+    };
+    
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    
+    // Handle visibility change (tab switch)
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        sendHeartbeat();
+      }
+    };
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
     // Cleanup
     return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      
+      if (activityInterval.current) {
+        clearInterval(activityInterval.current);
+      }
+      
       channel.unbind_all();
       pusher.unsubscribe(channelName);
       channelRef.current = null;
+      
+      // Disconnect from server
+      disconnectFromServer();
     };
-  }, [userId]);
+  }, [userId, registerWithServer, sendHeartbeat, disconnectFromServer]);
 
   // Register event handlers
   const onProvision = useCallback((handler: (data: ProvisionAgentEvent) => void) => {
@@ -168,14 +273,16 @@ export function usePusher() {
     handlersRef.current.onError = handler;
   }, []);
 
-  // Disconnect
+  // Manual disconnect
   const disconnect = useCallback(() => {
     if (channelRef.current && userId) {
       const pusher = getPusher();
       pusher.unsubscribe(`private-user-${userId}`);
+      pusher.disconnect();
       channelRef.current = null;
+      disconnectFromServer();
     }
-  }, [userId]);
+  }, [userId, disconnectFromServer]);
 
   return {
     ...state,
