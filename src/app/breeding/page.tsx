@@ -51,7 +51,7 @@ function BreedingContent() {
         fetch("/api/agents", { headers: { Authorization: `Bearer ${token}` } }),
         fetch("/api/breeding/requests", { headers: { Authorization: `Bearer ${token}` } }),
       ]);
-      if (agentsRes.ok) { const data = await agentsRes.json(); setAllAgents(data.agents || []); setMyAgents(data.agents || []); // All agents from /api/agents are mine }
+      if (agentsRes.ok) { const data = await agentsRes.json(); setAllAgents(data.agents || []); setMyAgents(data.agents || []); }
       if (requestsRes.ok) { const reqData = await requestsRes.json(); setPendingRequests(reqData.requests || []); }
     } catch (err) { console.error(err); } finally { setLoading(false); }
   }, [authenticated, getAccessToken]);
