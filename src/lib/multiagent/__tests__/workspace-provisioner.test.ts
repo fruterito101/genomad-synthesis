@@ -2,7 +2,7 @@
 // WORKSPACE PROVISIONER TESTS
 // ═══════════════════════════════════════════════════════════════════
 
-import { describe, it, expect, beforeAll, afterAll } from "bun:test";
+import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { existsSync, rmSync } from "fs";
 import { join } from "path";
 import {

@@ -2,7 +2,7 @@
 // CONFIG MANAGER TESTS
 // ═══════════════════════════════════════════════════════════════════
 
-import { describe, it, expect } from "bun:test";
+import { describe, it, expect } from "vitest";
 import {
   readConfig,
   agentExistsInConfig,

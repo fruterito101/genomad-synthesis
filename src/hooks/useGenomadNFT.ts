@@ -13,13 +13,13 @@ import { useCallback } from "react";
  * Register a new agent on-chain
  */
 export function useRegisterAgent() {
-  const { writeContract, data: hash, isPending, error, reset } = useWriteContract();
+  const { writeContract, writeContractAsync, data: hash, isPending, error, reset } = useWriteContract();
   
   const { isLoading: isConfirming, isSuccess, data: receipt } = useWaitForTransactionReceipt({
     hash,
   });
 
-  const register = useCallback(async (dnaCommitment: `0x${string}`) => {
+  const register = useCallback((dnaCommitment: `0x${string}`) => {
     writeContract({
       address: CONTRACTS.genomadNFT as `0x${string}`,
       abi: GENOMAD_NFT_ABI,
@@ -28,12 +28,23 @@ export function useRegisterAgent() {
     });
   }, [writeContract]);
 
+  const registerAsync = useCallback(async (dnaCommitment: `0x${string}`) => {
+    return writeContractAsync({
+      address: CONTRACTS.genomadNFT as `0x${string}`,
+      abi: GENOMAD_NFT_ABI,
+      functionName: "registerAgent",
+      args: [dnaCommitment],
+    });
+  }, [writeContractAsync]);
+
   return {
     register,
+    registerAsync,
     hash,
     isPending,
     isConfirming,
     isSuccess,
+    isError: !!error,
     receipt,
     error,
     reset,
@@ -44,13 +55,13 @@ export function useRegisterAgent() {
  * Activate an agent (owner only)
  */
 export function useActivateAgent() {
-  const { writeContract, data: hash, isPending, error, reset } = useWriteContract();
+  const { writeContract, writeContractAsync, data: hash, isPending, error, reset } = useWriteContract();
   
   const { isLoading: isConfirming, isSuccess, data: receipt } = useWaitForTransactionReceipt({
     hash,
   });
 
-  const activate = useCallback(async (tokenId: bigint) => {
+  const activate = useCallback((tokenId: bigint) => {
     writeContract({
       address: CONTRACTS.genomadNFT as `0x${string}`,
       abi: GENOMAD_NFT_ABI,
@@ -59,12 +70,23 @@ export function useActivateAgent() {
     });
   }, [writeContract]);
 
+  const activateAsync = useCallback(async (tokenId: bigint) => {
+    return writeContractAsync({
+      address: CONTRACTS.genomadNFT as `0x${string}`,
+      abi: GENOMAD_NFT_ABI,
+      functionName: "activateAgent",
+      args: [tokenId],
+    });
+  }, [writeContractAsync]);
+
   return {
     activate,
+    activateAsync,
     hash,
     isPending,
     isConfirming,
     isSuccess,
+    isError: !!error,
     receipt,
     error,
     reset,
@@ -75,13 +97,13 @@ export function useActivateAgent() {
  * Deactivate an agent (owner only)
  */
 export function useDeactivateAgent() {
-  const { writeContract, data: hash, isPending, error, reset } = useWriteContract();
+  const { writeContract, writeContractAsync, data: hash, isPending, error, reset } = useWriteContract();
   
   const { isLoading: isConfirming, isSuccess, data: receipt } = useWaitForTransactionReceipt({
     hash,
   });
 
-  const deactivate = useCallback(async (tokenId: bigint) => {
+  const deactivate = useCallback((tokenId: bigint) => {
     writeContract({
       address: CONTRACTS.genomadNFT as `0x${string}`,
       abi: GENOMAD_NFT_ABI,
@@ -90,12 +112,23 @@ export function useDeactivateAgent() {
     });
   }, [writeContract]);
 
+  const deactivateAsync = useCallback(async (tokenId: bigint) => {
+    return writeContractAsync({
+      address: CONTRACTS.genomadNFT as `0x${string}`,
+      abi: GENOMAD_NFT_ABI,
+      functionName: "deactivateAgent",
+      args: [tokenId],
+    });
+  }, [writeContractAsync]);
+
   return {
     deactivate,
+    deactivateAsync,
     hash,
     isPending,
     isConfirming,
     isSuccess,
+    isError: !!error,
     receipt,
     error,
     reset,
@@ -106,13 +139,13 @@ export function useDeactivateAgent() {
  * Transfer an agent to another address
  */
 export function useTransferAgent() {
-  const { writeContract, data: hash, isPending, error, reset } = useWriteContract();
+  const { writeContract, writeContractAsync, data: hash, isPending, error, reset } = useWriteContract();
   
   const { isLoading: isConfirming, isSuccess, data: receipt } = useWaitForTransactionReceipt({
     hash,
   });
 
-  const transfer = useCallback(async (
+  const transfer = useCallback((
     from: `0x${string}`,
     to: `0x${string}`,
     tokenId: bigint
@@ -125,12 +158,27 @@ export function useTransferAgent() {
     });
   }, [writeContract]);
 
+  const transferAsync = useCallback(async (
+    from: `0x${string}`,
+    to: `0x${string}`,
+    tokenId: bigint
+  ) => {
+    return writeContractAsync({
+      address: CONTRACTS.genomadNFT as `0x${string}`,
+      abi: GENOMAD_NFT_ABI,
+      functionName: "transferFrom",
+      args: [from, to, tokenId],
+    });
+  }, [writeContractAsync]);
+
   return {
     transfer,
+    transferAsync,
     hash,
     isPending,
     isConfirming,
     isSuccess,
+    isError: !!error,
     receipt,
     error,
     reset,

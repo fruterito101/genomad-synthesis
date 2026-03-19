@@ -2,7 +2,7 @@
 // SOUL GENERATOR TESTS
 // ═══════════════════════════════════════════════════════════════════
 
-import { describe, it, expect } from "bun:test";
+import { describe, it, expect } from "vitest";
 import { 
   generateSoul, 
   generateIdentity,
