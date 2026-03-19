@@ -137,7 +137,7 @@ export function AgentCard({
       const dnaCommitment = (agent.commitment || `0x${agent.dnaHash}`) as `0x${string}`
       
       // Register on-chain
-      const txHash = await registerAsync(dnaCommitment)
+      const { txHash, tokenId } = await registerAsync(dnaCommitment)
       setActivationStatus("confirming")
       
       // Update in our API
@@ -150,13 +150,13 @@ export function AgentCard({
               Authorization: `Bearer ${token}`,
               "Content-Type": "application/json",
             },
-            body: JSON.stringify({ txHash }),
+            body: JSON.stringify({ txHash, tokenId }),
           })
         }
       }
       
       setActivationStatus("done")
-      onActivated?.(txHash, txHash)
+      onActivated?.(tokenId || "", txHash || "")
       
       // Reload page to show updated state
       setTimeout(() => window.location.reload(), 2000)
