@@ -89,7 +89,7 @@ export function Hero() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.8 }}
             >
-              <Button variant="primary" size="md" href="/dashboard" className="w-full sm:w-auto" style={{ background: "var(--color-primary)" }}>
+              <Button variant="primary" size="md" href="/dashboard" className="w-full sm:w-auto !bg-[var(--color-primary)]">
                 Activación
               </Button>
               <Button variant="secondary" size="md" href="#about" className="w-full sm:w-auto">
