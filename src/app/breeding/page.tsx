@@ -1,5 +1,6 @@
 "use client"
 import dynamic from "next/dynamic";
+import { BreedingSkeleton } from "@/components/skeletons";
 import { Dna } from "lucide-react";
 
 // Dynamic import with SSR disabled to avoid WagmiProvider issues during prerender

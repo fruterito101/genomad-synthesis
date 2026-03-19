@@ -1,4 +1,5 @@
 "use client"
+import { DashboardSkeleton, AgentCardSkeleton, StatsCardSkeleton } from "@/components/skeletons";
 export const dynamic = "force-dynamic"
 
 import { useEffect, useState, useCallback } from "react"

@@ -1,5 +1,6 @@
 "use client"
 import dynamicImport from "next/dynamic";
+import { ProfileSkeleton, AgentCardSkeleton } from "@/components/skeletons";
 export const dynamic = "force-dynamic";
 
 import { useEffect, useState, useCallback } from "react";
