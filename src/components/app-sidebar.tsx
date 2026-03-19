@@ -5,6 +5,7 @@ import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { usePrivy } from "@privy-io/react-auth"
 import { useTranslation } from "react-i18next"
+import { NotificationBell } from "@/components/NotificationBell"
 import {
   LayoutDashboard,
   Dna,
@@ -115,6 +116,9 @@ export function AppSidebar() {
         <SidebarMenu>
           {user && (
             <>
+              <SidebarMenuItem className="flex justify-center py-2">
+                <NotificationBell />
+              </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
                   <Link href="/profile">
