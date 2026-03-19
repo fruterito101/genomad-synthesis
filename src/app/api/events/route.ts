@@ -1,78 +1,83 @@
 // src/app/api/events/route.ts
-// API para controlar el event listener (admin only)
+// API para obtener eventos del blockchain (polling approach)
 
 import { NextRequest, NextResponse } from "next/server";
-import { getEventListener, startEventListener, stopEventListener } from "@/lib/blockchain/events";
+import { 
+  getLatestBlock, 
+  getAllEvents,
+  getAgentRegisteredEvents,
+  getTransferEvents,
+} from "@/lib/blockchain/events";
 
-// GET - Status del listener
-export async function GET() {
+// GET - Get recent events
+export async function GET(request: NextRequest) {
   try {
-    const listener = getEventListener();
-    const status = listener.getStatus();
+    const { searchParams } = new URL(request.url);
+    const blocksBack = searchParams.get("blocks") || "100";
+    const eventType = searchParams.get("type"); // agentRegistered, transfer, breeding
+    
+    const latestBlock = await getLatestBlock();
+    const fromBlock = latestBlock - BigInt(blocksBack);
+    
+    let events;
+    
+    if (eventType === "agentRegistered") {
+      events = await getAgentRegisteredEvents(fromBlock, latestBlock);
+    } else if (eventType === "transfer") {
+      events = await getTransferEvents(fromBlock, latestBlock);
+    } else {
+      // Get all events
+      events = await getAllEvents(fromBlock, latestBlock);
+    }
     
     return NextResponse.json({
       success: true,
-      listener: status,
+      fromBlock: fromBlock.toString(),
+      toBlock: latestBlock.toString(),
+      events,
     });
+    
   } catch (error) {
-    console.error("Get listener status error:", error);
+    console.error("Get events error:", error);
     return NextResponse.json(
-      { error: "Failed to get listener status" },
+      { error: error instanceof Error ? error.message : "Unknown error" },
       { status: 500 }
     );
   }
 }
 
-// POST - Start/stop listener
+// POST - Fetch events for specific block range
 export async function POST(request: NextRequest) {
   try {
-    // TODO: Add admin auth check
-    const adminKey = request.headers.get("x-admin-key");
-    if (adminKey !== process.env.ADMIN_SECRET_KEY) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const body = await request.json();
-    const { action, network } = body as {
-      action: "start" | "stop" | "restart";
-      network?: "testnet" | "mainnet";
+    const { fromBlock, toBlock } = body as {
+      fromBlock: string;
+      toBlock?: string;
     };
-
-    switch (action) {
-      case "start":
-        const listener = startEventListener({ network: network || "testnet" });
-        return NextResponse.json({
-          success: true,
-          message: "Event listener started",
-          status: listener.getStatus(),
-        });
-
-      case "stop":
-        stopEventListener();
-        return NextResponse.json({
-          success: true,
-          message: "Event listener stopped",
-        });
-
-      case "restart":
-        stopEventListener();
-        const newListener = startEventListener({ network: network || "testnet" });
-        return NextResponse.json({
-          success: true,
-          message: "Event listener restarted",
-          status: newListener.getStatus(),
-        });
-
-      default:
-        return NextResponse.json(
-          { error: "Invalid action. Use: start, stop, restart" },
-          { status: 400 }
-        );
+    
+    if (!fromBlock) {
+      return NextResponse.json(
+        { error: "fromBlock required" },
+        { status: 400 }
+      );
     }
+    
+    const from = BigInt(fromBlock);
+    const to = toBlock ? BigInt(toBlock) : await getLatestBlock();
+    
+    const events = await getAllEvents(from, to);
+    
+    return NextResponse.json({
+      success: true,
+      fromBlock: from.toString(),
+      toBlock: to.toString(),
+      events,
+    });
+    
   } catch (error) {
-    console.error("Event listener control error:", error);
+    console.error("Fetch events error:", error);
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: error instanceof Error ? error.message : "Unknown error" },
       { status: 500 }
     );
   }

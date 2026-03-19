@@ -1,4 +1,5 @@
 // src/lib/blockchain/events/index.ts
-export * from "./types";
-export * from "./handlers";
+// Export event listener and handlers
+
 export * from "./listener";
+export * from "./handlers";
