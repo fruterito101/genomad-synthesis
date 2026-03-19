@@ -99,7 +99,7 @@ export async function POST(request: NextRequest) {
       parentBOwnerId: parentB.ownerId,
       childName: childName || `child-${Date.now()}`,
       crossoverType: crossoverType || "weighted",
-      status: "pending",
+      status: (ownsA && ownsB) ? "approved" : "pending",
       // Auto-aprobar el lado del iniciador
       parentAApproved: ownsA,
       parentAApprovedAt: ownsA ? new Date() : null,
