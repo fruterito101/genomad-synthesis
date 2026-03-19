@@ -6,19 +6,21 @@
 
 [![Deploy](https://img.shields.io/badge/Deploy-Vercel-black)](https://genomad.vercel.app)
 [![Chain](https://img.shields.io/badge/Chain-Monad%20Testnet-purple)](https://testnet.monadexplorer.com)
-[![Token](https://img.shields.io/badge/Token-$GMD-green)](https://testnet.nad.fun/token/0x03DD45bA22F57b715a2F30C3C945E57DA0AC7777)
+[![Tests](https://img.shields.io/badge/Tests-131%2B%20passing-green)]()
+[![License](https://img.shields.io/badge/License-MIT-blue)]()
 
 ---
 
-## 🔗 Smart Contracts (Monad Testnet)
+## 📑 Tabla de Contenidos
 
-| Contrato | Address | Explorer |
-|----------|---------|----------|
-| **GenomadNFT** | `0x9f20494A0FbC929adAC553f4A2FCFa7D2b448Cf0` | [Ver →](https://testnet.monadexplorer.com/address/0x9f20494A0FbC929adAC553f4A2FCFa7D2b448Cf0) |
-| **BreedingFactory** | `0x72D60f32185B67606a533dc28DeC3f88E05788De` | [Ver →](https://testnet.monadexplorer.com/address/0x72D60f32185B67606a533dc28DeC3f88E05788De) |
-| **$GMD Token** | `0x03DD45bA22F57b715a2F30C3C945E57DA0AC7777` | [nad.fun →](https://testnet.nad.fun/token/0x03DD45bA22F57b715a2F30C3C945E57DA0AC7777) |
-
-**Network:** Monad Testnet (Chain ID: 10143) | **RPC:** `https://testnet-rpc.monad.xyz`
+- [¿Qué es Genomad?](#-qué-es-genomad)
+- [Smart Contracts](#-smart-contracts)
+- [Quick Start](#-quick-start)
+- [Arquitectura](#-arquitectura)
+- [API Reference](#-api-reference)
+- [Sistema Genético](#-sistema-genético)
+- [ZK Proofs](#-zk-proofs)
+- [Contributing](#-contributing)
 
 ---
 
@@ -26,72 +28,77 @@
 
 **Genomad** es una plataforma de breeding y evolución de agentes AI en Monad blockchain.
 
-Permite a los usuarios:
-- **Poseer** agentes AI como NFTs con DNA verificable on-chain
-- **Criar** nuevos agentes combinando dos existentes
-- **Evolucionar** agentes a través de generaciones
-- **Comerciar** agentes únicos en el marketplace
-- **Verificar** linaje y autenticidad con ZK proofs
+### Features
 
-### El Problema
-
-Los agentes AI actuales son **estáticos**. Nacen completos y mueren igual. No evolucionan, no se adaptan, no dejan legado.
-
-### La Solución
-
-Genomad introduce el **DNA digital** — un sistema genético donde los agentes pueden reproducirse, heredar características y mejorar generación tras generación.
+- 🧬 **DNA Único** — 8 traits genéticos definen la personalidad de cada agente
+- ⛓️ **On-Chain** — Agentes como NFTs con datos verificables en Monad
+- 🔐 **ZK Privacy** — Traits encriptados, proofs verifican sin revelar
+- 🧪 **Breeding** — Cruza agentes para crear nuevas generaciones
+- 📊 **Fitness** — Sistema de puntuación basado en traits
+- 🏆 **Leaderboard** — Compite por los mejores genes
 
 ---
 
-## 🧬 El Sistema Genético
+## 🔗 Smart Contracts
 
-### 8 Traits Fundamentales
+**Network:** Monad Testnet (Chain ID: 10143)
 
-Cada agente posee un DNA único con 8 traits heredables:
-
-| Trait | Descripción |
-|-------|-------------|
-| 💻 **Technical** | Capacidad de código y sistemas |
-| 🎨 **Creativity** | Pensamiento creativo e innovación |
-| 🤝 **Social** | Habilidad de interacción y networking |
-| 📊 **Analysis** | Capacidad analítica y lógica |
-| 💜 **Empathy** | Conexión emocional y comprensión |
-| 📈 **Trading** | Instinto de mercado y oportunidades |
-| 📚 **Teaching** | Capacidad de enseñar y guiar |
-| 👑 **Leadership** | Liderazgo y toma de decisiones |
-
-Cada trait tiene un valor de **0-100**, creando billones de combinaciones posibles.
-
-### Operadores Genéticos
-
-- **Crossover Ponderado** — Los traits más fuertes tienen mayor probabilidad de heredarse
-- **Mutación Gaussiana** — ±15 puntos de variación con 25% de probabilidad
-- **Auto-Ajuste** — El sistema aprende de cada breeding
+| Contrato | Address | Descripción |
+|----------|---------|-------------|
+| **GenomadNFT** | `0x190fd355ED38e82a2390C07222C4BcB4DbC4cD20` | NFT principal de agentes |
+| **BreedingFactory** | `0x2703fb336139292c7ED854061072e316727ED7fA` | Lógica de breeding |
+| **TraitVerifier** | `0xaccaE8B19AD67df4Ce91638855c9B41A5Da90be3` | Verificación ZK on-chain |
 
 ---
 
 ## 🚀 Quick Start
 
 ### Requisitos
+
 - Node.js 20+
-- Bun (opcional, recomendado)
+- Bun 1.0+ (o npm/pnpm)
+- PostgreSQL (o Neon)
 
 ### Instalación
 
 ```bash
+# Clonar repo
 git clone https://github.com/fruterito101/genomad.git
 cd genomad
-npm install
+
+# Instalar dependencias
+bun install
+
+# Configurar variables de entorno
 cp .env.example .env.local
-npm run dev
+
+# Migrar base de datos
+bun run db:push
+
+# Iniciar desarrollo
+bun run dev
 ```
 
 ### Variables de Entorno
 
 ```env
-NEXT_PUBLIC_PRIVY_APP_ID=your_privy_app_id
-DATABASE_URL=your_database_url
-DEPLOYER_PRIVATE_KEY=your_deployer_key
+# Database
+DATABASE_URL="postgresql://..."
+
+# Auth (Privy)
+NEXT_PUBLIC_PRIVY_APP_ID="..."
+PRIVY_APP_SECRET="..."
+
+# Blockchain
+NEXT_PUBLIC_CHAIN_ID="10143"
+PRIVATE_KEY="0x..."
+
+# Redis (opcional)
+UPSTASH_REDIS_REST_URL="https://..."
+UPSTASH_REDIS_REST_TOKEN="..."
+
+# Analytics (opcional)
+NEXT_PUBLIC_CLARITY_PROJECT_ID="..."
 ```
 
 ---
@@ -99,108 +106,229 @@ DEPLOYER_PRIVATE_KEY=your_deployer_key
 ## 🏗️ Arquitectura
 
 ```
-genomad/
-├── src/
-│   ├── app/                 # Next.js App Router
-│   │   ├── api/            # API Routes
-│   │   ├── dashboard/      # Dashboard page
-│   │   ├── profile/        # Profile page
-│   │   └── breeding/       # Breeding Lab
-│   ├── components/         # React components
-│   │   ├── landing/        # Landing page sections
-│   │   └── ui/             # Reusable UI components
-│   ├── lib/                # Core logic
-│   │   ├── genetic/        # Genetic engine
-│   │   ├── crypto/         # Encryption & ZK
-│   │   └── db/             # Database operations
-│   └── hooks/              # Custom React hooks
-├── contracts/              # Solidity smart contracts
-└── public/                 # Static assets
+┌─────────────────────────────────────────────────────────────┐
+│                      GENOMAD STACK                          │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│  Frontend (Next.js 16)                                       │
+│  ├── React 19 + TypeScript                                   │
+│  ├── Tailwind CSS + shadcn/ui                               │
+│  ├── Three.js (DNA visuals)                                 │
+│  └── Framer Motion (animations)                             │
+│                                                              │
+│  Backend (Next.js API Routes)                               │
+│  ├── Drizzle ORM + PostgreSQL                               │
+│  ├── Privy Auth                                             │
+│  ├── Vitest (131+ tests)                                    │
+│  └── Rate Limiting (Redis/Memory)                           │
+│                                                              │
+│  Blockchain (Monad)                                         │
+│  ├── Solidity Contracts                                     │
+│  ├── viem/wagmi                                             │
+│  └── ZK Proofs (RISC Zero ready)                           │
+│                                                              │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Estructura de Carpetas
+
+```
+src/
+├── app/                    # Next.js App Router
+│   ├── api/               # API Routes
+│   ├── dashboard/         # Dashboard page
+│   ├── breeding/          # Breeding page
+│   └── profile/           # Profile page
+├── components/            # React components
+│   ├── ui/               # shadcn/ui components
+│   ├── three/            # 3D components
+│   ├── skeletons/        # Loading skeletons
+│   └── landing/          # Landing page sections
+├── lib/                   # Core libraries
+│   ├── db/               # Database (Drizzle)
+│   ├── genetic/          # Genetic system
+│   ├── zk/               # ZK proofs
+│   ├── blockchain/       # Contracts + chains
+│   ├── notifications/    # Notification system
+│   └── crypto/           # Encryption
+├── hooks/                 # React hooks
+└── e2e/                   # Playwright tests
 ```
 
 ---
 
-## 🛠️ Stack Tecnológico
+## 📡 API Reference
 
-### Web3 & Blockchain
+### Agents
 
-| Tecnología | Uso |
-|------------|-----|
-| **Monad** | L1 EVM-compatible de alta performance (10k TPS) |
-| **Solidity** | Smart contracts (GenomadNFT, BreedingFactory) |
-| **ERC-721** | Standard NFT para agentes con DNA on-chain |
-| **Zero-Knowledge Proofs** | Verificación de breeding sin revelar DNA privado |
-| **Viem** | Cliente Ethereum moderno y type-safe |
-| **Wagmi** | React hooks para interacción blockchain |
-| **Privy** | Auth Web3 (wallets + social login) |
-| **nad.fun** | Bonding curve para $GMD token |
+| Endpoint | Method | Descripción |
+|----------|--------|-------------|
+| `/api/agents` | GET | Lista agentes |
+| `/api/agents` | POST | Registrar agente |
+| `/api/agents/[id]` | GET | Obtener agente |
+| `/api/agents/[id]/activate` | POST | Activar on-chain |
 
-### Cryptography
+### Breeding
 
-| Tecnología | Uso |
-|------------|-----|
-| **AES-256-GCM** | Encriptación simétrica del DNA |
-| **ECDH** | Intercambio de claves entre padres |
-| **SHA-256** | Hash de DNA para commitments on-chain |
-| **Poseidon Hash** | Hash ZK-friendly para circuitos |
+| Endpoint | Method | Descripción |
+|----------|--------|-------------|
+| `/api/breeding/request` | POST | Solicitar breeding |
+| `/api/breeding/[id]/approve` | POST | Aprobar solicitud |
+| `/api/breeding/[id]/execute` | POST | Ejecutar breeding |
 
-### Frontend & Backend
+### ZK
 
-| Capa | Tecnología |
-|------|------------|
-| **Frontend** | Next.js 16, React 19, TailwindCSS 4, Framer Motion |
-| **Backend** | Next.js API Routes, Drizzle ORM |
-| **Database** | Neon PostgreSQL (serverless) |
-| **Runtime** | Bun |
+| Endpoint | Method | Descripción |
+|----------|--------|-------------|
+| `/api/zk/prove` | GET | Documentación |
+| `/api/zk/prove` | POST | Generar proof |
 
----
+### Notifications
 
-## 📱 Features
-
-- ✅ **Dashboard Global** — Visualiza todos los agentes del ecosistema
-- ✅ **Profile** — Gestiona tus agentes y genera códigos de vinculación
-- ✅ **Breeding Lab** — Cruza dos agentes para crear descendencia
-- ✅ **Agent Details** — Visualiza los 8 traits y estadísticas
-- ✅ **$GMD Integration** — Token de utilidad del ecosistema
-- ✅ **Responsive Design** — Mobile-first
+| Endpoint | Method | Descripción |
+|----------|--------|-------------|
+| `/api/notifications` | GET | Lista notificaciones |
+| `/api/notifications/stream` | GET | SSE realtime |
 
 ---
 
-## 👥 Equipo
+## 🧬 Sistema Genético
 
-| Rol | Persona | Área |
-|-----|---------|------|
-| **Backend Lead** | Brian | Smart Contracts, Genetic Engine, Infrastructure |
-| **Frontend Lead** | Jazz | UI/UX, Design System, Content |
-| **DevRel** | Fruterito | Arquitectura, Documentación, AI Agent |
+### Los 8 Traits
+
+| Trait | Emoji | Descripción |
+|-------|-------|-------------|
+| technical | 💻 | Habilidades técnicas |
+| creativity | 🎨 | Pensamiento creativo |
+| social | 🤝 | Interacción social |
+| analysis | 📊 | Capacidad analítica |
+| empathy | 💜 | Conexión emocional |
+| trading | 📈 | Instinto financiero |
+| teaching | 📚 | Capacidad de enseñar |
+| leadership | 👑 | Liderazgo |
+
+### Breeding
+
+```
+Parent A: [80, 65, 70, 55, 60, 45, 75, 50]
+Parent B: [70, 75, 60, 65, 55, 50, 80, 45]
+                    ↓
+            Crossover + Mutation
+                    ↓
+Child:    [75, 70, 65, 60, 58, 48, 78, 48]
+```
+
+- **Crossover:** Cada trait viene de un padre (50% probabilidad)
+- **Mutation:** ±10 puntos máximo por trait
+- **Fitness:** Suma de todos los traits (max 800)
+
+### Niveles de Rareza
+
+| Nivel | Fitness | Color |
+|-------|---------|-------|
+| Common | < 320 | ⚪ |
+| Uncommon | 320-479 | 🟢 |
+| Rare | 480-599 | 🔵 |
+| Epic | 600-719 | 🟣 |
+| Legendary | 720+ | 🟡 |
 
 ---
 
-## 🏆 Hackathon
+## 🔐 ZK Proofs
 
-**Monad Moltiverse Hackathon 2026**
+Genomad usa Zero-Knowledge proofs para privacidad:
 
-- 💰 Prize Pool: $200K
-- 🎯 Track: Agent + Token
-- 🌐 Demo: [genomad.vercel.app](https://genomad.vercel.app)
+### ¿Qué se prueba?
+
+- **Trait Proof:** "Tengo estos traits" sin revelar valores
+- **Breed Proof:** "Este hijo es válido" sin revelar genética
+- **Custody Proof:** "Tengo X% custody" sin revelar shareholders
+
+### Modo Mock vs Producción
+
+```env
+# Mock (desarrollo/hackathon)
+NEXT_PUBLIC_ZK_DEV_MODE=true
+
+# Producción (RISC Zero real)
+NEXT_PUBLIC_ZK_DEV_MODE=false
+NEXT_PUBLIC_ZK_API_URL=https://zk-server.example.com
+```
 
 ---
 
-## 📜 Licencia
+## 🧪 Testing
 
-MIT
+```bash
+# Unit tests
+bun run test
+
+# E2E tests
+bun run test:e2e
+
+# E2E con UI
+bun run test:e2e:ui
+
+# Coverage
+bun run test:coverage
+```
 
 ---
 
-<div align="center">
+## 🚢 Deploy
 
-### La evolución de la IA comienza aquí
+### Vercel (Recomendado)
 
-**GENOMAD** — Gene + Monad
+1. Fork el repo
+2. Importar en Vercel
+3. Agregar variables de entorno
+4. Deploy automático en cada push
 
-🧬 Built with ❤️ by Team Genomad 🧬
+### Variables requeridas en Vercel
 
-[Demo](https://genomad.vercel.app) · [nad.fun](https://testnet.nad.fun/token/0x03DD45bA22F57b715a2F30C3C945E57DA0AC7777) · [Explorer](https://testnet.monadexplorer.com/address/0x9f20494A0FbC929adAC553f4A2FCFa7D2b448Cf0)
+- `DATABASE_URL`
+- `NEXT_PUBLIC_PRIVY_APP_ID`
+- `PRIVY_APP_SECRET`
+- `UPSTASH_REDIS_REST_URL` (opcional)
+- `UPSTASH_REDIS_REST_TOKEN` (opcional)
+- `NEXT_PUBLIC_CLARITY_PROJECT_ID` (opcional)
 
-</div>
+---
 
+## 🤝 Contributing
+
+1. Fork el repositorio
+2. Crea tu branch (`git checkout -b feature/amazing-feature`)
+3. Commit tus cambios (`git commit -m 'feat: add amazing feature'`)
+4. Push al branch (`git push origin feature/amazing-feature`)
+5. Abre un Pull Request
+
+### Convenciones de Commits
+
+- `feat:` Nueva feature
+- `fix:` Bug fix
+- `docs:` Documentación
+- `style:` Formateo
+- `refactor:` Refactor
+- `test:` Tests
+- `chore:` Mantenimiento
+
+---
+
+## 📄 License
+
+MIT License — ver [LICENSE](LICENSE) para detalles.
+
+---
+
+## 🔗 Links
+
+- **App:** [genomad.vercel.app](https://genomad.vercel.app)
+- **Docs:** [docs/](./docs/)
+- **Contracts:** [contracts/](./contracts/)
+
+---
+
+<p align="center">
+  <strong>🧬 Genomad — Tu agente, on-chain</strong>
+</p>
