@@ -98,7 +98,7 @@ export function Hero() {
             </motion.div>
           </motion.div>
 
-          {/* Visual / Video Placeholder */}
+          {/* Video Section */}
           <motion.div
             className="relative order-1 lg:order-2"
             initial={{ opacity: 0, x: 30 }}
@@ -106,34 +106,25 @@ export function Hero() {
             transition={{ duration: 0.6, delay: 0.3 }}
           >
             <div 
-              className="aspect-video rounded-xl sm:rounded-2xl flex items-center justify-center"
+              className="aspect-video rounded-xl sm:rounded-2xl overflow-hidden"
               style={{ 
                 backgroundColor: 'var(--color-bg-secondary)',
                 border: '1px solid var(--color-border)'
               }}
             >
-              {/* Placeholder for video/image */}
-              <div className="text-center p-4 sm:p-8">
-                <motion.div 
-                  className="text-6xl sm:text-8xl mb-2 sm:mb-4"
-                  animate={{ 
-                    rotateY: [0, 360],
-                  }}
-                  transition={{ 
-                    duration: 8, 
-                    repeat: Infinity, 
-                    ease: "linear" 
-                  }}
-                >
-                  🧬
-                </motion.div>
-                <p 
-                  className="text-xs sm:text-sm"
-                  style={{ color: 'var(--color-text-muted)' }}
-                >
-                  Video explicativo próximamente
-                </p>
-              </div>
+              <video
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="w-full h-full object-cover"
+              >
+                <source 
+                  src="https://res.cloudinary.com/ddejtxqjq/video/upload/v1771212418/GMD_zqv1gd.mp4" 
+                  type="video/mp4" 
+                />
+                Tu navegador no soporta el tag de video.
+              </video>
             </div>
 
             {/* Floating stats - hidden on very small screens */}
