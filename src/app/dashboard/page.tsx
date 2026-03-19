@@ -23,6 +23,7 @@ import { AgentCard } from "@/components/agent-card"
 import { StatsCard } from "@/components/stats-card"
 import { AppSidebar } from "@/components/app-sidebar"
 import { LoginButton } from "@/components/LoginButton"
+import { NetworkSwitcher } from "@/components/NetworkSwitcher"
 // Lazy load heavy components
 const ActivityChart = dynamicImport(
   () => import("@/components/activity-chart").then(mod => ({ default: mod.ActivityChart })),
@@ -231,6 +232,7 @@ export default function DashboardPage() {
         <header className="flex h-14 items-center gap-4 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 lg:px-6">
           <SidebarTrigger className="-ml-1" />
           <div className="flex-1" />
+          <NetworkSwitcher />
         </header>
         <main className="flex-1 p-4 lg:p-6 min-w-0">
           <div className="space-y-6 min-w-0">

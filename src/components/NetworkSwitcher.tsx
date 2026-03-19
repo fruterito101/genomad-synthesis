@@ -1,181 +1,101 @@
 "use client";
 
-import { useState } from "react";
-import { motion } from "framer-motion";
-import { Globe, TestTube, Rocket, ChevronDown, ExternalLink } from "lucide-react";
 import { useNetwork, Network } from "@/contexts/NetworkContext";
-
-interface NetworkConfig {
-  name: string;
-  icon: React.ElementType;
-  color: string;
-  bgColor: string;
-  borderColor: string;
-  badge: string;
-}
-
-const NETWORKS: Record<Network, NetworkConfig> = {
-  testnet: {
-    name: "Testnet",
-    icon: TestTube,
-    color: "text-orange-400",
-    bgColor: "bg-orange-500/15",
-    borderColor: "border-orange-500/30",
-    badge: "🧪",
-  },
-  mainnet: {
-    name: "Mainnet",
-    icon: Rocket,
-    color: "text-emerald-400",
-    bgColor: "bg-emerald-500/15",
-    borderColor: "border-emerald-500/30",
-    badge: "🚀",
-  },
-};
+import { motion, AnimatePresence } from "framer-motion";
+import { Globe, TestTube, Sparkles, ChevronDown } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
 
 export function NetworkSwitcher() {
-  const { network, switchNetwork, contracts, explorerUrl } = useNetwork();
+  const { network, switchNetwork, isTestnet } = useNetwork();
   const [isOpen, setIsOpen] = useState(false);
-  const [isChanging, setIsChanging] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const handleNetworkChange = async (newNetwork: Network) => {
-    if (newNetwork === network) {
-      setIsOpen(false);
-      return;
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
     }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
-    setIsChanging(true);
-    setIsOpen(false);
-    
-    // Switch network in context
-    switchNetwork(newNetwork);
-
-    // Small delay for visual feedback, then reload to reinitialize providers
-    setTimeout(() => {
+  const handleSwitch = (newNetwork: Network) => {
+    if (newNetwork !== network) {
+      switchNetwork(newNetwork);
+      // Reload to reinitialize providers
       window.location.reload();
-    }, 500);
+    }
+    setIsOpen(false);
   };
 
-  const currentNetwork = NETWORKS[network];
-  const CurrentIcon = currentNetwork.icon;
-
-  // Check if mainnet has contracts configured
-  const mainnetReady = Boolean(
-    process.env.NEXT_PUBLIC_MAINNET_GENOMAD_NFT || 
-    contracts.genomadNFT // Will be empty string if not set
-  );
-
   return (
-    <div className="relative">
-      {/* Trigger Button */}
+    <div className="relative" ref={dropdownRef}>
       <motion.button
         onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all duration-200 ${currentNetwork.bgColor} ${currentNetwork.borderColor} hover:opacity-90`}
-        whileTap={{ scale: 0.98 }}
-        disabled={isChanging}
+        className={`
+          flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium
+          transition-colors border
+          ${isTestnet 
+            ? "bg-amber-500/10 border-amber-500/30 text-amber-500 hover:bg-amber-500/20" 
+            : "bg-emerald-500/10 border-emerald-500/30 text-emerald-500 hover:bg-emerald-500/20"
+          }
+        `}
+        whileTap={{ scale: 0.95 }}
       >
-        <CurrentIcon className={`w-4 h-4 ${currentNetwork.color}`} />
-        <span className={`text-sm font-medium ${currentNetwork.color}`}>
-          {currentNetwork.name}
-        </span>
-        <ChevronDown 
-          className={`w-3 h-3 ${currentNetwork.color} transition-transform ${isOpen ? "rotate-180" : ""}`} 
-        />
+        {isTestnet ? (
+          <TestTube className="w-3.5 h-3.5" />
+        ) : (
+          <Sparkles className="w-3.5 h-3.5" />
+        )}
+        <span className="hidden sm:inline">{isTestnet ? "Testnet" : "Mainnet"}</span>
+        <ChevronDown className={`w-3 h-3 transition-transform ${isOpen ? "rotate-180" : ""}`} />
       </motion.button>
 
-      {/* Dropdown */}
-      {isOpen && (
-        <>
-          {/* Backdrop */}
-          <div 
-            className="fixed inset-0 z-40" 
-            onClick={() => setIsOpen(false)} 
-          />
-          
-          {/* Menu */}
+      <AnimatePresence>
+        {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: -10, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -10, scale: 0.95 }}
-            className="absolute right-0 top-full mt-2 z-50 min-w-[200px] bg-background/95 backdrop-blur-xl border border-border rounded-lg shadow-xl overflow-hidden"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="absolute right-0 top-full mt-2 w-40 rounded-lg border border-border bg-card shadow-xl z-50"
           >
             <div className="p-1">
-              {(Object.entries(NETWORKS) as [Network, NetworkConfig][]).map(([key, config]) => {
-                const Icon = config.icon;
-                const isActive = key === network;
-                const isDisabled = key === "mainnet" && !mainnetReady;
-                
-                return (
-                  <button
-                    key={key}
-                    onClick={() => !isDisabled && handleNetworkChange(key)}
-                    disabled={isDisabled}
-                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-md transition-all ${
-                      isDisabled 
-                        ? "opacity-50 cursor-not-allowed text-muted-foreground"
-                        : isActive 
-                          ? `${config.bgColor} ${config.color}` 
-                          : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                    }`}
-                  >
-                    <Icon className="w-4 h-4" />
-                    <div className="flex-1 text-left">
-                      <span className="text-sm font-medium">{config.name}</span>
-                      {isDisabled && (
-                        <span className="block text-xs opacity-70">Coming soon</span>
-                      )}
-                    </div>
-                    {isActive && (
-                      <motion.div
-                        layoutId="network-indicator"
-                        className={`w-2 h-2 rounded-full ${config.color.replace("text-", "bg-")}`}
-                      />
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Contract Info */}
-            <div className="px-3 py-2 border-t border-border bg-muted/50">
-              <div className="flex items-center justify-between">
-                <p className="text-xs text-muted-foreground">
-                  {currentNetwork.badge} {network === "testnet" ? "Test environment" : "Production"}
-                </p>
-                <a
-                  href={explorerUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-xs text-primary hover:underline flex items-center gap-1"
-                >
-                  Explorer <ExternalLink className="w-3 h-3" />
-                </a>
-              </div>
-              {contracts.genomadNFT && (
-                <p className="text-[10px] text-muted-foreground/70 mt-1 font-mono truncate">
-                  NFT: {contracts.genomadNFT.slice(0, 10)}...
-                </p>
-              )}
+              <button
+                onClick={() => handleSwitch("testnet")}
+                className={`
+                  w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm
+                  transition-colors
+                  ${isTestnet 
+                    ? "bg-amber-500/20 text-amber-500" 
+                    : "hover:bg-muted text-muted-foreground hover:text-foreground"
+                  }
+                `}
+              >
+                <TestTube className="w-4 h-4" />
+                <span>Testnet</span>
+                {isTestnet && <span className="ml-auto text-xs">✓</span>}
+              </button>
+              <button
+                onClick={() => handleSwitch("mainnet")}
+                className={`
+                  w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm
+                  transition-colors
+                  ${!isTestnet 
+                    ? "bg-emerald-500/20 text-emerald-500" 
+                    : "hover:bg-muted text-muted-foreground hover:text-foreground"
+                  }
+                `}
+              >
+                <Sparkles className="w-4 h-4" />
+                <span>Mainnet</span>
+                {!isTestnet && <span className="ml-auto text-xs">✓</span>}
+              </button>
             </div>
           </motion.div>
-        </>
-      )}
-
-      {/* Loading overlay */}
-      {isChanging && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center"
-        >
-          <div className="text-center">
-            <Globe className="w-8 h-8 text-primary animate-spin mx-auto mb-2" />
-            <p className="text-sm text-muted-foreground">Switching to {NETWORKS[network === "testnet" ? "mainnet" : "testnet"].name}...</p>
-          </div>
-        </motion.div>
-      )}
+        )}
+      </AnimatePresence>
     </div>
   );
 }
-
-export default NetworkSwitcher;

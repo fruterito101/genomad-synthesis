@@ -16,6 +16,7 @@ import { AgentCard } from "@/components/agent-card";
 import { PendingApprovals } from "@/components/PendingApprovals";
 import { BreedingRequests } from "@/components/BreedingRequests";
 import { CoOwnersDisplay } from "@/components/CoOwnersDisplay";
+import { NetworkSwitcher } from "@/components/NetworkSwitcher";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui";
@@ -80,6 +81,8 @@ export default function ProfilePage() {
         <header className="flex h-14 items-center gap-4 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 lg:px-6">
           <SidebarTrigger className="-ml-1" />
           <h1 className="font-semibold">{i18n.language === "es" ? "Mi Perfil" : "My Profile"}</h1>
+          <div className="flex-1" />
+          <NetworkSwitcher />
         </header>
         
         <AgentDetailModal agent={selectedAgent ? { ...selectedAgent, isMine: true } : null} isOpen={!!selectedAgent} onClose={() => setSelectedAgent(null)} onAgentUpdated={fetchProfile} getAccessToken={getAccessToken} />

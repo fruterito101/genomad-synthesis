@@ -13,6 +13,7 @@ import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/s
 import { Button } from "@/components/ui";
 import { Dna, Plus, Loader2, ArrowRight, Sparkles, Check, Clock, Shield, Zap, Crown, Activity, RefreshCw, AlertCircle, ChevronDown, Cpu, Palette, MessageSquare, Brain, Heart, TrendingUp, GraduationCap } from "lucide-react";
 import { SuccessModal } from "@/components/SuccessModal";
+import { NetworkSwitcher } from "@/components/NetworkSwitcher";
 
 interface Agent { id: string; name: string; botUsername: string | null; traits: { technical: number; creativity: number; social: number; analysis: number; empathy: number; trading: number; teaching: number; leadership: number; }; fitness: number; generation: number; isActive: boolean; ownerId: string; isMine?: boolean; ownerDisplay?: string; }
 interface BreedingRequest { 
@@ -171,6 +172,8 @@ function BreedingContent() {
         <header className="flex h-14 items-center gap-4 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 lg:px-6">
           <SidebarTrigger className="-ml-1" />
           <h1 className="font-semibold">Breeding Lab</h1>
+          <div className="flex-1" />
+          <NetworkSwitcher />
         </header>
         
         <main className="flex-1 p-4 lg:p-6">
