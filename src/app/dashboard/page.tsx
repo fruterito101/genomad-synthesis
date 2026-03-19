@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button-shadcn"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Skeleton } from "@/components/ui/skeleton"
+import { AgentCard } from "@/components/agent-card"
 import { StatsCard } from "@/components/stats-card"
 import { AppSidebar } from "@/components/app-sidebar"
 import { LoginButton } from "@/components/LoginButton"
@@ -39,31 +40,7 @@ interface Agent {
   isMine?: boolean
 }
 
-const traitIcons: Record<string, React.ElementType> = {
-  technical: Cpu, creativity: Palette, social: MessageSquare, analysis: Brain,
-  empathy: Heart, trading: TrendingUp, teaching: GraduationCap, leadership: Crown,
-}
 
-const traitColors: Record<string, string> = {
-  technical: "#3B82F6", creativity: "#EC4899", social: "#8B5CF6", analysis: "#06B6D4",
-  empathy: "#EF4444", trading: "#10B981", teaching: "#F59E0B", leadership: "#F97316",
-}
-
-function getTopTrait(traits: Agent["traits"]): { key: string; value: number } {
-  const entries = Object.entries(traits)
-  const top = entries.sort(([, a], [, b]) => b - a)[0]
-  return { key: top[0], value: top[1] }
-}
-
-function getRarity(traits: Agent["traits"]): { label: string; color: string } {
-  const values = Object.values(traits)
-  const avg = values.reduce((a, b) => a + b, 0) / values.length
-  const max = Math.max(...values)
-  if (avg >= 80) return { label: "Legendary", color: "#FBBF24" }
-  if (avg >= 75 || max >= 95) return { label: "Epic", color: "#A855F7" }
-  if (avg >= 60 || max >= 85) return { label: "Rare", color: "#3B82F6" }
-  return { label: "Uncommon", color: "#10B981" }
-}
 
 // Features for non-authenticated view
 const features = [
@@ -222,47 +199,15 @@ export default function DashboardPage() {
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                {globalAgents.slice(0, 8).map((agent, index) => {
-                  const rarity = getRarity(agent.traits)
-                  const topTrait = getTopTrait(agent.traits)
-                  const topColor = traitColors[topTrait.key]
-                  return (
-                    <motion.div 
-                      key={agent.id} 
-                      className="p-4 rounded-xl bg-muted/50 border border-border hover:border-primary/50 transition-colors"
-                      initial={{ opacity: 0, y: 20 }} 
-                      animate={{ opacity: 1, y: 0 }} 
-                      transition={{ delay: index * 0.05 }}
-                    >
-                      <div className="flex items-center gap-3 mb-3">
-                        <Avatar className="h-10 w-10">
-                          <AvatarFallback 
-                            className="text-white text-sm font-medium"
-                            style={{ background: `linear-gradient(135deg, ${topColor}, var(--color-primary-legacy))` }}
-                          >
-                            {agent.name.slice(0, 2).toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1 min-w-0">
-                          <h4 className="font-bold text-sm truncate">{agent.name}</h4>
-                          <p className="text-xs text-muted-foreground">Gen {agent.generation}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <Badge variant="outline" style={{ borderColor: rarity.color, color: rarity.color }}>
-                          {rarity.label}
-                        </Badge>
-                        <span className="text-lg font-bold gradient-text">{agent.fitness.toFixed(1)}</span>
-                      </div>
-                      {agent.isActive && (
-                        <div className="mt-2 flex items-center gap-1">
-                          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                          <span className="text-xs text-emerald-500">Online</span>
-                        </div>
-                      )}
-                    </motion.div>
-                  )
-                })}
+                {globalAgents.slice(0, 8).map((agent, index) => (
+                  <AgentCard
+                    key={agent.id}
+                    agent={agent}
+                    variant="compact"
+                    index={index}
+                    labels={{ active: "Online", inactive: "Off" }}
+                  />
+                ))}
               </div>
             )}
           </motion.div>
@@ -407,62 +352,23 @@ export default function DashboardPage() {
                     </Button>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                     {globalAgents.map((agent) => {
-                      const rarity = getRarity(agent.traits)
-                      const topTrait = getTopTrait(agent.traits)
-                      const topColor = traitColors[topTrait.key]
                       const isMine = myAgents.some(m => m.id === agent.id)
-
                       return (
-                        <motion.div
+                        <AgentCard
                           key={agent.id}
-                          className="p-4 rounded-xl border border-border bg-card hover:border-primary/50 transition-all cursor-pointer"
+                          agent={agent}
+                          isMine={isMine}
+                          variant="compact"
                           onClick={() => {
                             if (!isMine) {
                               setSelectedAgent(agent)
                               setShowBreedingModal(true)
                             }
                           }}
-                          whileHover={{ y: -2 }}
-                        >
-                          <div className="flex items-center gap-3 mb-3">
-                            <Avatar className="h-10 w-10">
-                              <AvatarFallback 
-                                className="text-white text-sm font-medium"
-                                style={{ background: `linear-gradient(135deg, ${topColor}, var(--color-primary-legacy))` }}
-                              >
-                                {agent.name.slice(0, 2).toUpperCase()}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div className="flex-1 min-w-0">
-                              <h4 className="font-semibold text-sm truncate">{agent.name}</h4>
-                              <p className="text-xs text-muted-foreground">Gen {agent.generation}</p>
-                            </div>
-                            {isMine && (
-                              <Badge variant="outline" className="text-xs">
-                                {isEs ? "Tuyo" : "Yours"}
-                              </Badge>
-                            )}
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <Badge 
-                              variant="outline" 
-                              style={{ borderColor: rarity.color, color: rarity.color }}
-                            >
-                              {rarity.label}
-                            </Badge>
-                            <span className="text-xl font-bold gradient-text">
-                              {agent.fitness.toFixed(1)}
-                            </span>
-                          </div>
-                          {agent.isActive && (
-                            <div className="mt-2 flex items-center gap-1.5">
-                              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                              <span className="text-xs text-emerald-500">Online</span>
-                            </div>
-                          )}
-                        </motion.div>
+                          labels={{ active: "Online", inactive: "Off" }}
+                        />
                       )
                     })}
                   </div>
