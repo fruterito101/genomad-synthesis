@@ -351,7 +351,7 @@ export const suspiciousAlerts = pgTable("suspicious_alerts", {
   // Metadata
   reportedAt: timestamp("reported_at").notNull(),
   sourceIp: text("source_ip"),
-  source: text("source").default("genomad-verify-skill"),
+  source: text("source").default("genomad-skill"),
   
   // Review status
   reviewed: boolean("reviewed").default(false).notNull(),

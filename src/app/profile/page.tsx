@@ -161,14 +161,14 @@ export default function ProfilePage() {
                 </p>
                 <div className="flex items-center gap-2">
                   <code className="flex-1 block px-3 py-2 rounded text-xs sm:text-sm bg-background text-primary font-mono overflow-x-auto">
-                    Instala el skill genomad-verify de ClawHub
+                    Instala el skill genomad de ClawHub
                   </code>
                   <motion.button 
-                    onClick={() => copySkillCommand("Instala el skill genomad-verify de ClawHub")}
+                    onClick={() => copySkillCommand("Instala el skill genomad de ClawHub")}
                     className="p-2 rounded-lg bg-background flex-shrink-0"
                     whileTap={{ scale: 0.95 }}
                   >
-                    {skillCopied === "Instala el skill genomad-verify de ClawHub" 
+                    {skillCopied === "Instala el skill genomad de ClawHub" 
                       ? <Check className="w-4 h-4 text-emerald-500" /> 
                       : <Copy className="w-4 h-4 text-muted-foreground" />}
                   </motion.button>
@@ -182,14 +182,14 @@ export default function ProfilePage() {
               <div className="rounded-lg p-3 sm:p-4 bg-muted">
                 <div className="flex items-center gap-2">
                   <code className="flex-1 block px-3 py-2 rounded text-xs sm:text-sm bg-background text-secondary font-mono overflow-x-auto">
-                    clawhub install fruterito101/genomad-verify
+                    clawhub install fruterito101/genomad-skill
                   </code>
                   <motion.button 
-                    onClick={() => copySkillCommand("clawhub install fruterito101/genomad-verify")}
+                    onClick={() => copySkillCommand("clawhub install fruterito101/genomad-skill")}
                     className="p-2 rounded-lg bg-background flex-shrink-0"
                     whileTap={{ scale: 0.95 }}
                   >
-                    {skillCopied === "clawhub install fruterito101/genomad-verify" 
+                    {skillCopied === "clawhub install fruterito101/genomad-skill" 
                       ? <Check className="w-4 h-4 text-emerald-500" /> 
                       : <Copy className="w-4 h-4 text-muted-foreground" />}
                   </motion.button>
@@ -199,7 +199,7 @@ export default function ProfilePage() {
 
             <div className="mt-4 pt-4 border-t border-border">
               <a 
-                href="https://github.com/fruterito101/genomad-verify-skill" 
+                href="https://github.com/fruterito101/genomad-skill" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="text-xs sm:text-sm text-primary hover:underline flex items-center gap-1"
@@ -232,7 +232,7 @@ export default function ProfilePage() {
                   </div>
                   <div className="rounded-lg p-3 sm:p-4 bg-muted">
                     <p className="text-xs sm:text-sm text-muted-foreground"><strong>{i18n.language === "es" ? "Siguiente:" : "Next:"}</strong> {i18n.language === "es" ? "Dile a tu agente:" : "Tell your agent:"}</p>
-                    <code className="block mt-2 px-2 sm:px-3 py-1.5 sm:py-2 rounded text-xs sm:text-sm bg-background text-secondary">/genomad-verify {verificationCode}</code>
+                    <code className="block mt-2 px-2 sm:px-3 py-1.5 sm:py-2 rounded text-xs sm:text-sm bg-background text-secondary">/genomad-register {verificationCode}</code>
                   </div>
                   <button onClick={() => { setVerificationCode(null); setCodeExpiry(null); }} className="text-xs sm:text-sm text-muted-foreground">{i18n.language === "es" ? "Generar nuevo" : "Generate new"}</button>
                 </motion.div>

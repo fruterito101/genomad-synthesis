@@ -96,7 +96,7 @@ export async function POST(request: NextRequest) {
       code,
       expiresAt: expiresAt.toISOString(),
       expiresInMinutes: 30,
-      message: "Dile a tu agente: /genomad-verify " + code,
+      message: "Dile a tu agente: /genomad-register " + code,
     });
 
   } catch (error) {

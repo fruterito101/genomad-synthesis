@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
       fileStats: files || {},
       reportedAt: timestamp ? new Date(timestamp) : new Date(),
       sourceIp: ip,
-      source: "genomad-verify-skill",
+      source: "genomad-skill",
     }).returning();
     
     console.warn(`🚨 SUSPICIOUS ALERT #${alert.id.slice(0,8)}: ${agentName} - ${reason}`);
