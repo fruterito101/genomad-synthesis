@@ -13,7 +13,7 @@ import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/s
 import { Button } from "@/components/ui";
 import { Dna, Plus, Loader2, ArrowRight, Sparkles, Check, Clock, Shield, Zap, Crown, Activity, RefreshCw, AlertCircle, ChevronDown, Cpu, Palette, MessageSquare, Brain, Heart, TrendingUp, GraduationCap } from "lucide-react";
 import { SuccessModal } from "@/components/SuccessModal";
-import { useBreedingFlow, useBreedingFee } from "@/hooks";
+import { useBreedingFlow, useBreedingFee, useIsMounted } from "@/hooks";
 import { NetworkSwitcher } from "@/components/NetworkSwitcher";
 
 interface Agent { id: string; name: string; tokenId?: string; botUsername: string | null; traits: { technical: number; creativity: number; social: number; analysis: number; empathy: number; trading: number; teaching: number; leadership: number; }; fitness: number; generation: number; isActive: boolean; ownerId: string; isMine?: boolean; ownerDisplay?: string; }

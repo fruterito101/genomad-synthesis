@@ -1,6 +1,7 @@
 // src/hooks/useBreedingFactory.ts
 "use client";
 
+import { useState, useEffect } from "react";
 import { useWriteContract, useWaitForTransactionReceipt, useReadContract } from "wagmi";
 import { useNetwork } from "@/contexts/NetworkContext";
 import { BREEDING_FACTORY_ABI } from "@/lib/blockchain/contracts";
@@ -8,20 +9,34 @@ import { type Address } from "viem";
 
 // ============================================
 // useBreedingFee
-// Lee el fee actual de breeding
+// Lee el fee actual de breeding (SSR-safe)
 // ============================================
 export function useBreedingFee() {
+  const [isMounted, setIsMounted] = useState(false);
   const { contracts } = useNetwork();
   const address = contracts.breedingFactory as Address;
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const { data, isLoading, error, refetch } = useReadContract({
     address,
     abi: BREEDING_FACTORY_ABI,
     functionName: "breedingFee",
     query: {
-      enabled: !!address,
+      enabled: isMounted && !!address,
     },
   });
+
+  if (!isMounted) {
+    return {
+      fee: undefined,
+      isLoading: false,
+      error: null,
+      refetch: () => {},
+    };
+  }
 
   return {
     fee: data as bigint | undefined,
@@ -32,12 +47,16 @@ export function useBreedingFee() {
 }
 
 // ============================================
-// useRequestBreeding
-// Solicita breeding entre dos agentes (paga fee)
+// useRequestBreeding (SSR-safe)
 // ============================================
 export function useRequestBreeding() {
+  const [isMounted, setIsMounted] = useState(false);
   const { contracts } = useNetwork();
   const address = contracts.breedingFactory as Address;
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const {
     writeContract,
@@ -55,7 +74,7 @@ export function useRequestBreeding() {
   } = useWaitForTransactionReceipt({ hash });
 
   const request = (parentA: bigint, parentB: bigint, fee: bigint) => {
-    if (!address) throw new Error("BreedingFactory not configured");
+    if (!isMounted || !address) return;
     
     writeContract({
       address,
@@ -67,7 +86,7 @@ export function useRequestBreeding() {
   };
 
   const requestAsync = async (parentA: bigint, parentB: bigint, fee: bigint) => {
-    if (!address) throw new Error("BreedingFactory not configured");
+    if (!isMounted || !address) throw new Error("Not ready");
     
     return writeContractAsync({
       address,
@@ -77,6 +96,20 @@ export function useRequestBreeding() {
       value: fee,
     });
   };
+
+  if (!isMounted) {
+    return {
+      request: () => {},
+      requestAsync: async () => { throw new Error("Not mounted"); },
+      hash: undefined,
+      isPending: false,
+      isConfirming: false,
+      isSuccess: false,
+      isError: false,
+      error: null,
+      reset: () => {},
+    };
+  }
 
   return {
     request,
@@ -92,12 +125,16 @@ export function useRequestBreeding() {
 }
 
 // ============================================
-// useApproveBreeding
-// El dueño del parent B aprueba el breeding
+// useApproveBreeding (SSR-safe)
 // ============================================
 export function useApproveBreeding() {
+  const [isMounted, setIsMounted] = useState(false);
   const { contracts } = useNetwork();
   const address = contracts.breedingFactory as Address;
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const {
     writeContract,
@@ -115,7 +152,7 @@ export function useApproveBreeding() {
   } = useWaitForTransactionReceipt({ hash });
 
   const approve = (requestId: bigint) => {
-    if (!address) throw new Error("BreedingFactory not configured");
+    if (!isMounted || !address) return;
     
     writeContract({
       address,
@@ -126,7 +163,7 @@ export function useApproveBreeding() {
   };
 
   const approveAsync = async (requestId: bigint) => {
-    if (!address) throw new Error("BreedingFactory not configured");
+    if (!isMounted || !address) throw new Error("Not ready");
     
     return writeContractAsync({
       address,
@@ -135,6 +172,20 @@ export function useApproveBreeding() {
       args: [requestId],
     });
   };
+
+  if (!isMounted) {
+    return {
+      approve: () => {},
+      approveAsync: async () => { throw new Error("Not mounted"); },
+      hash: undefined,
+      isPending: false,
+      isConfirming: false,
+      isSuccess: false,
+      isError: false,
+      error: null,
+      reset: () => {},
+    };
+  }
 
   return {
     approve,
@@ -150,12 +201,16 @@ export function useApproveBreeding() {
 }
 
 // ============================================
-// useExecuteBreeding
-// Ejecuta el breeding y mintea el hijo
+// useExecuteBreeding (SSR-safe)
 // ============================================
 export function useExecuteBreeding() {
+  const [isMounted, setIsMounted] = useState(false);
   const { contracts } = useNetwork();
   const address = contracts.breedingFactory as Address;
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const {
     writeContract,
@@ -173,7 +228,7 @@ export function useExecuteBreeding() {
   } = useWaitForTransactionReceipt({ hash });
 
   const execute = (requestId: bigint, dnaCommitment: `0x${string}`) => {
-    if (!address) throw new Error("BreedingFactory not configured");
+    if (!isMounted || !address) return;
     
     writeContract({
       address,
@@ -184,7 +239,7 @@ export function useExecuteBreeding() {
   };
 
   const executeAsync = async (requestId: bigint, dnaCommitment: `0x${string}`) => {
-    if (!address) throw new Error("BreedingFactory not configured");
+    if (!isMounted || !address) throw new Error("Not ready");
     
     return writeContractAsync({
       address,
@@ -193,6 +248,20 @@ export function useExecuteBreeding() {
       args: [requestId, dnaCommitment],
     });
   };
+
+  if (!isMounted) {
+    return {
+      execute: () => {},
+      executeAsync: async () => { throw new Error("Not mounted"); },
+      hash: undefined,
+      isPending: false,
+      isConfirming: false,
+      isSuccess: false,
+      isError: false,
+      error: null,
+      reset: () => {},
+    };
+  }
 
   return {
     execute,
@@ -208,12 +277,16 @@ export function useExecuteBreeding() {
 }
 
 // ============================================
-// useCancelBreeding
-// Cancela un breeding request
+// useCancelBreeding (SSR-safe)
 // ============================================
 export function useCancelBreeding() {
+  const [isMounted, setIsMounted] = useState(false);
   const { contracts } = useNetwork();
   const address = contracts.breedingFactory as Address;
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const {
     writeContract,
@@ -231,7 +304,7 @@ export function useCancelBreeding() {
   } = useWaitForTransactionReceipt({ hash });
 
   const cancel = (requestId: bigint) => {
-    if (!address) throw new Error("BreedingFactory not configured");
+    if (!isMounted || !address) return;
     
     writeContract({
       address,
@@ -242,7 +315,7 @@ export function useCancelBreeding() {
   };
 
   const cancelAsync = async (requestId: bigint) => {
-    if (!address) throw new Error("BreedingFactory not configured");
+    if (!isMounted || !address) throw new Error("Not ready");
     
     return writeContractAsync({
       address,
@@ -251,6 +324,20 @@ export function useCancelBreeding() {
       args: [requestId],
     });
   };
+
+  if (!isMounted) {
+    return {
+      cancel: () => {},
+      cancelAsync: async () => { throw new Error("Not mounted"); },
+      hash: undefined,
+      isPending: false,
+      isConfirming: false,
+      isSuccess: false,
+      isError: false,
+      error: null,
+      reset: () => {},
+    };
+  }
 
   return {
     cancel,
@@ -266,12 +353,16 @@ export function useCancelBreeding() {
 }
 
 // ============================================
-// useBreedingRequest
-// Lee los datos de un breeding request
+// useBreedingRequest (SSR-safe)
 // ============================================
 export function useBreedingRequest(requestId: bigint | undefined) {
+  const [isMounted, setIsMounted] = useState(false);
   const { contracts } = useNetwork();
   const address = contracts.breedingFactory as Address;
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const { data, isLoading, error, refetch } = useReadContract({
     address,
@@ -279,11 +370,19 @@ export function useBreedingRequest(requestId: bigint | undefined) {
     functionName: "getRequest",
     args: requestId ? [requestId] : undefined,
     query: {
-      enabled: !!address && requestId !== undefined,
+      enabled: isMounted && !!address && requestId !== undefined,
     },
   });
 
-  // Parse the tuple response
+  if (!isMounted) {
+    return {
+      request: undefined,
+      isLoading: false,
+      error: null,
+      refetch: () => {},
+    };
+  }
+
   const request = data as {
     parentA: bigint;
     parentB: bigint;

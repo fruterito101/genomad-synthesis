@@ -8,3 +8,4 @@ export * from "./useBreedingFactory";
 export * from "./useBreedingFlow";
 export * from "./useAgentRead";
 export * from "./useBreedingRead";
+export * from "./useSSRSafe";
