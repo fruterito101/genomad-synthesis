@@ -22,11 +22,10 @@ export async function POST(request: NextRequest) {
       generation = 0,
       botUsername,
       telegramId,
-      code,  // Código de vinculación opcional
+      code,
       source = "genomad-verify-skill"
     } = body;
 
-    // Limpiar espacios
     name = name?.trim();
     botUsername = botUsername?.trim();
     code = code?.trim()?.toUpperCase();
@@ -50,7 +49,6 @@ export async function POST(request: NextRequest) {
     let ownerId = UNLINKED_OWNER;
     let linkedToOwner = false;
 
-    // Si hay código, verificarlo y obtener el owner
     if (code) {
       const [codeRecord] = await db
         .select()
@@ -71,13 +69,9 @@ export async function POST(request: NextRequest) {
         }, { status: 400 });
       }
 
-      // Marcar código como usado
       await db
         .update(verificationCodes)
-        .set({ 
-          used: true, 
-          usedAt: new Date() 
-        })
+        .set({ used: true, usedAt: new Date() })
         .where(eq(verificationCodes.id, codeRecord.id));
 
       ownerId = codeRecord.userId;
@@ -85,7 +79,6 @@ export async function POST(request: NextRequest) {
       console.log(`🔗 Code ${code} validated, linking to owner ${ownerId}`);
     }
 
-    // Buscar agente existente
     const [existing] = await db
       .select()
       .from(agents)
@@ -99,15 +92,12 @@ export async function POST(request: NextRequest) {
       )
       .limit(1);
 
-    // Calcular fitness
     const fitness = calculateTotalFitness(traits);
     const traitsWithSkills = { ...traits, skillCount: skillCount || 0 };
 
     if (existing) {
-      // Determinar nuevo ownerId (si se vincula, actualizar; si no, mantener)
       const newOwnerId = linkedToOwner ? ownerId : existing.ownerId;
 
-      // ACTUALIZAR agente existente
       await db
         .update(agents)
         .set({
@@ -121,7 +111,6 @@ export async function POST(request: NextRequest) {
         })
         .where(eq(agents.id, existing.id));
 
-      // Actualizar código con el agentId
       if (code && linkedToOwner) {
         await db
           .update(verificationCodes)
@@ -130,7 +119,6 @@ export async function POST(request: NextRequest) {
       }
 
       const isNowLinked = newOwnerId !== UNLINKED_OWNER;
-
       console.log(`🔄 Agent updated: ${name} (linked: ${isNowLinked}, fitness: ${fitness.toFixed(1)})`);
 
       return NextResponse.json({
@@ -139,12 +127,12 @@ export async function POST(request: NextRequest) {
         linked: isNowLinked,
         agent: {
           id: existing.id,
-          name: name,
+          name,
           botUsername: botUsername || existing.botUsername,
-          dnaHash: dnaHash,
-          traits: traits,
-          skillCount: skillCount,
-          fitness: fitness,
+          dnaHash,
+          traits,
+          skillCount,
+          fitness,
           generation: existing.generation,
           ownerId: newOwnerId,
           createdAt: existing.createdAt,
@@ -155,7 +143,6 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Crear nuevo agente
     const newAgentId = uuidv4();
     const newAgent = {
       id: newAgentId,
@@ -174,7 +161,6 @@ export async function POST(request: NextRequest) {
 
     await db.insert(agents).values(newAgent);
 
-    // Actualizar código con el agentId si existe
     if (code && linkedToOwner) {
       await db
         .update(verificationCodes)
@@ -183,7 +169,6 @@ export async function POST(request: NextRequest) {
     }
 
     const isLinked = ownerId !== UNLINKED_OWNER;
-
     console.log(`✅ New agent: ${name} (linked: ${isLinked}, fitness: ${fitness.toFixed(1)})`);
 
     return NextResponse.json({
@@ -195,8 +180,8 @@ export async function POST(request: NextRequest) {
         name: newAgent.name,
         botUsername: newAgent.botUsername,
         dnaHash: newAgent.dnaHash,
-        traits: traits,
-        skillCount: skillCount,
+        traits,
+        skillCount,
         fitness: newAgent.fitness,
         generation: newAgent.generation,
         ownerId: newAgent.ownerId,
@@ -217,7 +202,7 @@ export async function GET(request: NextRequest) {
   try {
     const db = getDb();
     
-    // Verificar auth opcional para saber cuál es el usuario actual
+    // Verificar auth opcional para isMine
     let currentUserId: string | null = null;
     const authHeader = request.headers.get("authorization");
     if (authHeader?.startsWith("Bearer ")) {
@@ -230,7 +215,6 @@ export async function GET(request: NextRequest) {
         const verifiedClaims = await privy.verifyAuthToken(token);
         const privyId = verifiedClaims.userId;
         
-        // Buscar usuario por privyId
         const [user] = await db
           .select()
           .from(users)
@@ -245,6 +229,7 @@ export async function GET(request: NextRequest) {
       }
     }
     
+    // Obtener agentes
     const allAgents = await db
       .select({
         id: agents.id,
@@ -261,25 +246,59 @@ export async function GET(request: NextRequest) {
       .from(agents)
       .orderBy(agents.createdAt);
 
-    const agentsWithMine = allAgents.map(agent => {
+    // Obtener info de owners
+    const ownerIds = [...new Set(allAgents.map(a => a.ownerId).filter(id => id !== UNLINKED_OWNER))];
+    
+    let ownersMap: Record<string, { walletAddress: string | null; displayName: string | null; telegramUsername: string | null }> = {};
+    
+    if (ownerIds.length > 0) {
+      const owners = await db
+        .select({
+          id: users.id,
+          walletAddress: users.walletAddress,
+          displayName: users.displayName,
+          telegramUsername: users.telegramUsername,
+        })
+        .from(users)
+        .where(sql`${users.id} IN (${sql.join(ownerIds.map(id => sql`${id}`), sql`, `)})`);
+      
+      for (const owner of owners) {
+        ownersMap[owner.id] = {
+          walletAddress: owner.walletAddress,
+          displayName: owner.displayName,
+          telegramUsername: owner.telegramUsername,
+        };
+      }
+    }
+
+    const agentsWithOwnerInfo = allAgents.map(agent => {
       const traitsObj = agent.traits as any;
       const { skillCount, ...pureTraits } = traitsObj || {};
+      const isLinked = agent.ownerId !== UNLINKED_OWNER;
+      const ownerInfo = isLinked ? ownersMap[agent.ownerId] : null;
+      
       return {
         ...agent,
         name: agent.name?.trim(),
         traits: pureTraits,
         skillCount: skillCount || 0,
-        isLinked: agent.ownerId !== UNLINKED_OWNER,
+        isLinked,
         isMine: currentUserId ? agent.ownerId === currentUserId : false,
+        owner: isLinked ? {
+          wallet: ownerInfo?.walletAddress ? `${ownerInfo.walletAddress.slice(0, 6)}...${ownerInfo.walletAddress.slice(-4)}` : null,
+          walletFull: ownerInfo?.walletAddress || null,
+          name: ownerInfo?.displayName || ownerInfo?.telegramUsername || null,
+          telegram: ownerInfo?.telegramUsername || null,
+        } : null,
       };
     });
 
-    const myCount = agentsWithMine.filter(a => a.isMine).length;
+    const myCount = agentsWithOwnerInfo.filter(a => a.isMine).length;
 
     return NextResponse.json({
-      total: agentsWithMine.length,
+      total: agentsWithOwnerInfo.length,
       myCount,
-      agents: agentsWithMine,
+      agents: agentsWithOwnerInfo,
     });
 
   } catch (error) {

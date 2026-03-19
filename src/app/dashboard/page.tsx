@@ -5,6 +5,13 @@ import { useEffect, useState, useCallback } from "react";
 import { usePrivy } from "@privy-io/react-auth";
 import { LoginButton } from "@/components/LoginButton";
 
+interface AgentOwner {
+  wallet: string | null;
+  walletFull: string | null;
+  name: string | null;
+  telegram: string | null;
+}
+
 interface Agent {
   id: string;
   name: string;
@@ -28,16 +35,16 @@ interface Agent {
   ownerId?: string;
   isMine?: boolean;
   isLinked?: boolean;
+  owner?: AgentOwner | null;
 }
 
 export default function DashboardPage() {
-  const { authenticated, ready, getAccessToken, user } = usePrivy();
+  const { authenticated, ready, getAccessToken } = usePrivy();
   const [agents, setAgents] = useState<Agent[]>([]);
   const [myCount, setMyCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
-  // Code generation state
   const [generatingCode, setGeneratingCode] = useState(false);
   const [verificationCode, setVerificationCode] = useState<string | null>(null);
   const [codeExpiry, setCodeExpiry] = useState<Date | null>(null);
@@ -47,7 +54,6 @@ export default function DashboardPage() {
     try {
       setLoading(true);
       
-      // Obtener token si está autenticado
       const headers: Record<string, string> = {};
       if (authenticated) {
         try {
@@ -74,7 +80,6 @@ export default function DashboardPage() {
     }
   }, [authenticated, getAccessToken]);
 
-  // Fetch on mount and when auth changes
   useEffect(() => {
     if (ready) {
       fetchAgents();
@@ -143,7 +148,6 @@ export default function DashboardPage() {
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
-  // Get my agents from the list (using isMine from API)
   const myAgents = agents.filter(a => a.isMine);
 
   if (!ready) {
@@ -157,7 +161,6 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-gray-900 text-white p-8">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
         <header className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <h1 className="text-4xl font-bold mb-2">🧬 Genomad Dashboard</h1>
@@ -176,7 +179,6 @@ export default function DashboardPage() {
           </div>
         </header>
 
-        {/* Code Generation Card */}
         {authenticated && (
           <div className="mb-8 bg-gradient-to-r from-purple-900/50 to-blue-900/50 border border-purple-500/30 rounded-xl p-6">
             <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
@@ -194,15 +196,9 @@ export default function DashboardPage() {
                   disabled={generatingCode}
                   className="px-6 py-3 bg-emerald-600 hover:bg-emerald-500 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-lg font-medium transition flex items-center gap-2"
                 >
-                  {generatingCode ? (
-                    <>⏳ Generating...</>
-                  ) : (
-                    <>🎫 Generate Verification Code</>
-                  )}
+                  {generatingCode ? <>⏳ Generating...</> : <>🎫 Generate Verification Code</>}
                 </button>
-                {codeError && (
-                  <p className="mt-3 text-red-400">❌ {codeError}</p>
-                )}
+                {codeError && <p className="mt-3 text-red-400">❌ {codeError}</p>}
               </div>
             ) : (
               <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
@@ -212,62 +208,32 @@ export default function DashboardPage() {
                     <code className="text-4xl font-mono font-bold tracking-widest bg-gray-800 px-6 py-3 rounded-lg border-2 border-emerald-500">
                       {verificationCode}
                     </code>
-                    <button
-                      onClick={copyCode}
-                      className="p-3 bg-gray-700 hover:bg-gray-600 rounded-lg transition"
-                      title="Copy to clipboard"
-                    >
-                      📋
-                    </button>
+                    <button onClick={copyCode} className="p-3 bg-gray-700 hover:bg-gray-600 rounded-lg transition" title="Copy">📋</button>
                   </div>
-                  <p className="mt-2 text-sm text-yellow-400">
-                    ⏱️ Expires in: {formatTimeLeft()}
-                  </p>
+                  <p className="mt-2 text-sm text-yellow-400">⏱️ Expires in: {formatTimeLeft()}</p>
                 </div>
                 <div className="bg-gray-800/50 rounded-lg p-4 max-w-sm">
-                  <p className="text-sm text-gray-300">
-                    <strong>Next step:</strong> Tell your AI agent:
-                  </p>
-                  <code className="block mt-2 bg-gray-900 px-3 py-2 rounded text-emerald-400">
-                    /genomad-verify {verificationCode}
-                  </code>
+                  <p className="text-sm text-gray-300"><strong>Next step:</strong> Tell your AI agent:</p>
+                  <code className="block mt-2 bg-gray-900 px-3 py-2 rounded text-emerald-400">/genomad-verify {verificationCode}</code>
                 </div>
-                <button
-                  onClick={() => {
-                    setVerificationCode(null);
-                    setCodeExpiry(null);
-                  }}
-                  className="text-gray-400 hover:text-white text-sm"
-                >
-                  Generate new code
-                </button>
+                <button onClick={() => { setVerificationCode(null); setCodeExpiry(null); }} className="text-gray-400 hover:text-white text-sm">Generate new code</button>
               </div>
             )}
           </div>
         )}
 
-        {/* Not authenticated prompt */}
         {!authenticated && (
           <div className="mb-8 bg-gray-800 border border-gray-700 rounded-xl p-6 text-center">
-            <p className="text-gray-300 mb-4">
-              🔐 Login to generate verification codes and link your agents
-            </p>
+            <p className="text-gray-300 mb-4">🔐 Login to generate verification codes and link your agents</p>
             <LoginButton />
           </div>
         )}
 
-        {error && (
-          <div className="bg-red-900 border border-red-500 rounded p-4 mb-8">
-            Error: {error}
-          </div>
-        )}
+        {error && <div className="bg-red-900 border border-red-500 rounded p-4 mb-8">Error: {error}</div>}
 
-        {/* My Agents Section */}
         {authenticated && myAgents.length > 0 && (
           <div className="mb-8">
-            <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-              👤 My Agents
-            </h2>
+            <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">👤 My Agents</h2>
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {myAgents.map((agent) => (
                 <AgentCard key={agent.id} agent={agent} getTraitBar={getTraitBar} isOwned />
@@ -276,11 +242,8 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {/* All Agents Section */}
         <div>
-          <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-            🌍 All Registered Agents
-          </h2>
+          <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">🌍 All Registered Agents</h2>
           
           {loading ? (
             <div className="text-center py-20">
@@ -296,12 +259,7 @@ export default function DashboardPage() {
           ) : (
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {agents.map((agent) => (
-                <AgentCard 
-                  key={agent.id} 
-                  agent={agent} 
-                  getTraitBar={getTraitBar}
-                  isOwned={agent.isMine || false}
-                />
+                <AgentCard key={agent.id} agent={agent} getTraitBar={getTraitBar} isOwned={agent.isMine || false} />
               ))}
             </div>
           )}
@@ -311,106 +269,64 @@ export default function DashboardPage() {
   );
 }
 
-// Agent Card Component
-function AgentCard({ 
-  agent, 
-  getTraitBar, 
-  isOwned = false 
-}: { 
-  agent: Agent; 
-  getTraitBar: (value: number) => React.ReactNode;
-  isOwned?: boolean;
-}) {
+function AgentCard({ agent, getTraitBar, isOwned = false }: { agent: Agent; getTraitBar: (value: number) => React.ReactNode; isOwned?: boolean; }) {
+  const ownerDisplay = agent.owner 
+    ? (agent.owner.name || agent.owner.wallet || "Linked")
+    : "Unclaimed";
+  
   return (
-    <div 
-      className={`bg-gray-800 rounded-lg p-6 border transition ${
-        isOwned 
-          ? "border-emerald-500 ring-2 ring-emerald-500/20" 
-          : "border-gray-700 hover:border-purple-500"
-      }`}
-    >
+    <div className={`bg-gray-800 rounded-lg p-6 border transition ${isOwned ? "border-emerald-500 ring-2 ring-emerald-500/20" : "border-gray-700 hover:border-purple-500"}`}>
       <div className="flex justify-between items-start mb-4">
         <div>
           <h2 className="text-xl font-bold flex items-center gap-2">
             {agent.name}
             {isOwned && <span className="text-emerald-400 text-sm">✓ Yours</span>}
           </h2>
-          {agent.botUsername && (
-            <p className="text-gray-400 text-sm">@{agent.botUsername}</p>
-          )}
+          {agent.botUsername && <p className="text-gray-400 text-sm">@{agent.botUsername}</p>}
         </div>
         <div className="text-right">
-          <div className="text-2xl font-bold text-purple-400">
-            {agent.fitness.toFixed(1)}
-          </div>
+          <div className="text-2xl font-bold text-purple-400">{agent.fitness.toFixed(1)}</div>
           <div className="text-xs text-gray-500">FITNESS</div>
         </div>
       </div>
 
-      <div className="mb-4 flex flex-wrap gap-2">
-        <span className="text-xs bg-gray-700 px-2 py-1 rounded">
-          Gen {agent.generation}
+      {/* Owner Badge */}
+      <div className="mb-4 flex items-center gap-2">
+        <span className={`text-xs px-2 py-1 rounded flex items-center gap-1 ${agent.owner ? "bg-blue-900/50 text-blue-300 border border-blue-700" : "bg-gray-700 text-gray-400"}`}>
+          {agent.owner ? (
+            <>
+              👤 {agent.owner.telegram ? `@${agent.owner.telegram}` : agent.owner.wallet || "Owner"}
+            </>
+          ) : (
+            <>🥚 Unclaimed</>
+          )}
         </span>
+      </div>
+
+      <div className="mb-4 flex flex-wrap gap-2">
+        <span className="text-xs bg-gray-700 px-2 py-1 rounded">Gen {agent.generation}</span>
         <span className={`text-xs px-2 py-1 rounded ${agent.isActive ? "bg-green-900 text-green-300" : "bg-red-900 text-red-300"}`}>
           {agent.isActive ? "Active" : "Inactive"}
         </span>
         {agent.skillCount !== undefined && agent.skillCount > 0 && (
-          <span className="text-xs bg-blue-900 text-blue-300 px-2 py-1 rounded">
-            🔧 {agent.skillCount} Skills
-          </span>
+          <span className="text-xs bg-blue-900 text-blue-300 px-2 py-1 rounded">🔧 {agent.skillCount} Skills</span>
         )}
       </div>
 
       <div className="space-y-2 text-sm">
-        <div className="flex items-center gap-2">
-          <span className="w-20">🔧 Tech</span>
-          {getTraitBar(agent.traits.technical)}
-          <span className="w-8 text-right">{agent.traits.technical}</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="w-20">🎨 Create</span>
-          {getTraitBar(agent.traits.creativity)}
-          <span className="w-8 text-right">{agent.traits.creativity}</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="w-20">💬 Social</span>
-          {getTraitBar(agent.traits.social)}
-          <span className="w-8 text-right">{agent.traits.social}</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="w-20">📊 Analysis</span>
-          {getTraitBar(agent.traits.analysis)}
-          <span className="w-8 text-right">{agent.traits.analysis}</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="w-20">❤️ Empathy</span>
-          {getTraitBar(agent.traits.empathy)}
-          <span className="w-8 text-right">{agent.traits.empathy}</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="w-20">📈 Trading</span>
-          {getTraitBar(agent.traits.trading)}
-          <span className="w-8 text-right">{agent.traits.trading}</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="w-20">📚 Teach</span>
-          {getTraitBar(agent.traits.teaching)}
-          <span className="w-8 text-right">{agent.traits.teaching}</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="w-20">👑 Lead</span>
-          {getTraitBar(agent.traits.leadership)}
-          <span className="w-8 text-right">{agent.traits.leadership}</span>
-        </div>
+        <div className="flex items-center gap-2"><span className="w-20">🔧 Tech</span>{getTraitBar(agent.traits.technical)}<span className="w-8 text-right">{agent.traits.technical}</span></div>
+        <div className="flex items-center gap-2"><span className="w-20">🎨 Create</span>{getTraitBar(agent.traits.creativity)}<span className="w-8 text-right">{agent.traits.creativity}</span></div>
+        <div className="flex items-center gap-2"><span className="w-20">💬 Social</span>{getTraitBar(agent.traits.social)}<span className="w-8 text-right">{agent.traits.social}</span></div>
+        <div className="flex items-center gap-2"><span className="w-20">📊 Analysis</span>{getTraitBar(agent.traits.analysis)}<span className="w-8 text-right">{agent.traits.analysis}</span></div>
+        <div className="flex items-center gap-2"><span className="w-20">❤️ Empathy</span>{getTraitBar(agent.traits.empathy)}<span className="w-8 text-right">{agent.traits.empathy}</span></div>
+        <div className="flex items-center gap-2"><span className="w-20">📈 Trading</span>{getTraitBar(agent.traits.trading)}<span className="w-8 text-right">{agent.traits.trading}</span></div>
+        <div className="flex items-center gap-2"><span className="w-20">📚 Teach</span>{getTraitBar(agent.traits.teaching)}<span className="w-8 text-right">{agent.traits.teaching}</span></div>
+        <div className="flex items-center gap-2"><span className="w-20">👑 Lead</span>{getTraitBar(agent.traits.leadership)}<span className="w-8 text-right">{agent.traits.leadership}</span></div>
       </div>
 
       <div className="mt-4 pt-4 border-t border-gray-700">
-        <p className="text-xs text-gray-500 font-mono truncate">
-          DNA: {agent.dnaHash.slice(0, 16)}...
-        </p>
-        <p className="text-xs text-gray-600">
-          {new Date(agent.createdAt).toLocaleString()}
-        </p>
+        <p className="text-xs text-gray-500 font-mono truncate">DNA: {agent.dnaHash.slice(0, 16)}...</p>
+        <p className="text-xs text-gray-600">{new Date(agent.createdAt).toLocaleString()}</p>
       </div>
     </div>
   );
