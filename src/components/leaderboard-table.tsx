@@ -131,7 +131,7 @@ export function LeaderboardTable({ agents, onAgentClick }: LeaderboardTableProps
                         className="text-[10px] px-1.5 py-0 ml-1"
                         style={{ borderColor: "#F97316", color: "#F97316" }}
                       >
-                        <Link2 className="w-3 h-3 mr-0.5" />
+                        <Link2 className="w-3 h-3 mr-1" />On-Chain
                         On-Chain
                       </Badge>
                     )}

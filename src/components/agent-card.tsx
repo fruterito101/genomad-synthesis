@@ -219,7 +219,7 @@ export function AgentCard({
               </div>
             )}
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1"><Badge variant="outline" style={{ borderColor: rarity.color, color: rarity.color }}>{rarity.label}</Badge>{agent.tokenId && <Badge variant="outline" className="text-[10px]" style={{ borderColor: "#F97316", color: "#F97316" }}><Link2 className="w-3 h-3" /></Badge>}</div>
+              <div className="flex items-center gap-1"><Badge variant="outline" style={{ borderColor: rarity.color, color: rarity.color }}>{rarity.label}</Badge>{agent.tokenId && <Badge variant="outline" className="text-[10px]" style={{ borderColor: "#F97316", color: "#F97316" }}><Link2 className="w-3 h-3 mr-0.5" />On-Chain</Badge>}</div>
               <span className="text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">{agent.fitness.toFixed(1)}</span>
             </div>
             {agent.isActive && (
@@ -268,12 +268,6 @@ export function AgentCard({
             {agent.tokenId && (
               <Badge variant="outline" className="text-[10px] sm:text-xs" style={{ borderColor: "#F97316", color: "#F97316" }}>
                 <Link2 className="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-1" />On-Chain
-              </Badge>
-            )}
-            {isOnChain && (
-              <Badge variant="outline" className="text-[10px] sm:text-xs border-amber-500 text-amber-500">
-                <Zap className="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-1" />
-                {labels.onChain}
               </Badge>
             )}
           </div>
