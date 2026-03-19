@@ -228,3 +228,95 @@ export const verificationCodesRelations = relations(verificationCodes, ({ one })
     references: [agents.id],
   }),
 }));
+
+// ============================================
+// CUSTODY SHARES - Co-ownership de agentes
+// ============================================
+export const custodyShares = pgTable("custody_shares", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  
+  // El agente con custodia compartida
+  agentId: uuid("agent_id").notNull(),
+  
+  // El co-owner
+  ownerId: uuid("owner_id").notNull(),
+  
+  // Porcentaje de custodia (0-100, con decimales)
+  share: real("share").notNull(),
+  
+  // Origen: 'direct' (padre directo) | 'inherited' (de generaciones anteriores)
+  source: text("source").default("direct").notNull(),
+  
+  // De qué padre heredó (si source = 'inherited')
+  inheritedFromAgentId: uuid("inherited_from_agent_id"),
+  
+  // Timestamps
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => [
+  index("custody_agent_idx").on(table.agentId),
+  index("custody_owner_idx").on(table.ownerId),
+]);
+
+// ============================================
+// ACTION APPROVALS - Aprobaciones para acciones
+// ============================================
+export const actionApprovals = pgTable("action_approvals", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  
+  // El agente sobre el que se hace la acción
+  agentId: uuid("agent_id").notNull(),
+  
+  // Tipo de acción: 'rename' | 'transfer' | 'deactivate' | 'breed'
+  actionType: text("action_type").notNull(),
+  
+  // Quién propuso la acción
+  proposedBy: uuid("proposed_by").notNull(),
+  
+  // Datos de la acción (JSON)
+  actionData: jsonb("action_data"),
+  
+  // Status: 'pending' | 'approved' | 'rejected' | 'expired'
+  status: text("status").default("pending").notNull(),
+  
+  // Aprobaciones recibidas (array de owner IDs)
+  approvedBy: jsonb("approved_by").default([]).notNull(),
+  rejectedBy: jsonb("rejected_by").default([]).notNull(),
+  
+  // % de aprobación requerido
+  requiredShare: real("required_share").default(50).notNull(),
+  
+  // Timestamps
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  expiresAt: timestamp("expires_at").notNull(),
+  resolvedAt: timestamp("resolved_at"),
+}, (table) => [
+  index("approvals_agent_idx").on(table.agentId),
+  index("approvals_status_idx").on(table.status),
+]);
+
+// Relations for custody
+export const custodySharesRelations = relations(custodyShares, ({ one }) => ({
+  agent: one(agents, {
+    fields: [custodyShares.agentId],
+    references: [agents.id],
+  }),
+  owner: one(users, {
+    fields: [custodyShares.ownerId],
+    references: [users.id],
+  }),
+  inheritedFromAgent: one(agents, {
+    fields: [custodyShares.inheritedFromAgentId],
+    references: [agents.id],
+  }),
+}));
+
+export const actionApprovalsRelations = relations(actionApprovals, ({ one }) => ({
+  agent: one(agents, {
+    fields: [actionApprovals.agentId],
+    references: [agents.id],
+  }),
+  proposer: one(users, {
+    fields: [actionApprovals.proposedBy],
+    references: [users.id],
+  }),
+}));
