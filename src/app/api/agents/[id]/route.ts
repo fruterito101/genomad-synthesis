@@ -7,6 +7,7 @@ import { getUserByPrivyId } from "@/lib/db";
 import { getDb } from "@/lib/db/client";
 import { agents, breedingRequests } from "@/lib/db/schema";
 import { eq, or } from "drizzle-orm";
+import { getUserCustodyShare } from "@/lib/custody";
 
 // GET - Detalles del agente
 export async function GET(
@@ -35,6 +36,9 @@ export async function GET(
     }
 
     const isOwner = agent.ownerId === user.id;
+    const custodyShare = await getUserCustodyShare(id, user.id);
+    const isCoOwner = custodyShare > 0;
+    const canManage = isOwner || isCoOwner;
 
     // Buscar padres
     let parents: { parentA?: typeof agent; parentB?: typeof agent } = {};
@@ -66,6 +70,8 @@ export async function GET(
         isActive: agent.isActive,
         createdAt: agent.createdAt,
         isOwner,
+        isCoOwner,
+        custodyShare,
       },
       parents: {
         parentA: parents.parentA ? { id: parents.parentA.id, name: parents.parentA.name, dnaHash: parents.parentA.dnaHash, fitness: parents.parentA.fitness } : null,
@@ -74,7 +80,8 @@ export async function GET(
       children: children.map((c) => ({ id: c.id, name: c.name, dnaHash: c.dnaHash, fitness: c.fitness, generation: c.generation })),
       canDelete: isOwner && children.length === 0 && !agent.tokenId,
       canUnlink: isOwner,
-      canToggleActive: isOwner,
+      canToggleActive: canManage, // Co-owners can toggle
+      canRename: canManage, // Co-owners can rename
     });
   } catch (error) {
     console.error("Get agent error:", error);
@@ -104,7 +111,12 @@ export async function PATCH(
       return NextResponse.json({ error: "Agent not found" }, { status: 404 });
     }
 
-    if (agent.ownerId !== user.id) {
+    // Check if user is owner OR co-owner
+    const custodyShare = await getUserCustodyShare(id, user.id);
+    const isOwner = agent.ownerId === user.id;
+    const isCoOwner = custodyShare > 0;
+    
+    if (!isOwner && !isCoOwner) {
       return NextResponse.json({ error: "Not authorized" }, { status: 403 });
     }
 
