@@ -1,22 +1,23 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
-import resourcesToBackend from 'i18next-resources-to-backend';
+
+// Import translations directly for synchronous loading
+import esTranslation from '../locales/es/translation.json';
+import enTranslation from '../locales/en/translation.json';
+
+const resources = {
+  es: { translation: esTranslation },
+  en: { translation: enTranslation },
+};
 
 i18n
-  .use(resourcesToBackend((language: string, namespace: string) =>
-    import(`../locales/${language}/${namespace}.json`)
-  ))
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({
+    resources,
     supportedLngs: ['en', 'es'],
-    fallbackLng: (code) => {
-      if (code && code.toLowerCase().startsWith('en')) {
-        return ['en'];
-      }
-      return ['es']; // Spanish-first (Mexico audience)
-    },
+    fallbackLng: 'es', // Spanish-first (Mexico audience)
     defaultNS: 'translation',
     interpolation: {
       escapeValue: false,
@@ -25,6 +26,9 @@ i18n
       order: ['localStorage', 'navigator'],
       caches: ['localStorage'],
       lookupLocalStorage: 'i18nextLng',
+    },
+    react: {
+      useSuspense: false, // Prevent suspense issues
     },
   });
 

@@ -19,11 +19,8 @@ export function I18nProvider({ children }: I18nProviderProps) {
     }
   }, []);
 
-  // Wait for i18n to be ready
-  if (!isInitialized) {
-    return null; // Or a loading spinner
-  }
-
+  // Show children immediately with fallback - no blank screen
+  // i18n will update the content once loaded
   return (
     <I18nextProvider i18n={i18n}>
       {children}
