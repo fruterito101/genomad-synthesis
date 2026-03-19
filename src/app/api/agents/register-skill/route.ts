@@ -37,11 +37,11 @@ export async function POST(request: NextRequest) {
 
     const db = getDb();
 
-    // Verificar si ya existe
+    // Buscar por NOMBRE (no por hash) - así el agente puede evolucionar
     const [existing] = await db
       .select()
       .from(agents)
-      .where(eq(agents.dnaHash, dnaHash))
+      .where(eq(agents.name, name))
       .limit(1);
 
     // Calcular fitness
@@ -49,12 +49,14 @@ export async function POST(request: NextRequest) {
     const traitsWithSkills = { ...traits, skillCount: skillCount || 0 };
 
     if (existing) {
-      // ACTUALIZAR el agente existente con nuevos datos
+      // ACTUALIZAR el agente existente (DNA puede cambiar/evolucionar)
       await db
         .update(agents)
         .set({
+          dnaHash,  // Actualizar hash si cambió
           traits: traitsWithSkills,
           fitness,
+          botUsername: botUsername || existing.botUsername,
           updatedAt: new Date(),
         })
         .where(eq(agents.id, existing.id));
@@ -66,15 +68,15 @@ export async function POST(request: NextRequest) {
         action: "updated",
         agent: {
           id: existing.id,
-          name: existing.name,
-          dnaHash: existing.dnaHash,
+          name: name,
+          dnaHash: dnaHash,
           traits: traits,
           skillCount: skillCount,
           fitness: fitness,
           generation: existing.generation,
           createdAt: existing.createdAt,
         },
-        message: "Agent updated with latest traits!",
+        message: "Agent DNA updated! Your agent has evolved.",
       });
     }
 
@@ -157,5 +159,24 @@ export async function GET(_request: NextRequest) {
   } catch (error) {
     console.error("List agents error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+}
+
+// DELETE: Borrar agente por ID (para limpiar duplicados)
+export async function DELETE(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get("id");
+    
+    if (!id) {
+      return NextResponse.json({ error: "Agent ID required" }, { status: 400 });
+    }
+
+    const db = getDb();
+    await db.delete(agents).where(eq(agents.id, id));
+
+    return NextResponse.json({ success: true, message: "Agent deleted" });
+  } catch (error) {
+    return NextResponse.json({ error: "Delete failed" }, { status: 500 });
   }
 }
