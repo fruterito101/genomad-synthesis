@@ -18,7 +18,7 @@ const footerLinks = {
     { label: "Blog", href: "/blog" }
   ],
   community: [
-    { label: "Discord", href: "https://discord.gg/genomad" },
+    { label: "GitHub", href: "https://github.com/fruterito101/genomad" },
     { label: "Twitter", href: "https://twitter.com/genomad" },
     { label: "Telegram", href: "https://t.me/genomad" }
   ]
@@ -26,7 +26,7 @@ const footerLinks = {
 
 const socialLinks = [
   { icon: "𝕏", href: "https://twitter.com/genomad", label: "Twitter" },
-  { icon: "💬", href: "https://discord.gg/genomad", label: "Discord" },
+  { icon: "📦", href: "https://github.com/fruterito101/genomad", label: "GitHub" },
   { icon: "📱", href: "https://t.me/genomad", label: "Telegram" },
   { icon: "📂", href: "https://github.com/genomad", label: "GitHub" }
 ];
