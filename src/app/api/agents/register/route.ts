@@ -1,12 +1,22 @@
 // src/app/api/agents/register/route.ts
 // Ticket 7.1: Registrar agente desde web
+// Ticket 2.3: Return commitment for on-chain mint
 
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth/middleware";
 import { createAgent, getUserByPrivyId } from "@/lib/db";
 import { heuristicsEngine } from "@/lib/heuristics";
 import { calculateDNAHash, calculateTotalFitness } from "@/lib/genetic";
+import { keccak256, toHex } from "viem";
 import type { AgentDNA } from "@/lib/genetic/types";
+
+/**
+ * Generate DNA commitment for on-chain registration
+ * commitment = keccak256(dnaHash)
+ */
+function generateCommitment(dnaHash: string): `0x${string}` {
+  return keccak256(toHex(dnaHash));
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -67,7 +77,10 @@ export async function POST(request: NextRequest) {
       hash: calculateDNAHash(dnaBase),
     };
 
-    // 7. Guardar en DB
+    // 7. Generate commitment for on-chain
+    const commitment = generateCommitment(dna.hash);
+
+    // 8. Guardar en DB (with commitment)
     const agent = await createAgent({
       ownerId: user.id,
       name,
@@ -76,6 +89,7 @@ export async function POST(request: NextRequest) {
       generation: 0,
       lineage: [],
       fitness,
+      commitment, // Store commitment for later verification
     });
 
     return NextResponse.json({
@@ -87,10 +101,20 @@ export async function POST(request: NextRequest) {
         traits: agent.traits,
         fitness: agent.fitness,
         generation: agent.generation,
+        // For on-chain registration
+        commitment: commitment,
       },
       analysis: {
         confidence: analysisResult.totalConfidence,
         warnings: analysisResult.warnings,
+      },
+      // Instructions for frontend
+      onChain: {
+        commitment: commitment,
+        contractAddress: process.env.NEXT_PUBLIC_GENOMAD_NFT_ADDRESS || "0x190fd355ED38e82a2390C07222C4BcB4DbC4cD20",
+        functionName: "registerAgent",
+        args: [commitment],
+        syncEndpoint: `/api/agents/${agent.id}/onchain`,
       },
     });
   } catch (error) {
