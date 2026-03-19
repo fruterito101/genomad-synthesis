@@ -133,7 +133,7 @@ function BreedingContent() {
         });
         const execData = await execRes.json();
         if (!execRes.ok) { setError(execData.error || "Breeding execution failed"); return; }
-        setResult({ id: breedingCheck.requestId, child: execData.child, breeding: execData.breeding, executed: true });
+        setResult({ id: breedingCheck.requestId, status: "COMPLETED", createdAt: new Date().toISOString(), child: execData.child, breeding: execData.breeding, executed: true });
         setShowSuccessModal(true);
         fetchAgents();
         return;
