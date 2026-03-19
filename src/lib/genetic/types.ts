@@ -54,6 +54,7 @@ export interface BreedingOptions {
   mutationRate?: number;
   mutationRange?: number;
   validateParents?: boolean;
+  childName?: string;
 }
 
 export interface BreedingResult {
