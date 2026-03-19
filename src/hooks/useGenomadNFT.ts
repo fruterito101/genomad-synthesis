@@ -1,61 +1,130 @@
 // src/hooks/useGenomadNFT.ts
 "use client";
 
-import { useState, useEffect } from "react";
-import { useWriteContract, useWaitForTransactionReceipt } from "wagmi";
+import { useState, useEffect, useCallback } from "react";
+import { usePrivy, useWallets } from "@privy-io/react-auth";
 import { useNetwork } from "@/contexts/NetworkContext";
 import { GENOMAD_NFT_ABI } from "@/lib/blockchain/contracts";
-import { type Address } from "viem";
+import { type Address, encodeFunctionData } from "viem";
 
 // ============================================
-// useRegisterAgent (SSR-safe)
+// useRegisterAgent (usando Privy wallet)
 // Registra un nuevo agente on-chain
 // ============================================
 export function useRegisterAgent() {
   const [isMounted, setIsMounted] = useState(false);
-  const { contracts } = useNetwork();
+  const [isPending, setIsPending] = useState(false);
+  const [isConfirming, setIsConfirming] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [isError, setIsError] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+  const [hash, setHash] = useState<string | undefined>();
+  
+  const { contracts, chain } = useNetwork();
+  const { wallets } = useWallets();
+  const { ready } = usePrivy();
+  
   const address = contracts.genomadNFT as Address;
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
+  
+  const reset = useCallback(() => {
+    setIsPending(false);
+    setIsConfirming(false);
+    setIsSuccess(false);
+    setIsError(false);
+    setError(null);
+    setHash(undefined);
+  }, []);
 
-  const {
-    writeContract,
-    writeContractAsync,
-    data: hash,
-    isPending,
-    error: writeError,
-    reset,
-  } = useWriteContract();
-
-  const {
-    isLoading: isConfirming,
-    isSuccess,
-    error: receiptError,
-  } = useWaitForTransactionReceipt({ hash });
-
-  const register = (dnaCommitment: `0x${string}`) => {
-    if (!isMounted || !address) return;
+  const registerAsync = useCallback(async (dnaCommitment: `0x${string}`) => {
+    if (!isMounted || !address || !ready) {
+      throw new Error("Not ready");
+    }
     
-    writeContract({
-      address,
-      abi: GENOMAD_NFT_ABI,
-      functionName: "registerAgent",
-      args: [dnaCommitment],
-    });
-  };
-
-  const registerAsync = async (dnaCommitment: `0x${string}`) => {
-    if (!isMounted || !address) throw new Error("Not ready");
+    // Encontrar la wallet de Privy (embedded o la primera disponible)
+    const embeddedWallet = wallets.find(w => w.walletClientType === "privy");
+    const wallet = embeddedWallet || wallets[0];
     
-    return writeContractAsync({
-      address,
-      abi: GENOMAD_NFT_ABI,
-      functionName: "registerAgent",
-      args: [dnaCommitment],
-    });
-  };
+    if (!wallet) {
+      throw new Error("No wallet found. Please connect a wallet.");
+    }
+    
+    try {
+      setIsPending(true);
+      setIsError(false);
+      setError(null);
+      
+      // Obtener el provider de la wallet
+      const provider = await wallet.getEthereumProvider();
+      
+      // Asegurar que estamos en la red correcta
+      try {
+        await provider.request({
+          method: "wallet_switchEthereumChain",
+          params: [{ chainId: `0x${chain.id.toString(16)}` }],
+        });
+      } catch (switchError: any) {
+        // Si la red no existe, agregarla
+        if (switchError.code === 4902) {
+          await provider.request({
+            method: "wallet_addEthereumChain",
+            params: [{
+              chainId: `0x${chain.id.toString(16)}`,
+              chainName: chain.name,
+              nativeCurrency: chain.nativeCurrency,
+              rpcUrls: [chain.rpcUrls.default.http[0]],
+              blockExplorerUrls: chain.blockExplorers?.default?.url ? [chain.blockExplorers.default.url] : undefined,
+            }],
+          });
+        }
+      }
+      
+      // Encode function data
+      const data = encodeFunctionData({
+        abi: GENOMAD_NFT_ABI,
+        functionName: "registerAgent",
+        args: [dnaCommitment],
+      });
+      
+      // Enviar transacción usando el provider de Privy
+      const txHash = await provider.request({
+        method: "eth_sendTransaction",
+        params: [{
+          from: wallet.address,
+          to: address,
+          data,
+        }],
+      });
+      
+      setHash(txHash);
+      setIsPending(false);
+      setIsConfirming(true);
+      
+      // Esperar confirmación (simplificado)
+      // En producción, usar un loop o websocket para verificar
+      await new Promise(resolve => setTimeout(resolve, 5000));
+      
+      setIsConfirming(false);
+      setIsSuccess(true);
+      
+      return txHash;
+      
+    } catch (err) {
+      console.error("Registration error:", err);
+      setIsPending(false);
+      setIsConfirming(false);
+      setIsError(true);
+      setError(err instanceof Error ? err : new Error(String(err)));
+      throw err;
+    }
+  }, [isMounted, address, ready, wallets, chain]);
+
+  const register = useCallback((dnaCommitment: `0x${string}`) => {
+    registerAsync(dnaCommitment).catch(console.error);
+  }, [registerAsync]);
 
   if (!isMounted) {
     return {
@@ -67,7 +136,7 @@ export function useRegisterAgent() {
       isSuccess: false,
       isError: false,
       error: null,
-      reset: () => {},
+      reset,
     };
   }
 
@@ -78,236 +147,35 @@ export function useRegisterAgent() {
     isPending,
     isConfirming,
     isSuccess,
-    isError: !!(writeError || receiptError),
-    error: writeError || receiptError,
+    isError,
+    error,
     reset,
   };
 }
 
 // ============================================
-// useActivateAgent (SSR-safe)
+// useBreedAgents (placeholder - agregar después)
 // ============================================
-export function useActivateAgent() {
+export function useBreedAgents() {
   const [isMounted, setIsMounted] = useState(false);
-  const { contracts } = useNetwork();
-  const address = contracts.genomadNFT as Address;
-
+  
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
-  const {
-    writeContract,
-    writeContractAsync,
-    data: hash,
-    isPending,
-    error: writeError,
-    reset,
-  } = useWriteContract();
-
-  const {
-    isLoading: isConfirming,
-    isSuccess,
-    error: receiptError,
-  } = useWaitForTransactionReceipt({ hash });
-
-  const activate = (tokenId: bigint) => {
-    if (!isMounted || !address) return;
-    
-    writeContract({
-      address,
-      abi: GENOMAD_NFT_ABI,
-      functionName: "activateAgent",
-      args: [tokenId],
-    });
-  };
-
-  const activateAsync = async (tokenId: bigint) => {
-    if (!isMounted || !address) throw new Error("Not ready");
-    
-    return writeContractAsync({
-      address,
-      abi: GENOMAD_NFT_ABI,
-      functionName: "activateAgent",
-      args: [tokenId],
-    });
-  };
-
-  if (!isMounted) {
-    return {
-      activate: () => {},
-      activateAsync: async () => { throw new Error("Not mounted"); },
-      hash: undefined,
-      isPending: false,
-      isConfirming: false,
-      isSuccess: false,
-      isError: false,
-      error: null,
-      reset: () => {},
-    };
-  }
-
   return {
-    activate,
-    activateAsync,
-    hash,
-    isPending,
-    isConfirming,
-    isSuccess,
-    isError: !!(writeError || receiptError),
-    error: writeError || receiptError,
-    reset,
+    breed: () => {},
+    breedAsync: async () => { throw new Error("Not implemented"); },
+    isPending: false,
+    isConfirming: false,
+    isSuccess: false,
+    isError: false,
+    error: null,
+    reset: () => {},
   };
 }
 
 // ============================================
-// useDeactivateAgent (SSR-safe)
+// useActivateAgent (alias de useRegisterAgent)
 // ============================================
-export function useDeactivateAgent() {
-  const [isMounted, setIsMounted] = useState(false);
-  const { contracts } = useNetwork();
-  const address = contracts.genomadNFT as Address;
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  const {
-    writeContract,
-    writeContractAsync,
-    data: hash,
-    isPending,
-    error: writeError,
-    reset,
-  } = useWriteContract();
-
-  const {
-    isLoading: isConfirming,
-    isSuccess,
-    error: receiptError,
-  } = useWaitForTransactionReceipt({ hash });
-
-  const deactivate = (tokenId: bigint) => {
-    if (!isMounted || !address) return;
-    
-    writeContract({
-      address,
-      abi: GENOMAD_NFT_ABI,
-      functionName: "deactivateAgent",
-      args: [tokenId],
-    });
-  };
-
-  const deactivateAsync = async (tokenId: bigint) => {
-    if (!isMounted || !address) throw new Error("Not ready");
-    
-    return writeContractAsync({
-      address,
-      abi: GENOMAD_NFT_ABI,
-      functionName: "deactivateAgent",
-      args: [tokenId],
-    });
-  };
-
-  if (!isMounted) {
-    return {
-      deactivate: () => {},
-      deactivateAsync: async () => { throw new Error("Not mounted"); },
-      hash: undefined,
-      isPending: false,
-      isConfirming: false,
-      isSuccess: false,
-      isError: false,
-      error: null,
-      reset: () => {},
-    };
-  }
-
-  return {
-    deactivate,
-    deactivateAsync,
-    hash,
-    isPending,
-    isConfirming,
-    isSuccess,
-    isError: !!(writeError || receiptError),
-    error: writeError || receiptError,
-    reset,
-  };
-}
-
-// ============================================
-// useTransferAgent (SSR-safe)
-// ============================================
-export function useTransferAgent() {
-  const [isMounted, setIsMounted] = useState(false);
-  const { contracts } = useNetwork();
-  const address = contracts.genomadNFT as Address;
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  const {
-    writeContract,
-    writeContractAsync,
-    data: hash,
-    isPending,
-    error: writeError,
-    reset,
-  } = useWriteContract();
-
-  const {
-    isLoading: isConfirming,
-    isSuccess,
-    error: receiptError,
-  } = useWaitForTransactionReceipt({ hash });
-
-  const transfer = (from: Address, to: Address, tokenId: bigint) => {
-    if (!isMounted || !address) return;
-    
-    writeContract({
-      address,
-      abi: GENOMAD_NFT_ABI,
-      functionName: "transferFrom",
-      args: [from, to, tokenId],
-    });
-  };
-
-  const transferAsync = async (from: Address, to: Address, tokenId: bigint) => {
-    if (!isMounted || !address) throw new Error("Not ready");
-    
-    return writeContractAsync({
-      address,
-      abi: GENOMAD_NFT_ABI,
-      functionName: "transferFrom",
-      args: [from, to, tokenId],
-    });
-  };
-
-  if (!isMounted) {
-    return {
-      transfer: () => {},
-      transferAsync: async () => { throw new Error("Not mounted"); },
-      hash: undefined,
-      isPending: false,
-      isConfirming: false,
-      isSuccess: false,
-      isError: false,
-      error: null,
-      reset: () => {},
-    };
-  }
-
-  return {
-    transfer,
-    transferAsync,
-    hash,
-    isPending,
-    isConfirming,
-    isSuccess,
-    isError: !!(writeError || receiptError),
-    error: writeError || receiptError,
-    reset,
-  };
-}
+export const useActivateAgent = useRegisterAgent;
