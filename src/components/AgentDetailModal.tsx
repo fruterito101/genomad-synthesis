@@ -368,6 +368,16 @@ export function AgentDetailModal({ agent, isOpen, onClose }: AgentDetailModalPro
                                   {copied === 'token' ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
                                 </button>
                               </div>
+                              {/* View on Blockchain Button */}
+                              <a
+                                href={`https://testnet.monadexplorer.com/token/0x9f20494A0FbC929adAC553f4A2FCFa7D2b448Cf0?a=${details.agent.tokenId}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="mt-3 w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-primary/20 hover:bg-primary/30 text-primary font-medium transition"
+                              >
+                                <ExternalLink className="w-4 h-4" />
+                                Ver en Monad Explorer
+                              </a>
                             </div>
                           )}
 
