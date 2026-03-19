@@ -24,7 +24,7 @@
 
 | # | Tarea | Detalle | Estado |
 |---|-------|---------|--------|
-| 7 | **Config Chain** | Cambiar Sepolia → Monad | ❌ Pendiente |
+| 7 | **Config Chain** | Cambiar Sepolia → Monad | ✅ Completo |
 | 8 | **Hooks Usuario** | useRegisterAgent, useBreeding (user firma TX) | ❌ Pendiente |
 | 9 | **Sync DB ↔ Chain** | Acciones DB llamen contratos | ❌ Pendiente |
 | 10 | **Event Listeners** | Escuchar eventos on-chain | ❌ Pendiente |
