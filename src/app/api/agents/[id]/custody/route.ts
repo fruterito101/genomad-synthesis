@@ -47,7 +47,7 @@ export async function GET(
         isShared: false,
         shares: [{
           ownerId: agent.ownerId,
-          ownerName: owner?.displayName || owner?.telegramUsername || "Unknown",
+          ownerName: owner?.displayName || owner?.telegramUsername || (owner?.walletAddress ? `${owner.walletAddress.slice(0, 6)}...${owner.walletAddress.slice(-4)}` : "Anon"),
           share: 100,
           source: "original",
         }],
@@ -61,7 +61,7 @@ export async function GET(
       const [owner] = await db.select().from(users).where(eq(users.id, s.ownerId)).limit(1);
       return {
         ownerId: s.ownerId,
-        ownerName: owner?.displayName || owner?.telegramUsername || "Unknown",
+        ownerName: owner?.displayName || owner?.telegramUsername || (owner?.walletAddress ? `${owner.walletAddress.slice(0, 6)}...${owner.walletAddress.slice(-4)}` : "Anon"),
         ownerWallet: owner?.walletAddress ? `${owner.walletAddress.slice(0,6)}...${owner.walletAddress.slice(-4)}` : null,
         share: s.share,
         source: s.source,

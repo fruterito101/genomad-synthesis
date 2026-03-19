@@ -7,12 +7,12 @@ import { motion } from "framer-motion";
 import { 
   Dna, Shield, Crown, Cpu, Palette, MessageSquare, Brain, Heart, 
   TrendingUp, GraduationCap, Star, ExternalLink, Copy, Check, Activity, 
-  Trash2, Unlink, Power, AlertTriangle, Loader2 
+  Trash2, Unlink, Power, AlertTriangle, Loader2, Pencil, X, Save
 } from "lucide-react";
 import { CoOwnersDisplay } from "@/components/CoOwnersDisplay";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { 
-  Button, Badge,
+  Button, Badge, Input,
   Dialog, DialogContent, DialogHeader, DialogTitle,
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -22,6 +22,7 @@ import { useTranslation } from "react-i18next";
 
 interface AgentTraits { technical: number; creativity: number; social: number; analysis: number; empathy: number; trading: number; teaching: number; leadership: number; }
 interface Agent { id: string; name: string; botUsername: string | null; dnaHash: string; traits: AgentTraits | string | null; fitness: number; generation: number; isActive: boolean; createdAt?: string; commitment?: string | null; tokenId?: string | null; parentAId?: string | null; parentBId?: string | null; owner?: { wallet: string | null } | null; isMine?: boolean; }
+interface ParentInfo { id: string; name: string; dnaHash?: string; fitness?: number; }
 interface AgentDetailModalProps { 
   agent: Agent | null; 
   isOpen: boolean; 
@@ -45,6 +46,15 @@ export function AgentDetailModal({ agent, isOpen, onClose, onAgentUpdated, getAc
   const [showUnlinkConfirm, setShowUnlinkConfirm] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+  
+  // Parent info state
+  const [parentA, setParentA] = useState<ParentInfo | null>(null);
+  const [parentB, setParentB] = useState<ParentInfo | null>(null);
+  const [loadingParents, setLoadingParents] = useState(false);
+  
+  // Edit name state
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [editedName, setEditedName] = useState("");
 
   const traitConfig: Record<string, { icon: React.ElementType; color: string; labelKey: string }> = {
     technical: { icon: Cpu, color: "#3B82F6", labelKey: "dashboard.traits.technical" },
@@ -69,6 +79,52 @@ export function AgentDetailModal({ agent, isOpen, onClose, onAgentUpdated, getAc
     return { label: t("dashboard.rarity.common"), color: "#6B7280", bg: "rgba(107, 114, 128, 0.15)" };
   }
 
+  // Fetch parent info when modal opens
+  useEffect(() => {
+    if (!isOpen || !agent) {
+      setParentA(null);
+      setParentB(null);
+      setIsEditingName(false);
+      return;
+    }
+
+    const fetchParents = async () => {
+      if (!agent.parentAId && !agent.parentBId) return;
+      
+      setLoadingParents(true);
+      try {
+        const token = getAccessToken ? await getAccessToken() : null;
+        const headers: Record<string, string> = {};
+        if (token) headers.Authorization = `Bearer ${token}`;
+
+        // Fetch parent A
+        if (agent.parentAId) {
+          const resA = await fetch(`/api/agents/${agent.parentAId}`, { headers });
+          if (resA.ok) {
+            const dataA = await resA.json();
+            setParentA({ id: dataA.agent.id, name: dataA.agent.name, fitness: dataA.agent.fitness });
+          }
+        }
+
+        // Fetch parent B
+        if (agent.parentBId) {
+          const resB = await fetch(`/api/agents/${agent.parentBId}`, { headers });
+          if (resB.ok) {
+            const dataB = await resB.json();
+            setParentB({ id: dataB.agent.id, name: dataB.agent.name, fitness: dataB.agent.fitness });
+          }
+        }
+      } catch (err) {
+        console.error("Error fetching parents:", err);
+      } finally {
+        setLoadingParents(false);
+      }
+    };
+
+    fetchParents();
+    setEditedName(agent.name);
+  }, [isOpen, agent?.id, agent?.parentAId, agent?.parentBId, getAccessToken]);
+
   const safeTraits = useMemo(() => parseTraits(agent?.traits), [agent?.traits]);
   const rarity = useMemo(() => getRarity(safeTraits), [safeTraits, i18n.language]);
   const sortedTraits = useMemo(() => Object.entries(safeTraits).sort(([, a], [, b]) => b - a), [safeTraits]);
@@ -77,10 +133,33 @@ export function AgentDetailModal({ agent, isOpen, onClose, onAgentUpdated, getAc
   const canDelete = isMine && !agent?.tokenId;
   const canUnlink = isMine;
   const canToggle = isMine;
+  const canRename = isMine;
 
   if (!agent) return null;
 
   const copyHash = () => { navigator.clipboard.writeText(agent.dnaHash || ""); setCopied(true); setTimeout(() => setCopied(false), 2000); };
+
+  const handleSaveName = async () => {
+    if (!editedName.trim() || editedName === agent.name) {
+      setIsEditingName(false);
+      return;
+    }
+
+    setActionLoading("rename");
+    setActionError(null);
+    try {
+      const token = getAccessToken ? await getAccessToken() : null;
+      if (!token) { setActionError("No auth token"); setActionLoading(null); return; }
+      const res = await fetch(`/api/agents/${agent.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ name: editedName.trim() }),
+      });
+      if (!res.ok) { const data = await res.json(); throw new Error(data.error || "Error al renombrar"); }
+      onAgentUpdated?.();
+      setIsEditingName(false);
+    } catch (err: any) { setActionError(err.message); } finally { setActionLoading(null); }
+  };
 
   const handleToggleActive = async () => {
     setActionLoading("toggle");
@@ -134,8 +213,36 @@ export function AgentDetailModal({ agent, isOpen, onClose, onAgentUpdated, getAc
               <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${rarity.color}, var(--color-primary))` }}>
                 <Dna className="w-7 h-7 sm:w-8 sm:h-8 text-white" />
               </div>
-              <div>
-                <DialogTitle className="text-xl sm:text-2xl">{agent.name || (i18n.language === "es" ? "Agente Desconocido" : "Unknown Agent")}</DialogTitle>
+              <div className="flex-1">
+                {isEditingName ? (
+                  <div className="flex items-center gap-2">
+                    <Input
+                      value={editedName}
+                      onChange={(e) => setEditedName(e.target.value)}
+                      className="text-xl font-bold h-9"
+                      autoFocus
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") handleSaveName();
+                        if (e.key === "Escape") { setIsEditingName(false); setEditedName(agent.name); }
+                      }}
+                    />
+                    <Button size="icon" variant="ghost" onClick={handleSaveName} disabled={actionLoading === "rename"}>
+                      {actionLoading === "rename" ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4 text-emerald-500" />}
+                    </Button>
+                    <Button size="icon" variant="ghost" onClick={() => { setIsEditingName(false); setEditedName(agent.name); }}>
+                      <X className="w-4 h-4 text-muted-foreground" />
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <DialogTitle className="text-xl sm:text-2xl">{agent.name || (i18n.language === "es" ? "Agente Desconocido" : "Unknown Agent")}</DialogTitle>
+                    {canRename && (
+                      <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => setIsEditingName(true)}>
+                        <Pencil className="w-3.5 h-3.5 text-muted-foreground hover:text-primary" />
+                      </Button>
+                    )}
+                  </div>
+                )}
                 <div className="flex items-center gap-2 mt-1">
                   {agent.botUsername && <span className="text-sm text-muted-foreground">@{agent.botUsername}</span>}
                   <Badge variant="outline" style={{ borderColor: rarity.color, color: rarity.color }}><Star className="w-3 h-3 mr-1" />{rarity.label}</Badge>
@@ -221,12 +328,40 @@ export function AgentDetailModal({ agent, isOpen, onClose, onAgentUpdated, getAc
               </div>
             </div>
 
-            {/* Lineage */}
+            {/* Lineage with Names */}
             {(agent.parentAId || agent.parentBId) && (
               <div>
                 <h3 className="text-sm font-medium mb-3 flex items-center gap-2 text-muted-foreground"><Dna className="w-4 h-4" /> {t("agentDetail.lineage")}</h3>
                 <div className="p-4 rounded-xl bg-muted">
-                  <p className="text-sm text-muted-foreground">{i18n.language === "es" ? "Criado de" : "Bred from"} Parent A ({agent.parentAId?.slice(0, 8)}...) × Parent B ({agent.parentBId?.slice(0, 8)}...)</p>
+                  {loadingParents ? (
+                    <div className="flex items-center gap-2">
+                      <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+                      <span className="text-sm text-muted-foreground">{i18n.language === "es" ? "Cargando linaje..." : "Loading lineage..."}</span>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <p className="text-sm text-foreground font-medium">
+                        {i18n.language === "es" ? "Criado de:" : "Bred from:"}
+                      </p>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        {parentA && (
+                          <Link href={`/agents?highlight=${parentA.id}`} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 hover:bg-primary/20 transition-colors">
+                            <Crown className="w-3.5 h-3.5 text-primary" />
+                            <span className="text-sm font-medium text-primary">{parentA.name}</span>
+                            {parentA.fitness && <span className="text-xs text-muted-foreground">({parentA.fitness.toFixed(1)})</span>}
+                          </Link>
+                        )}
+                        {parentA && parentB && <span className="text-muted-foreground">×</span>}
+                        {parentB && (
+                          <Link href={`/agents?highlight=${parentB.id}`} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-accent/10 hover:bg-accent/20 transition-colors">
+                            <Crown className="w-3.5 h-3.5 text-accent" />
+                            <span className="text-sm font-medium text-accent">{parentB.name}</span>
+                            {parentB.fitness && <span className="text-xs text-muted-foreground">({parentB.fitness.toFixed(1)})</span>}
+                          </Link>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
