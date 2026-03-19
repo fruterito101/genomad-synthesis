@@ -46,3 +46,8 @@ contracts/cache/
 contracts/zk/target/
 circuits/node_modules/
 circuits/pot12_final.ptau
+
+# Playwright
+playwright-report/
+test-results/
+.playwright/
