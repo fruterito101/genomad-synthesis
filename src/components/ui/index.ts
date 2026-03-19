@@ -4,6 +4,25 @@ export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent }
 export { Badge, badgeVariants } from "./badge"
 export { Skeleton } from "./skeleton"
 export { Avatar, AvatarImage, AvatarFallback } from "./avatar"
+export {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarInset,
+  SidebarMenu,
+  SidebarMenuBadge,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarProvider,
+  SidebarRail,
+  SidebarSeparator,
+  SidebarTrigger,
+  useSidebar,
+} from "./sidebar"
 
 // Legacy Genomad components (for backwards compatibility)
 export { AnimatedText } from "./AnimatedText"
