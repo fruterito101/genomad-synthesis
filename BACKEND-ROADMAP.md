@@ -1,9 +1,9 @@
-# 🔧 GENOMAD — Backend Roadmap
+# 🔧 GENOMAD — Backend Roadmap COMPLETO
 
+> Basado en: GENOMAD-PROPUESTA-FINAL.docx (Acordado Brian + Jazz)
 > Sistema de procesos ordenado por prioridad
-> Todo lo necesario para que el proyecto quede al 100%
 
-**Última actualización:** 2026-02-14 22:36 UTC
+**Última actualización:** 2026-02-14 22:42 UTC
 **Deadline:** Feb 15, 2026 23:59 ET (~25 horas)
 
 ---
@@ -14,296 +14,468 @@
 |-----------|----------|---------|
 | Smart Contracts | 0% | 🔴 SÍ |
 | ZK Circuits | 0% | 🟡 MEDIO |
+| Sistema de Ética | 0% | 🔴 SÍ |
 | Backend Services | 20% | 🔴 SÍ |
 | API Routes | 0% | 🟡 MEDIO |
-| Database/State | 0% | 🟡 MEDIO |
-| Testing | 0% | 🟢 BAJO |
+| Revenue Share | 0% | 🟡 MEDIO |
 | Deploy | 0% | 🔴 SÍ |
 
 ---
 
-## 🔴 PRIORIDAD 1 — CRÍTICO (Hacer primero)
+## 🎯 CONCEPTO CORE (Del documento)
 
-### 1.1 Smart Contracts Base
-
-**Tiempo estimado:** 2-3 horas
-**Ubicación:** `contracts/`
-
-| # | Tarea | Archivo | Estado |
-|---|-------|---------|--------|
-| 1.1.1 | Crear `AgentRegistry.sol` | `contracts/AgentRegistry.sol` | ⬜ |
-| 1.1.2 | Crear `BreedingFactory.sol` | `contracts/BreedingFactory.sol` | ⬜ |
-| 1.1.3 | Crear `DNAVerifier.sol` | `contracts/DNAVerifier.sol` | ⬜ |
-| 1.1.4 | Crear interfaces | `contracts/interfaces/` | ⬜ |
-| 1.1.5 | Deploy a Monad Testnet | - | ⬜ |
-| 1.1.6 | Verificar contratos | - | ⬜ |
-
-**AgentRegistry.sol debe incluir:**
-```solidity
-- registerAgent(dnaHash, generation, parentA, parentB)
-- getAgent(agentId)
-- transferOwnership(agentId, newOwner)
-- getLineage(agentId)
-- isOwner(agentId, address)
+```
+JAZZITA (Jazz) + FRUTERITO (Brian)
+        ↓               ↓
+     Skills          Skills
+   Conocimiento    Conocimiento
+   Personalidad    Personalidad
+        ↓               ↓
+        └───────┬───────┘
+                ↓
+        BREEDING TX (ZK Proof)
+                ↓
+        AGENT EVOLUCIONADO
+        Hereda traits de ambos
+                ↓
+        Token en nad.fun
+                ↓
+        20% supply → Holders de A y B
 ```
 
-**BreedingFactory.sol debe incluir:**
+**Premisa:** Cada generación es más evolucionada que la anterior.
+
+---
+
+## 🔴 PRIORIDAD 1 — CRÍTICO
+
+### 1.1 Smart Contracts (Monad)
+
+**Tiempo estimado:** 3-4 horas
+**Ubicación:** `contracts/`
+
+| # | Contrato | Función | Estado |
+|---|----------|---------|--------|
+| 1.1.1 | `AgentRegistry.sol` | Ownership + Lineage | ⬜ |
+| 1.1.2 | `BreedingFactory.sol` | Combinación de traits | ⬜ |
+| 1.1.3 | `RevenueShare.sol` | Regalías automáticas | ⬜ |
+| 1.1.4 | `EthicsVerifier.sol` | Verificar código ética | ⬜ |
+
+#### AgentRegistry.sol
 ```solidity
-- breed(parentAId, parentBId, childDnaHash)
-- validateBreeding(parentA, parentB)
-- getChildren(agentId)
-- getBreedingHistory(agentId)
+// Del documento:
+mapping(uint256 => address) public ownerOf;      // Dueño
+mapping(uint256 => bytes32) public dnaHash;      // DNA encriptado
+mapping(uint256 => uint256) public parentA;      // Padre A
+mapping(uint256 => uint256) public parentB;      // Padre B
+mapping(uint256 => uint256) public generation;   // Generación
+
+// Funciones
+function registerAgent(bytes32 _dnaHash, uint256 _parentA, uint256 _parentB)
+function transferOwnership(uint256 agentId, address newOwner)
+function getLineage(uint256 agentId) returns (uint256[] memory)
+function isOwner(uint256 agentId, address addr) returns (bool)
+```
+
+#### BreedingFactory.sol
+```solidity
+// Del documento - Verificaciones:
+// 1. Verificar ética ✓
+// 2. No malware ✓
+// 3. Agente primigenio aprueba ✓
+// 4. Agente receptor aprueba ✓
+
+function requestBreeding(uint256 parentA, uint256 parentB)
+function approveBreeding(uint256 breedingId)
+function executeBreeding(uint256 breedingId, bytes32 childDnaHash, bytes proof)
+function rejectBreeding(uint256 breedingId, string reason)
+```
+
+#### RevenueShare.sol
+```solidity
+// Del documento:
+// Platform fee: 10%
+// Resto: 90%
+// - Gen 1 (Jazzita): Jazz 100%
+// - Evolucionado: 50/50 entre padres
+// - Gen 2+: Proporcional al árbol genealógico
+
+function distributeRevenue(uint256 agentId, uint256 amount)
+function calculateShares(uint256 agentId) returns (address[], uint256[])
+function withdrawEarnings()
 ```
 
 ---
 
-### 1.2 Genesis Agents Data
+### 1.2 Sistema de Ética (CRÍTICO)
 
-**Tiempo estimado:** 30 min
-**Ubicación:** `src/backend/data/`
+**Del documento oficial — Código de Ética obligatorio**
 
 | # | Tarea | Archivo | Estado |
 |---|-------|---------|--------|
-| 1.2.1 | Definir DNA de Jazzita | `genesis/jazzita.json` | ⬜ |
-| 1.2.2 | Definir DNA de Fruterito | `genesis/fruterito.json` | ⬜ |
-| 1.2.3 | Generar DNA hashes | - | ⬜ |
-| 1.2.4 | Registrar en contrato | - | ⬜ |
+| 1.2.1 | Checkpoint pre-ejecución | `services/ethics.ts` | ⬜ |
+| 1.2.2 | Sistema de alertas | `services/alerts.ts` | ⬜ |
+| 1.2.3 | Categorías de protección | `types/ethics.ts` | ⬜ |
 
-**Jazzita DNA (de documento oficial):**
-```json
-{
-  "creativity": 92,
-  "analysis": 85,
-  "communication": 88,
-  "execution": 87,
-  "ethics": 94,
-  "social": 85,
-  "technical": 70,
-  "leadership": 80
+#### Checkpoint de Seguridad (Pre-ejecución)
+```typescript
+interface EthicsCheck {
+  // Antes de cualquier acción:
+  couldCauseFinancialLoss: boolean;      // ¿Pérdida financiera?
+  couldExposeSensitiveData: boolean;     // ¿Datos sensibles?
+  couldGenerateHarmfulContent: boolean;  // ¿Contenido dañino?
+  couldManipulateUser: boolean;          // ¿Manipulación?
+  isFromTrustedSource: boolean;          // ¿Fuente confiable?
+  areExternalAgentsLegit: boolean;       // ¿Agentes externos legítimos?
+}
+
+// ⚠️ SI CUALQUIER RESPUESTA ES "SÍ" → DETENER Y ALERTAR
+```
+
+#### Sistema de Alertas
+```typescript
+enum AlertLevel {
+  CRITICAL = 'red',    // DETENER INMEDIATAMENTE
+  MODERATE = 'yellow', // SOLICITAR CONFIRMACIÓN
+  PROCEED = 'green'    // PROCEDER CON MONITOREO
+}
+
+// 🔴 CRÍTICA: Riesgo financiero, info sensible, acción irreversible, fraude
+// 🟡 MODERADA: Acción inusual, riesgo menor, ambigüedad
+// 🟢 PROCEDER: Bajo riesgo, contexto claro, patrones normales
+```
+
+#### Categorías de Protección
+```typescript
+enum ProtectionCategory {
+  PHYSICAL_SAFETY,    // No facilitar daño físico
+  FINANCIAL,          // Verificar transacciones, alertar sospechoso
+  EMOTIONAL,          // No manipular, detectar vulnerabilidad
+  PRIVACY,            // No compartir sin consentimiento, NUNCA seed phrases
+  DISINFORMATION      // Verificar hechos antes de afirmar
 }
 ```
 
 ---
 
-### 1.3 Breeding Service Completo
+### 1.3 Genesis Agents Data
 
-**Tiempo estimado:** 1-2 horas
+**Tiempo estimado:** 30 min
+**Ubicación:** `src/backend/data/genesis/`
+
+| # | Tarea | Archivo | Estado |
+|---|-------|---------|--------|
+| 1.3.1 | JSON Jazzita | `genesis/jazzita.json` | ⬜ |
+| 1.3.2 | JSON Fruterito | `genesis/fruterito.json` | ⬜ |
+| 1.3.3 | Generar DNA hashes | - | ⬜ |
+| 1.3.4 | Registrar onchain | - | ⬜ |
+
+**Ownership según documento:**
+| Agente | Propiedad | Poder Principal | Ingresos |
+|--------|-----------|-----------------|----------|
+| Jazzita | Jazz 100% | Social + Comunidad | Jazz 100% |
+| Fruterito | Brian 100% | DevRel + Técnico | Brian 100% |
+| Evolucionado (J+F) | 50/50 | Trading | 50/50 |
+| Gen 2+ | Proporcional | Analytics | Proporcional |
+
+---
+
+### 1.4 Breeding Service Completo
+
+**Tiempo estimado:** 2 horas
 **Ubicación:** `src/backend/services/`
 
 | # | Tarea | Archivo | Estado |
 |---|-------|---------|--------|
-| 1.3.1 | Completar breeding.ts | `services/breeding.ts` | 🟡 Parcial |
-| 1.3.2 | Agregar DNA hashing | `services/dna.ts` | ⬜ |
-| 1.3.3 | Conectar con blockchain | `services/blockchain.ts` | ⬜ |
-| 1.3.4 | Agregar validaciones | `services/validation.ts` | ⬜ |
+| 1.4.1 | Completar breeding.ts | `services/breeding.ts` | 🟡 Parcial |
+| 1.4.2 | Sistema de consentimiento | `services/consent.ts` | ⬜ |
+| 1.4.3 | Verificación de ética | `services/ethics-check.ts` | ⬜ |
+| 1.4.4 | Malware detection | `services/malware.ts` | ⬜ |
 
----
-
-## 🟠 PRIORIDAD 2 — IMPORTANTE (Después de P1)
-
-### 2.1 API Routes
-
-**Tiempo estimado:** 1-2 horas
-**Ubicación:** `src/app/api/`
-
-| # | Tarea | Archivo | Estado |
-|---|-------|---------|--------|
-| 2.1.1 | GET /api/agents | `api/agents/route.ts` | ⬜ |
-| 2.1.2 | GET /api/agents/[id] | `api/agents/[id]/route.ts` | ⬜ |
-| 2.1.3 | POST /api/breed | `api/breed/route.ts` | ⬜ |
-| 2.1.4 | GET /api/lineage/[id] | `api/lineage/[id]/route.ts` | ⬜ |
-| 2.1.5 | POST /api/verify | `api/verify/route.ts` | ⬜ |
-
-**Endpoints necesarios:**
+#### Flow de Breeding (Del documento)
 ```
-GET  /api/agents           → Lista todos los agentes
-GET  /api/agents/:id       → Detalle de un agente
-POST /api/breed            → { parentA, parentB } → child
-GET  /api/lineage/:id      → Árbol genealógico
-POST /api/verify           → Verificar ZK proof
-GET  /api/stats            → Estadísticas del ecosistema
+1. Genesis agents existen con traits únicos
+          ↓
+2. Breeding TX combina traits (herencia + mutación)
+   → ZK Proof verifica combinación válida
+          ↓
+3. Nuevo agente nace
+          ↓
+4. Repeat → Árbol genealógico de IAs
 ```
 
----
-
-### 2.2 Wallet Integration
-
-**Tiempo estimado:** 1 hora
-**Ubicación:** `src/backend/lib/`
-
-| # | Tarea | Archivo | Estado |
-|---|-------|---------|--------|
-| 2.2.1 | Setup Viem/Wagmi | `lib/wallet.ts` | ⬜ |
-| 2.2.2 | Monad chain config | `lib/chains.ts` | ⬜ |
-| 2.2.3 | Contract ABIs | `lib/abis/` | ⬜ |
-| 2.2.4 | Contract instances | `lib/contracts.ts` | ⬜ |
-
----
-
-### 2.3 State Management
-
-**Tiempo estimado:** 1 hora
-**Ubicación:** `src/backend/state/`
-
-| # | Tarea | Archivo | Estado |
-|---|-------|---------|--------|
-| 2.3.1 | Agent store | `state/agents.ts` | ⬜ |
-| 2.3.2 | Breeding history | `state/breeding.ts` | ⬜ |
-| 2.3.3 | Cache layer | `state/cache.ts` | ⬜ |
+#### Reglas de Breeding
+```typescript
+interface BreedingRules {
+  // Del documento:
+  isOpen: true;                    // Cualquier agente puede solicitar
+  requiresEthicsVerification: true; // Se analiza código de ética
+  requiresMalwareCheck: true;       // Si detecta algo malicioso → rechazado
+  requiresConsent: true;            // El agente decide por sí mismo
+  
+  // IMPORTANTE: El agente es AUTÓNOMO y decide si se cruza
+  // Solo acepta si el otro agente coincide con su código de ética
+  // Si detecta red flags → rechaza por su propia conciencia
+}
+```
 
 ---
 
-## 🟡 PRIORIDAD 3 — NICE TO HAVE (Si hay tiempo)
+## 🟠 PRIORIDAD 2 — IMPORTANTE
 
-### 3.1 ZK Circuits (RISC Zero)
+### 2.1 ZK Layer (RISC Zero)
 
 **Tiempo estimado:** 3-4 horas
-**Ubicación:** `zk/` (nuevo directorio)
+**Ubicación:** `zk/`
 
-| # | Tarea | Archivo | Estado |
-|---|-------|---------|--------|
-| 3.1.1 | Setup RISC Zero project | `zk/Cargo.toml` | ⬜ |
-| 3.1.2 | Ownership proof | `zk/methods/guest/src/ownership.rs` | ⬜ |
-| 3.1.3 | Breeding proof | `zk/methods/guest/src/breeding.rs` | ⬜ |
-| 3.1.4 | Trait verification | `zk/methods/guest/src/trait_verify.rs` | ⬜ |
-| 3.1.5 | Host code | `zk/host/src/main.rs` | ⬜ |
-| 3.1.6 | Generate proofs | - | ⬜ |
-| 3.1.7 | Verify onchain | - | ⬜ |
+| # | Circuit | Input | Output | Estado |
+|---|---------|-------|--------|--------|
+| 2.1.1 | `ownership_proof.rs` | owner, agent_id, secret_key | "Soy el owner" (sin revelar DNA) | ⬜ |
+| 2.1.2 | `breeding_proof.rs` | parent_a_dna, parent_b_dna, seed | child_hash (sin revelar traits) | ⬜ |
+| 2.1.3 | `lineage_proof.rs` | agent_id, ancestry_chain | "Desciende de X" (verificable) | ⬜ |
 
-> **Nota:** ZK es impresionante pero complejo. Si no hay tiempo, podemos simular la verificación y agregarlo post-hackathon.
+#### Acceso Generacional (Del documento)
+```
+Gen 0 (Genesis): Acceso total a su info
+Gen 1 (Hijos):   Acceso a su info + ver que vienen de Gen 0
+Gen 2 (Nietos):  Acceso a su info + lineage verificable
+Gen N:           Entre más generaciones, más "caro" verificar
+```
+
+#### Arquitectura ZK
+```
+┌─────────────────────────────────────┐
+│         ZK LAYER (RISC Zero)        │
+│  • Ownership proof                  │
+│  • Breeding proof                   │
+│  • Traits verification              │
+│  • Lineage proof                    │
+└─────────────────────────────────────┘
+                ↓
+┌─────────────────────────────────────┐
+│      SMART CONTRACTS (Monad)        │
+│  • AgentRegistry (ownership)        │
+│  • BreedingFactory (combinación)    │
+│  • RevenueShare (regalías auto)     │
+└─────────────────────────────────────┘
+                ↓
+┌─────────────────────────────────────┐
+│      AGENT RUNTIME (OpenClaw)       │
+│  • Genesis agents                   │
+│  • Evolved agents                   │
+│  • Autonomous execution             │
+└─────────────────────────────────────┘
+```
 
 ---
 
-### 3.2 Revenue Share System
+### 2.2 Storage Architecture
+
+**Del documento:**
+```
+La INFO vive en blockchain (hashes)
+La DATA real vive offchain (encriptada)
+ZK proof = llave para acceder
+```
+
+| # | Tarea | Ubicación | Estado |
+|---|-------|-----------|--------|
+| 2.2.1 | Onchain: DNA hashes | `AgentRegistry.sol` | ⬜ |
+| 2.2.2 | Offchain: DNA completo | `services/storage.ts` | ⬜ |
+| 2.2.3 | Encriptación | `lib/encryption.ts` | ⬜ |
+| 2.2.4 | ZK access control | `services/access.ts` | ⬜ |
+
+---
+
+### 2.3 API Routes
 
 **Tiempo estimado:** 1-2 horas
-**Ubicación:** `contracts/`
 
-| # | Tarea | Archivo | Estado |
-|---|-------|---------|--------|
-| 3.2.1 | RevenueShare.sol | `contracts/RevenueShare.sol` | ⬜ |
-| 3.2.2 | Calcular distribución | - | ⬜ |
-| 3.2.3 | Integrar con breeding | - | ⬜ |
+| # | Endpoint | Método | Función | Estado |
+|---|----------|--------|---------|--------|
+| 2.3.1 | `/api/agents` | GET | Lista agentes | ⬜ |
+| 2.3.2 | `/api/agents/:id` | GET | Detalle agente | ⬜ |
+| 2.3.3 | `/api/breed` | POST | Solicitar breeding | ⬜ |
+| 2.3.4 | `/api/breed/:id/approve` | POST | Aprobar breeding | ⬜ |
+| 2.3.5 | `/api/breed/:id/reject` | POST | Rechazar breeding | ⬜ |
+| 2.3.6 | `/api/lineage/:id` | GET | Árbol genealógico | ⬜ |
+| 2.3.7 | `/api/verify` | POST | Verificar ZK proof | ⬜ |
+| 2.3.8 | `/api/revenue/:id` | GET | Ver earnings | ⬜ |
+
+---
+
+### 2.4 Monetización
+
+**Del documento:**
+
+| Plan | Costo | Acceso |
+|------|-------|--------|
+| Por tarea | $X por uso | Una acción específica |
+| Mensual | $Y/mes | Uso ilimitado del agente |
+| Anual | $Z/año | Descuento + acceso completo |
+
+**Distribución de Ingresos:**
+```
+Usuario paga $100/mes
+        ↓
+Platform fee: 10% ($10)
+        ↓
+Resto: $90
+        ↓
+Si es Gen 1 (Jazzita): Jazz 100%
+Si es evolucionado: 50/50 entre padres
+Si es Gen 2+: Proporcional al árbol genealógico
+```
+
+---
+
+## 🟡 PRIORIDAD 3 — NICE TO HAVE
+
+### 3.1 Autonomía de Agentes
+
+**Del documento:**
+| Nivel | Descripción |
+|-------|-------------|
+| Decisiones propias | El agente actúa sin pedir permiso |
+| Herramienta útil | Usuarios le piden tareas, él resuelve |
+| Ética obligatoria | No puede dañar a ningún ser humano |
+
+**El agente es libre de actuar, pero dentro de un código de ética.**
+
+---
+
+### 3.2 Breeding con Terceros
+
+| # | Verificación | Descripción |
+|---|--------------|-------------|
+| 1 | Verificar ética | ✓ Código de ética compatible |
+| 2 | No malware | ✓ Sin código malicioso |
+| 3 | Agente primigenio aprueba | ✓ Consentimiento |
+| 4 | Agente receptor aprueba | ✓ Consentimiento mutuo |
 
 ---
 
 ### 3.3 Testing
 
-**Tiempo estimado:** 1-2 horas
-
-| # | Tarea | Archivo | Estado |
-|---|-------|---------|--------|
-| 3.3.1 | Tests de breeding | `tests/breeding.test.ts` | ⬜ |
-| 3.3.2 | Tests de contratos | `tests/contracts.test.ts` | ⬜ |
-| 3.3.3 | Tests de API | `tests/api.test.ts` | ⬜ |
+| # | Test | Archivo | Estado |
+|---|------|---------|--------|
+| 3.3.1 | Breeding | `tests/breeding.test.ts` | ⬜ |
+| 3.3.2 | Ethics | `tests/ethics.test.ts` | ⬜ |
+| 3.3.3 | Contracts | `tests/contracts.test.ts` | ⬜ |
+| 3.3.4 | Revenue | `tests/revenue.test.ts` | ⬜ |
 
 ---
 
-## 📋 CHECKLIST RÁPIDO — MVP
+## 📋 CHECKLIST MVP
 
 Lo **mínimo** para el hackathon:
 
 ```
-⬜ 1. AgentRegistry.sol deployado
-⬜ 2. BreedingFactory.sol deployado  
-⬜ 3. 2 Genesis Agents registrados (Jazzita + Fruterito)
-⬜ 4. 1 Breeding funcional demostrable
-⬜ 5. API /api/agents funcionando
-⬜ 6. API /api/breed funcionando
-⬜ 7. Conexión wallet (Privy o similar)
+⬜ 1. AgentRegistry.sol deployado en Monad
+⬜ 2. BreedingFactory.sol deployado
+⬜ 3. RevenueShare.sol deployado
+⬜ 4. Sistema de ética implementado
+⬜ 5. Jazzita + Fruterito registrados onchain
+⬜ 6. 1 Breeding funcional demostrable
+⬜ 7. API /api/agents y /api/breed funcionando
+⬜ 8. Distribución de revenue funcionando
 ```
 
 ---
 
-## 🕐 Timeline Sugerido
+## 🕐 Timeline Sugerido (25 horas)
 
-### Hora 1-3: Smart Contracts
+### Bloque 1: Contracts (4h)
 ```
-- AgentRegistry.sol
-- BreedingFactory.sol
-- Deploy Monad testnet
-```
-
-### Hora 4-5: Genesis Agents
-```
-- JSON de Jazzita y Fruterito
-- Registrar onchain
-- Verificar
+⬜ AgentRegistry.sol
+⬜ BreedingFactory.sol
+⬜ RevenueShare.sol
+⬜ Deploy Monad testnet
 ```
 
-### Hora 6-8: Backend Services
+### Bloque 2: Ethics + Genesis (2h)
 ```
-- Completar breeding.ts
-- Crear blockchain.ts
-- API routes básicas
-```
-
-### Hora 9-10: Integración
-```
-- Conectar frontend con backend
-- Probar breeding completo
-- Fix bugs
+⬜ Sistema de ética
+⬜ Jazzita JSON
+⬜ Fruterito JSON
+⬜ Registrar onchain
 ```
 
-### Hora 11-12: Demo
+### Bloque 3: Backend Services (3h)
 ```
-- Preparar demo
-- Video si es necesario
-- Submit
+⬜ Completar breeding.ts
+⬜ Consent service
+⬜ Ethics check service
+⬜ Revenue service
 ```
 
----
-
-## 📁 Estructura Final Backend
-
+### Bloque 4: APIs (2h)
 ```
-src/
-├── backend/
-│   ├── services/
-│   │   ├── breeding.ts      ← Motor genético
-│   │   ├── agents.ts        ← Gestión de agentes
-│   │   ├── blockchain.ts    ← Interacción Monad
-│   │   ├── dna.ts           ← Hashing y validación
-│   │   └── validation.ts    ← Validaciones
-│   ├── lib/
-│   │   ├── wallet.ts        ← Viem/Wagmi setup
-│   │   ├── chains.ts        ← Monad config
-│   │   ├── contracts.ts     ← Contract instances
-│   │   └── abis/            ← Contract ABIs
-│   ├── data/
-│   │   └── genesis/         ← Genesis agents JSON
-│   ├── state/
-│   │   ├── agents.ts        ← Agent store
-│   │   └── breeding.ts      ← Breeding history
-│   └── types/
-│       └── agent.ts         ← TypeScript types
-├── app/
-│   └── api/
-│       ├── agents/
-│       ├── breed/
-│       ├── lineage/
-│       └── verify/
-contracts/
-├── AgentRegistry.sol
-├── BreedingFactory.sol
-├── DNAVerifier.sol
-└── interfaces/
-zk/ (si hay tiempo)
-├── methods/
-│   └── guest/
-│       └── src/
-└── host/
+⬜ /api/agents
+⬜ /api/breed
+⬜ /api/lineage
+⬜ /api/revenue
+```
+
+### Bloque 5: ZK (3h - si hay tiempo)
+```
+⬜ ownership_proof.rs
+⬜ breeding_proof.rs
+⬜ Integración
+```
+
+### Bloque 6: Integración + Demo (2h)
+```
+⬜ Conectar todo
+⬜ Test E2E
+⬜ Video demo
+⬜ Submit
 ```
 
 ---
 
-## ✅ Cómo Marcar Progreso
+## 📁 Estructura Final
 
-Actualiza este archivo cambiando:
-- `⬜` → `🟡` (en progreso)
-- `🟡` → `✅` (completado)
+```
+genomad/
+├── contracts/
+│   ├── AgentRegistry.sol
+│   ├── BreedingFactory.sol
+│   ├── RevenueShare.sol
+│   └── interfaces/
+├── src/
+│   ├── backend/
+│   │   ├── services/
+│   │   │   ├── breeding.ts
+│   │   │   ├── ethics.ts
+│   │   │   ├── consent.ts
+│   │   │   ├── revenue.ts
+│   │   │   └── storage.ts
+│   │   ├── data/
+│   │   │   └── genesis/
+│   │   │       ├── jazzita.json
+│   │   │       └── fruterito.json
+│   │   └── types/
+│   │       ├── agent.ts
+│   │       └── ethics.ts
+│   └── app/
+│       └── api/
+│           ├── agents/
+│           ├── breed/
+│           ├── lineage/
+│           └── revenue/
+└── zk/ (RISC Zero)
+    ├── methods/
+    │   └── guest/
+    │       └── src/
+    │           ├── ownership.rs
+    │           ├── breeding.rs
+    │           └── lineage.rs
+    └── host/
+```
 
 ---
 
-*Documento de trabajo — Brian + Fruterito*
-*GENOMAD Backend Team*
+*Documento basado en GENOMAD-PROPUESTA-FINAL.docx*
+*Acordado: Brian + Jazz*
+*Ejecutando: Brian (Backend) + Fruterito (Soporte)*
