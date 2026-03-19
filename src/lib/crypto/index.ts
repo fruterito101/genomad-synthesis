@@ -92,3 +92,22 @@ export {
   toBase64Url,
   fromBase64Url,
 } from "./utils";
+
+// Wallet encryption for on-chain storage
+export {
+  encryptForWallet,
+  decryptWithWallet,
+  encryptForMultipleOwners,
+  decryptFromMultiOwner,
+  prepareAgentDataForChain,
+  recoverAgentDataFromChain,
+  serializeForOnChain,
+  deserializeFromOnChain,
+  deriveKeyFromWallet,
+} from "./wallet-encryption";
+
+export type {
+  OnChainEncryptedData,
+  MultiOwnerEncryptedData,
+} from "./wallet-encryption";
+
