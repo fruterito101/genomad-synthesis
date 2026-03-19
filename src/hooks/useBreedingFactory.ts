@@ -1,403 +1,188 @@
 // src/hooks/useBreedingFactory.ts
-"use client";
+// Hooks para interactuar con BreedingFactory contract
 
-import { useState, useEffect } from "react";
 import { useWriteContract, useWaitForTransactionReceipt, useReadContract } from "wagmi";
-import { useNetwork } from "@/contexts/NetworkContext";
-import { BREEDING_FACTORY_ABI } from "@/lib/blockchain/contracts";
-import { type Address } from "viem";
+import { CONTRACTS, BREEDING_FACTORY_ABI } from "@/lib/blockchain/contracts";
+import { useCallback } from "react";
+import { parseEther } from "viem";
 
 // ============================================
-// useBreedingFee
-// Lee el fee actual de breeding (SSR-safe)
+// WRITE HOOKS
 // ============================================
-export function useBreedingFee() {
-  const [isMounted, setIsMounted] = useState(false);
-  const { contracts } = useNetwork();
-  const address = contracts.breedingFactory as Address;
 
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  const { data, isLoading, error, refetch } = useReadContract({
-    address,
-    abi: BREEDING_FACTORY_ABI,
-    functionName: "breedingFee",
-    query: {
-      enabled: isMounted && !!address,
-    },
+/**
+ * Request breeding between two agents (initiator pays fee)
+ */
+export function useRequestBreeding() {
+  const { writeContract, data: hash, isPending, error, reset } = useWriteContract();
+  
+  const { isLoading: isConfirming, isSuccess, data: receipt } = useWaitForTransactionReceipt({
+    hash,
   });
 
-  if (!isMounted) {
-    return {
-      fee: undefined,
-      isLoading: false,
-      error: null,
-      refetch: () => {},
-    };
-  }
-
-  return {
-    fee: data as bigint | undefined,
-    isLoading,
-    error,
-    refetch,
-  };
-}
-
-// ============================================
-// useRequestBreeding (SSR-safe)
-// ============================================
-export function useRequestBreeding() {
-  const [isMounted, setIsMounted] = useState(false);
-  const { contracts } = useNetwork();
-  const address = contracts.breedingFactory as Address;
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  const {
-    writeContract,
-    writeContractAsync,
-    data: hash,
-    isPending,
-    error: writeError,
-    reset,
-  } = useWriteContract();
-
-  const {
-    isLoading: isConfirming,
-    isSuccess,
-    error: receiptError,
-  } = useWaitForTransactionReceipt({ hash });
-
-  const request = (parentA: bigint, parentB: bigint, fee: bigint) => {
-    if (!isMounted || !address) return;
-    
+  const request = useCallback(async (
+    parentATokenId: bigint,
+    parentBTokenId: bigint,
+    feeAmount: string = "0.001" // Default fee in MON
+  ) => {
     writeContract({
-      address,
+      address: CONTRACTS.breedingFactory as `0x${string}`,
       abi: BREEDING_FACTORY_ABI,
       functionName: "requestBreeding",
-      args: [parentA, parentB],
-      value: fee,
+      args: [parentATokenId, parentBTokenId],
+      value: parseEther(feeAmount),
     });
-  };
-
-  const requestAsync = async (parentA: bigint, parentB: bigint, fee: bigint) => {
-    if (!isMounted || !address) throw new Error("Not ready");
-    
-    return writeContractAsync({
-      address,
-      abi: BREEDING_FACTORY_ABI,
-      functionName: "requestBreeding",
-      args: [parentA, parentB],
-      value: fee,
-    });
-  };
-
-  if (!isMounted) {
-    return {
-      request: () => {},
-      requestAsync: async () => { throw new Error("Not mounted"); },
-      hash: undefined,
-      isPending: false,
-      isConfirming: false,
-      isSuccess: false,
-      isError: false,
-      error: null,
-      reset: () => {},
-    };
-  }
+  }, [writeContract]);
 
   return {
     request,
-    requestAsync,
     hash,
     isPending,
     isConfirming,
     isSuccess,
-    isError: !!(writeError || receiptError),
-    error: writeError || receiptError,
+    receipt,
+    error,
     reset,
   };
 }
 
-// ============================================
-// useApproveBreeding (SSR-safe)
-// ============================================
+/**
+ * Approve breeding request (parent B owner)
+ */
 export function useApproveBreeding() {
-  const [isMounted, setIsMounted] = useState(false);
-  const { contracts } = useNetwork();
-  const address = contracts.breedingFactory as Address;
+  const { writeContract, data: hash, isPending, error, reset } = useWriteContract();
+  
+  const { isLoading: isConfirming, isSuccess, data: receipt } = useWaitForTransactionReceipt({
+    hash,
+  });
 
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  const {
-    writeContract,
-    writeContractAsync,
-    data: hash,
-    isPending,
-    error: writeError,
-    reset,
-  } = useWriteContract();
-
-  const {
-    isLoading: isConfirming,
-    isSuccess,
-    error: receiptError,
-  } = useWaitForTransactionReceipt({ hash });
-
-  const approve = (requestId: bigint) => {
-    if (!isMounted || !address) return;
-    
+  const approve = useCallback(async (requestId: bigint) => {
     writeContract({
-      address,
+      address: CONTRACTS.breedingFactory as `0x${string}`,
       abi: BREEDING_FACTORY_ABI,
       functionName: "approveBreeding",
       args: [requestId],
     });
-  };
-
-  const approveAsync = async (requestId: bigint) => {
-    if (!isMounted || !address) throw new Error("Not ready");
-    
-    return writeContractAsync({
-      address,
-      abi: BREEDING_FACTORY_ABI,
-      functionName: "approveBreeding",
-      args: [requestId],
-    });
-  };
-
-  if (!isMounted) {
-    return {
-      approve: () => {},
-      approveAsync: async () => { throw new Error("Not mounted"); },
-      hash: undefined,
-      isPending: false,
-      isConfirming: false,
-      isSuccess: false,
-      isError: false,
-      error: null,
-      reset: () => {},
-    };
-  }
+  }, [writeContract]);
 
   return {
     approve,
-    approveAsync,
     hash,
     isPending,
     isConfirming,
     isSuccess,
-    isError: !!(writeError || receiptError),
-    error: writeError || receiptError,
+    receipt,
+    error,
     reset,
   };
 }
 
-// ============================================
-// useExecuteBreeding (SSR-safe)
-// ============================================
+/**
+ * Execute breeding (after approval)
+ */
 export function useExecuteBreeding() {
-  const [isMounted, setIsMounted] = useState(false);
-  const { contracts } = useNetwork();
-  const address = contracts.breedingFactory as Address;
+  const { writeContract, data: hash, isPending, error, reset } = useWriteContract();
+  
+  const { isLoading: isConfirming, isSuccess, data: receipt } = useWaitForTransactionReceipt({
+    hash,
+  });
 
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  const {
-    writeContract,
-    writeContractAsync,
-    data: hash,
-    isPending,
-    error: writeError,
-    reset,
-  } = useWriteContract();
-
-  const {
-    isLoading: isConfirming,
-    isSuccess,
-    error: receiptError,
-  } = useWaitForTransactionReceipt({ hash });
-
-  const execute = (requestId: bigint, dnaCommitment: `0x${string}`) => {
-    if (!isMounted || !address) return;
-    
+  const execute = useCallback(async (
+    requestId: bigint,
+    childDnaCommitment: `0x${string}`
+  ) => {
     writeContract({
-      address,
+      address: CONTRACTS.breedingFactory as `0x${string}`,
       abi: BREEDING_FACTORY_ABI,
       functionName: "executeBreeding",
-      args: [requestId, dnaCommitment],
+      args: [requestId, childDnaCommitment],
     });
-  };
-
-  const executeAsync = async (requestId: bigint, dnaCommitment: `0x${string}`) => {
-    if (!isMounted || !address) throw new Error("Not ready");
-    
-    return writeContractAsync({
-      address,
-      abi: BREEDING_FACTORY_ABI,
-      functionName: "executeBreeding",
-      args: [requestId, dnaCommitment],
-    });
-  };
-
-  if (!isMounted) {
-    return {
-      execute: () => {},
-      executeAsync: async () => { throw new Error("Not mounted"); },
-      hash: undefined,
-      isPending: false,
-      isConfirming: false,
-      isSuccess: false,
-      isError: false,
-      error: null,
-      reset: () => {},
-    };
-  }
+  }, [writeContract]);
 
   return {
     execute,
-    executeAsync,
     hash,
     isPending,
     isConfirming,
     isSuccess,
-    isError: !!(writeError || receiptError),
-    error: writeError || receiptError,
+    receipt,
+    error,
     reset,
   };
 }
 
-// ============================================
-// useCancelBreeding (SSR-safe)
-// ============================================
+/**
+ * Cancel breeding request (initiator only)
+ */
 export function useCancelBreeding() {
-  const [isMounted, setIsMounted] = useState(false);
-  const { contracts } = useNetwork();
-  const address = contracts.breedingFactory as Address;
+  const { writeContract, data: hash, isPending, error, reset } = useWriteContract();
+  
+  const { isLoading: isConfirming, isSuccess, data: receipt } = useWaitForTransactionReceipt({
+    hash,
+  });
 
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  const {
-    writeContract,
-    writeContractAsync,
-    data: hash,
-    isPending,
-    error: writeError,
-    reset,
-  } = useWriteContract();
-
-  const {
-    isLoading: isConfirming,
-    isSuccess,
-    error: receiptError,
-  } = useWaitForTransactionReceipt({ hash });
-
-  const cancel = (requestId: bigint) => {
-    if (!isMounted || !address) return;
-    
+  const cancel = useCallback(async (requestId: bigint) => {
     writeContract({
-      address,
+      address: CONTRACTS.breedingFactory as `0x${string}`,
       abi: BREEDING_FACTORY_ABI,
       functionName: "cancelBreeding",
       args: [requestId],
     });
-  };
-
-  const cancelAsync = async (requestId: bigint) => {
-    if (!isMounted || !address) throw new Error("Not ready");
-    
-    return writeContractAsync({
-      address,
-      abi: BREEDING_FACTORY_ABI,
-      functionName: "cancelBreeding",
-      args: [requestId],
-    });
-  };
-
-  if (!isMounted) {
-    return {
-      cancel: () => {},
-      cancelAsync: async () => { throw new Error("Not mounted"); },
-      hash: undefined,
-      isPending: false,
-      isConfirming: false,
-      isSuccess: false,
-      isError: false,
-      error: null,
-      reset: () => {},
-    };
-  }
+  }, [writeContract]);
 
   return {
     cancel,
-    cancelAsync,
     hash,
     isPending,
     isConfirming,
     isSuccess,
-    isError: !!(writeError || receiptError),
-    error: writeError || receiptError,
+    receipt,
+    error,
     reset,
   };
 }
 
 // ============================================
-// useBreedingRequest (SSR-safe)
+// READ HOOKS
 // ============================================
+
+/**
+ * Get breeding request data
+ */
 export function useBreedingRequest(requestId: bigint | undefined) {
-  const [isMounted, setIsMounted] = useState(false);
-  const { contracts } = useNetwork();
-  const address = contracts.breedingFactory as Address;
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  const { data, isLoading, error, refetch } = useReadContract({
-    address,
+  return useReadContract({
+    address: CONTRACTS.breedingFactory as `0x${string}`,
     abi: BREEDING_FACTORY_ABI,
     functionName: "getRequest",
     args: requestId ? [requestId] : undefined,
     query: {
-      enabled: isMounted && !!address && requestId !== undefined,
+      enabled: !!requestId,
     },
   });
+}
 
-  if (!isMounted) {
-    return {
-      request: undefined,
-      isLoading: false,
-      error: null,
-      refetch: () => {},
-    };
-  }
+/**
+ * Check if request is valid
+ */
+export function useIsRequestValid(requestId: bigint | undefined) {
+  return useReadContract({
+    address: CONTRACTS.breedingFactory as `0x${string}`,
+    abi: BREEDING_FACTORY_ABI,
+    functionName: "isRequestValid",
+    args: requestId ? [requestId] : undefined,
+    query: {
+      enabled: !!requestId,
+    },
+  });
+}
 
-  const request = data as {
-    parentA: bigint;
-    parentB: bigint;
-    initiator: Address;
-    parentBOwner: Address;
-    parentBApproved: boolean;
-    status: number;
-    createdAt: bigint;
-    expiresAt: bigint;
-  } | undefined;
-
-  return {
-    request,
-    isLoading,
-    error,
-    refetch,
-  };
+/**
+ * Get current breeding fee
+ */
+export function useBreedingFee() {
+  return useReadContract({
+    address: CONTRACTS.breedingFactory as `0x${string}`,
+    abi: BREEDING_FACTORY_ABI,
+    functionName: "breedingFee",
+  });
 }
