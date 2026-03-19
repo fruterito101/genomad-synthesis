@@ -2,207 +2,132 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { SectionTitle, Button } from "@/components/ui";
-import { Dna, Zap, Dices, Lock, Sparkles } from "lucide-react";
+import { Card, CardContent, Badge, Button } from "@/components/ui";
+import { Dna, Plus, ArrowRight, Sparkles, Crown, Activity, Zap } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
-const featureIcons = [Dna, Zap, Dices, Lock];
-
 export function Breeding() {
-  const { t, i18n } = useTranslation();
+  const { i18n } = useTranslation();
 
-  const breedingFeatures = [
-    {
-      icon: featureIcons[0],
-      title: t("breeding.features.0"),
-      description: i18n.language === "es" 
-        ? "Los hijos heredan traits de ambos padres con variaciones únicas"
-        : "Children inherit traits from both parents with unique variations"
+  const crossoverTypes = [
+    { 
+      icon: Crown, 
+      name: "Weighted",
+      desc: i18n.language === "es" ? "Traits dominantes prevalecen" : "Dominant traits prevail",
+      color: "text-yellow-500"
     },
-    {
-      icon: featureIcons[1],
-      title: i18n.language === "es" ? "Evolución On-Chain" : "On-Chain Evolution",
-      description: i18n.language === "es"
-        ? "Cada breeding queda registrado permanentemente en Monad"
-        : "Every breeding is permanently recorded on Monad"
+    { 
+      icon: Activity, 
+      name: "Uniform",
+      desc: i18n.language === "es" ? "División 50/50 equilibrada" : "Balanced 50/50 split",
+      color: "text-primary"
     },
-    {
-      icon: featureIcons[2],
-      title: i18n.language === "es" ? "Mutaciones Raras" : "Rare Mutations",
-      description: t("breeding.features.1")
+    { 
+      icon: Zap, 
+      name: "Single-Point",
+      desc: i18n.language === "es" ? "Corte aleatorio del DNA" : "Random DNA cut point",
+      color: "text-accent"
     },
-    {
-      icon: featureIcons[3],
-      title: i18n.language === "es" ? "Privacidad Total" : "Total Privacy",
-      description: i18n.language === "es"
-        ? "Solo los padres pueden ver el DNA de sus hijos"
-        : "Only parents can view their children's DNA"
-    }
   ];
 
   return (
-    <section 
-      id="breeding"
-      className="py-24 px-4"
-      style={{ backgroundColor: 'var(--color-bg-primary)' }}
-    >
+    <section className="py-16 sm:py-24 px-4 bg-background">
       <div className="max-w-6xl mx-auto">
-        <SectionTitle 
-          title={t("breeding.title")} 
-          subtitle={t("breeding.subtitle")}
-          gradient
-        />
-
-        {/* Main Content Grid */}
-        <div className="grid lg:grid-cols-2 gap-12 mt-16 items-center">
-          
-          {/* Left: Visual Representation */}
+        <div className="grid lg:grid-cols-2 gap-12 items-center">
+          {/* Visual */}
           <motion.div
-            
             className="relative"
             initial={{ opacity: 0, x: -30 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
           >
-            {/* Breeding Visualization */}
-            <div 
-              className="aspect-square rounded-2xl p-8 flex items-center justify-center"
-              style={{ 
-                background: 'linear-gradient(135deg, var(--color-bg-secondary), var(--color-bg-tertiary))',
-                border: '1px solid var(--color-border)'
-              }}
-            >
-              <div className="text-center">
-                {/* Parent Agents */}
-                <div className="flex justify-center gap-8 mb-8">
-                  <motion.div
-                    className="w-20 h-20 rounded-full flex items-center justify-center"
-                    style={{ 
-                      background: 'linear-gradient(135deg, var(--color-primary), var(--color-accent-1))',
-                      boxShadow: '0 0 30px var(--color-primary)'
-                    }}
-                    animate={{ 
-                      scale: [1, 1.05, 1],
-                      boxShadow: [
-                        '0 0 30px var(--color-primary)',
-                        '0 0 50px var(--color-primary)',
-                        '0 0 30px var(--color-primary)'
-                      ]
-                    }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                  >
-                    <Dna className="w-10 h-10 text-white" />
-                  </motion.div>
-                  <motion.div
-                    className="w-20 h-20 rounded-full flex items-center justify-center"
-                    style={{ 
-                      background: 'linear-gradient(135deg, var(--color-secondary), var(--color-accent-2))',
-                      boxShadow: '0 0 30px var(--color-secondary)'
-                    }}
-                    animate={{ 
-                      scale: [1, 1.05, 1],
-                      boxShadow: [
-                        '0 0 30px var(--color-secondary)',
-                        '0 0 50px var(--color-secondary)',
-                        '0 0 30px var(--color-secondary)'
-                      ]
-                    }}
-                    transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
-                  >
-                    <Dna className="w-10 h-10 text-white" />
-                  </motion.div>
+            <div className="flex items-center justify-center gap-4">
+              {/* Parent A */}
+              <Card className="p-6 text-center">
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary to-purple-600 mx-auto mb-3 flex items-center justify-center">
+                  <Dna className="w-8 h-8 text-white" />
                 </div>
+                <p className="font-semibold">Parent A</p>
+                <Badge variant="outline" className="mt-2">85.4 Fitness</Badge>
+              </Card>
 
-                {/* Connection Lines */}
-                <motion.div
-                  className="w-0.5 h-12 mx-auto"
-                  style={{ backgroundColor: 'var(--color-accent-1)' }}
-                  animate={{ opacity: [0.3, 1, 0.3] }}
-                  transition={{ duration: 1.5, repeat: Infinity }}
-                />
-
-                {/* Child Agent */}
-                <motion.div
-                  className="w-24 h-24 rounded-full flex items-center justify-center mx-auto mt-4"
-                  style={{ 
-                    background: 'linear-gradient(135deg, var(--color-accent-1), var(--color-accent-2))',
-                    boxShadow: '0 0 40px var(--color-accent-1)'
-                  }}
-                  animate={{ 
-                    rotate: [0, 5, -5, 0],
-                    scale: [1, 1.1, 1]
-                  }}
-                  transition={{ duration: 3, repeat: Infinity }}
-                >
-                  <Sparkles className="w-12 h-12 text-white" />
-                </motion.div>
-
-                <p 
-                  className="mt-6 text-sm"
-                  style={{ color: '#ffffff' }}
-                >
-                  {i18n.language === "es" ? "Nuevo agente con DNA único" : "New agent with unique DNA"}
-                </p>
+              {/* Plus */}
+              <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
+                <Plus className="w-6 h-6 text-primary" />
               </div>
+
+              {/* Parent B */}
+              <Card className="p-6 text-center">
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-secondary to-emerald-600 mx-auto mb-3 flex items-center justify-center">
+                  <Dna className="w-8 h-8 text-white" />
+                </div>
+                <p className="font-semibold">Parent B</p>
+                <Badge variant="outline" className="mt-2">78.2 Fitness</Badge>
+              </Card>
             </div>
+
+            {/* Arrow */}
+            <div className="flex justify-center my-6">
+              <motion.div
+                animate={{ y: [0, 5, 0] }}
+                transition={{ duration: 1.5, repeat: Infinity }}
+              >
+                <ArrowRight className="w-8 h-8 text-primary rotate-90" />
+              </motion.div>
+            </div>
+
+            {/* Child */}
+            <Card className="p-6 text-center max-w-xs mx-auto border-primary/50">
+              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary via-accent to-secondary mx-auto mb-3 flex items-center justify-center">
+                <Sparkles className="w-10 h-10 text-white" />
+              </div>
+              <p className="font-semibold text-lg">New Agent</p>
+              <Badge className="mt-2 bg-primary">88.1 Fitness ↑</Badge>
+              <p className="text-xs text-muted-foreground mt-2">Gen 2 • Traits heredados</p>
+            </Card>
           </motion.div>
 
-          {/* Right: Features */}
-          <div className="space-y-6">
-            {breedingFeatures.map((feature, index) => {
-              const Icon = feature.icon;
-              return (
-                <motion.div
-                  key={index}
-                  className="flex gap-4 p-4 rounded-xl"
-                  style={{ 
-                    backgroundColor: 'var(--color-bg-secondary)',
-                    border: '1px solid var(--color-border)'
-                  }}
-                  initial={{ opacity: 0, x: 30 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.4, delay: index * 0.1 }}
-                  whileHover={{ 
-                    scale: 1.02,
-                    borderColor: 'var(--color-secondary)'
-                  }}
-                >
-                  <div 
-                    className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
-                    style={{ backgroundColor: 'var(--color-bg-tertiary)' }}
-                  >
-                    <Icon className="w-6 h-6" style={{ color: 'var(--color-secondary)' }} />
+          {/* Content */}
+          <motion.div
+            initial={{ opacity: 0, x: 30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+          >
+            <Badge variant="outline" className="mb-4">
+              {i18n.language === "es" ? "Sistema Genético" : "Genetic System"}
+            </Badge>
+            <h2 className="text-3xl sm:text-4xl font-bold mb-4">
+              {i18n.language === "es" ? "Breeding de " : ""}
+              <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                {i18n.language === "es" ? "Agentes" : "Agent Breeding"}
+              </span>
+            </h2>
+            <p className="text-muted-foreground text-lg mb-6">
+              {i18n.language === "es" 
+                ? "Combina dos agentes para crear uno nuevo con traits heredados. El fitness puede mejorar o empeorar dependiendo de la genética."
+                : "Combine two agents to create a new one with inherited traits. Fitness can improve or worsen depending on genetics."}
+            </p>
+
+            <h4 className="font-semibold mb-4">{i18n.language === "es" ? "Tipos de Crossover" : "Crossover Types"}</h4>
+            <div className="space-y-3 mb-6">
+              {crossoverTypes.map((type) => (
+                <div key={type.name} className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
+                  <div className={`w-10 h-10 rounded-lg bg-muted flex items-center justify-center ${type.color}`}>
+                    <type.icon className="w-5 h-5" />
                   </div>
                   <div>
-                    <h3 
-                      className="font-semibold text-lg mb-1"
-                      style={{ color: 'var(--color-text-primary)' }}
-                    >
-                      {feature.title}
-                    </h3>
-                    <p style={{ color: '#ffffff' }}>
-                      {feature.description}
-                    </p>
+                    <p className="font-medium">{type.name}</p>
+                    <p className="text-sm text-muted-foreground">{type.desc}</p>
                   </div>
-                </motion.div>
-              );
-            })}
+                </div>
+              ))}
+            </div>
 
-            {/* CTA */}
-            <motion.div
-              className="pt-4"
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.5 }}
-            >
-              <Button variant="secondary" size="md" href="/breeding">
-                {t("breeding.cta")} →
-              </Button>
-            </motion.div>
-          </div>
+            <Button size="lg" href="/breeding">
+              {i18n.language === "es" ? "Ir a Breeding" : "Go to Breeding"}
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
+          </motion.div>
         </div>
       </div>
     </section>

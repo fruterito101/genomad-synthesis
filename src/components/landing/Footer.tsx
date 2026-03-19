@@ -1,241 +1,106 @@
 // src/components/landing/Footer.tsx
 "use client";
 
-import { motion } from "framer-motion";
 import Link from "next/link";
+import { Dna, Twitter, Github, MessageCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
-const footerLinks = {
-  product: [
-    { labelKey: "Dashboard", href: "/dashboard" },
-    { labelKey: "Leaderboard", href: "/leaderboard" },
-    { labelKey: "Breeding", href: "/breeding" },
-    { labelKey: "Marketplace", href: "/marketplace" }
-  ],
-  resources: [
-    { labelKey: "Docs", href: "/docs" },
-    { labelKey: "API", href: "/api" },
-    { labelKey: "GitHub", href: "https://github.com/fruterito101/genomad" },
-    { labelKey: "Blog", href: "/blog" }
-  ],
-  community: [
-    { labelKey: "GitHub", href: "https://github.com/fruterito101/genomad" },
-    { labelKey: "Twitter", href: "https://twitter.com/genomad" },
-    { labelKey: "Telegram", href: "https://t.me/genomad" }
-  ]
-};
-
-const socialLinks = [
-  { icon: "𝕏", href: "https://twitter.com/genomad", label: "Twitter" },
-  { icon: "📦", href: "https://github.com/fruterito101/genomad", label: "GitHub" },
-  { icon: "📱", href: "https://t.me/genomad", label: "Telegram" },
-  { icon: "📂", href: "https://github.com/fruterito101/genomad", label: "GitHub" }
-];
-
 export function Footer() {
-  const { t, i18n } = useTranslation();
+  const { i18n } = useTranslation();
+
+  const links = {
+    platform: [
+      { label: i18n.language === "es" ? "Dashboard" : "Dashboard", href: "/dashboard" },
+      { label: i18n.language === "es" ? "Catálogo" : "Catalog", href: "/agents" },
+      { label: i18n.language === "es" ? "Breeding" : "Breeding", href: "/breeding" },
+    ],
+    resources: [
+      { label: "Docs", href: "#" },
+      { label: "GitHub", href: "https://github.com/fruterito101/genomad" },
+      { label: "Monad", href: "https://monad.xyz" },
+    ],
+    socials: [
+      { icon: Twitter, href: "https://twitter.com/genomad", label: "Twitter" },
+      { icon: Github, href: "https://github.com/fruterito101/genomad", label: "GitHub" },
+      { icon: MessageCircle, href: "#", label: "Discord" },
+    ],
+  };
 
   return (
-    <footer 
-      className="py-16 px-4"
-      style={{ 
-        backgroundColor: 'var(--color-bg-tertiary)',
-        borderTop: '1px solid var(--color-border)'
-      }}
-    >
+    <footer className="py-12 px-4 bg-muted/50 border-t border-border">
       <div className="max-w-6xl mx-auto">
-        {/* Main Footer Content */}
-        <div className="grid md:grid-cols-4 gap-12 mb-12">
-          
-          {/* Brand Column */}
-          <div className="md:col-span-1">
-            <motion.div
-              
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-            >
-              <h3 
-                className="text-2xl font-bold mb-4"
-                style={{ 
-                  background: 'linear-gradient(135deg, var(--color-primary), var(--color-accent-1))',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent'
-                }}
-              >
-                Genomad
-              </h3>
-              <p 
-                className="text-sm mb-6"
-                style={{ color: 'var(--color-text-secondary)' }}
-              >
-                {t("footer.tagline")}
-              </p>
-              
-              {/* Social Links */}
-              <div className="flex gap-3">
-                {socialLinks.map((social) => (
-                  <motion.a
-                    key={social.label}
-                    href={social.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-10 h-10 rounded-full flex items-center justify-center text-lg"
-                    style={{ 
-                      backgroundColor: 'var(--color-bg-secondary)',
-                      border: '1px solid var(--color-border)'
-                    }}
-                    whileHover={{ 
-                      scale: 1.1,
-                      borderColor: 'var(--color-primary)'
-                    }}
-                    whileTap={{ scale: 0.95 }}
-                    aria-label={social.label}
-                  >
-                    {social.icon}
-                  </motion.a>
-                ))}
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
+          {/* Brand */}
+          <div>
+            <Link href="/" className="flex items-center gap-2 mb-4">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+                <Dna className="w-5 h-5 text-white" />
               </div>
-            </motion.div>
+              <span className="font-bold text-lg">Genomad</span>
+            </Link>
+            <p className="text-sm text-muted-foreground">
+              {i18n.language === "es" 
+                ? "El primer protocolo de breeding de agentes AI on-chain."
+                : "The first on-chain AI agent breeding protocol."}
+            </p>
           </div>
 
-          {/* Links Columns */}
-          <motion.div
-            className="md:col-span-1"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.1 }}
-          >
-            <h4 
-              className="font-semibold mb-4"
-              style={{ color: 'var(--color-text-primary)' }}
-            >
-              {t("footer.sections.product")}
-            </h4>
+          {/* Platform Links */}
+          <div>
+            <h4 className="font-semibold mb-4">{i18n.language === "es" ? "Plataforma" : "Platform"}</h4>
             <ul className="space-y-2">
-              {footerLinks.product.map((link) => (
-                <li key={link.labelKey}>
-                  <Link 
-                    href={link.href}
-                    className="text-sm transition-colors hover:opacity-80"
-                    style={{ color: 'var(--color-text-secondary)' }}
-                  >
-                    {link.labelKey}
+              {links.platform.map((link) => (
+                <li key={link.href}>
+                  <Link href={link.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                    {link.label}
                   </Link>
                 </li>
               ))}
             </ul>
-          </motion.div>
+          </div>
 
-          <motion.div
-            className="md:col-span-1"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.2 }}
-          >
-            <h4 
-              className="font-semibold mb-4"
-              style={{ color: 'var(--color-text-primary)' }}
-            >
-              {t("footer.sections.resources")}
-            </h4>
+          {/* Resources */}
+          <div>
+            <h4 className="font-semibold mb-4">{i18n.language === "es" ? "Recursos" : "Resources"}</h4>
             <ul className="space-y-2">
-              {footerLinks.resources.map((link) => (
-                <li key={link.labelKey}>
-                  <Link 
-                    href={link.href}
-                    className="text-sm transition-colors hover:opacity-80"
-                    style={{ color: 'var(--color-text-secondary)' }}
-                  >
-                    {link.labelKey}
+              {links.resources.map((link) => (
+                <li key={link.href}>
+                  <Link href={link.href} target="_blank" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                    {link.label}
                   </Link>
                 </li>
               ))}
             </ul>
-          </motion.div>
+          </div>
 
-          <motion.div
-            className="md:col-span-1"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.3 }}
-          >
-            <h4 
-              className="font-semibold mb-4"
-              style={{ color: 'var(--color-text-primary)' }}
-            >
-              {t("footer.sections.community")}
-            </h4>
-            <ul className="space-y-2">
-              {footerLinks.community.map((link) => (
-                <li key={link.labelKey}>
-                  <a 
-                    href={link.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm transition-colors hover:opacity-80"
-                    style={{ color: 'var(--color-text-secondary)' }}
-                  >
-                    {link.labelKey}
-                  </a>
-                </li>
+          {/* Socials */}
+          <div>
+            <h4 className="font-semibold mb-4">{i18n.language === "es" ? "Comunidad" : "Community"}</h4>
+            <div className="flex gap-3">
+              {links.socials.map((social) => (
+                <Link
+                  key={social.label}
+                  href={social.href}
+                  target="_blank"
+                  className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-colors"
+                >
+                  <social.icon className="w-5 h-5" />
+                </Link>
               ))}
-            </ul>
-          </motion.div>
+            </div>
+          </div>
         </div>
 
-        {/* Divider */}
-        <div 
-          className="h-px mb-8"
-          style={{ backgroundColor: 'var(--color-border)' }}
-        />
-
-        {/* Bottom Row */}
-        <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-          <p 
-            className="text-sm"
-            style={{ color: 'var(--color-text-muted)' }}
-          >
-            {t("footer.copyright")}
+        {/* Bottom */}
+        <div className="pt-8 border-t border-border flex flex-col sm:flex-row justify-between items-center gap-4">
+          <p className="text-sm text-muted-foreground">
+            © {new Date().getFullYear()} Genomad. {i18n.language === "es" ? "Todos los derechos reservados." : "All rights reserved."}
           </p>
-          
-          <div className="flex items-center gap-4">
-            <span 
-              className="text-xs px-3 py-1 rounded-full"
-              style={{ 
-                backgroundColor: 'var(--color-bg-secondary)',
-                color: 'var(--color-text-secondary)'
-              }}
-            >
-              🟢 Monad Testnet
-            </span>
-            <a 
-              href="#"
-              className="text-sm hover:opacity-80"
-              style={{ color: 'var(--color-text-secondary)' }}
-            >
-              {i18n.language === "es" ? "Términos" : "Terms"}
-            </a>
-            <a 
-              href="#"
-              className="text-sm hover:opacity-80"
-              style={{ color: 'var(--color-text-secondary)' }}
-            >
-              {i18n.language === "es" ? "Privacidad" : "Privacy"}
-            </a>
-          </div>
+          <p className="text-sm text-muted-foreground">
+            {i18n.language === "es" ? "Construido en" : "Built on"}{" "}
+            <span className="text-primary font-medium">Monad</span>
+          </p>
         </div>
-
-        {/* Disclaimer */}
-        <p 
-          className="text-xs text-center mt-6"
-          style={{ color: 'var(--color-text-muted)' }}
-        >
-          {t("footer.disclaimer")}
-        </p>
       </div>
     </footer>
   );

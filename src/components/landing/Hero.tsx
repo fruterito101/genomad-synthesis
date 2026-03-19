@@ -2,8 +2,8 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Button } from "@/components/ui";
-import { Check } from "lucide-react";
+import { Button, Card, Badge } from "@/components/ui";
+import { Check, Sparkles, Dna } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 export function Hero() {
@@ -18,40 +18,46 @@ export function Hero() {
   ];
 
   return (
-    <section 
-      className="min-h-screen flex items-center justify-center pt-20 sm:pt-24 pb-16 px-4"
-      style={{ backgroundColor: 'var(--color-bg-primary)' }}
-    >
+    <section className="min-h-screen flex items-center justify-center pt-20 sm:pt-24 pb-16 px-4 bg-background">
       <div className="max-w-6xl mx-auto w-full">
         <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
           {/* Content */}
           <motion.div
-            
             initial={{ opacity: 0, x: -30 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6 }}
             className="order-2 lg:order-1"
           >
+            {/* Beta Badge */}
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4 }}
+              className="mb-4"
+            >
+              <Badge variant="outline" className="border-primary text-primary">
+                <Sparkles className="w-3 h-3 mr-1" />
+                {i18n.language === "es" ? "Beta en Monad Testnet" : "Beta on Monad Testnet"}
+              </Badge>
+            </motion.div>
+
             {/* Tagline */}
             <motion.h1 
-              className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold leading-none mb-4 sm:mb-6"
+              className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold leading-tight mb-4 sm:mb-6"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.1 }}
             >
-              <span style={{ color: 'var(--color-text-primary)' }}>
-                {t("hero.title")}
-              </span>
+              <span className="text-foreground">{t("hero.title")}</span>
               <br />
-              <span className="gradient-text">
+              <span className="bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-transparent">
                 {t("hero.titleHighlight")}
               </span>
             </motion.h1>
 
             {/* Subtitle */}
             <motion.p 
-              className="text-base sm:text-lg md:text-xl mb-6 sm:mb-8"
-              style={{ color: '#ffffff' }}
+              className="text-base sm:text-lg md:text-xl mb-6 sm:mb-8 text-muted-foreground"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
@@ -61,7 +67,7 @@ export function Hero() {
 
             {/* Features List */}
             <motion.ul 
-              className="space-y-1 sm:space-y-2 mb-6 sm:mb-8"
+              className="space-y-2 sm:space-y-3 mb-6 sm:mb-8"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.6, delay: 0.3 }}
@@ -74,15 +80,10 @@ export function Hero() {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.4, delay: 0.4 + index * 0.1 }}
                 >
-                  <span 
-                    className="mt-0.5 shrink-0"
-                    style={{ color: 'var(--color-secondary)' }}
-                  >
-                    <Check className="w-4 h-4" style={{ color: "var(--color-secondary)" }} />
+                  <span className="mt-0.5 shrink-0 h-5 w-5 rounded-full bg-secondary/20 flex items-center justify-center">
+                    <Check className="w-3 h-3 text-secondary" />
                   </span>
-                  <span style={{ color: '#ffffff' }}>
-                    {feature}
-                  </span>
+                  <span className="text-foreground">{feature}</span>
                 </motion.li>
               ))}
             </motion.ul>
@@ -94,10 +95,11 @@ export function Hero() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.8 }}
             >
-              <Button variant="primary" size="md" href="/dashboard" className="w-full sm:w-auto !bg-[var(--color-primary)]">
+              <Button size="lg" href="/dashboard" className="w-full sm:w-auto">
+                <Dna className="w-4 h-4 mr-2" />
                 {t("header.cta")}
               </Button>
-              <Button variant="secondary" size="md" href="#about" className="w-full sm:w-auto">
+              <Button variant="outline" size="lg" href="#about" className="w-full sm:w-auto">
                 {i18n.language === "es" ? "Aprende Más" : "Learn More"}
               </Button>
             </motion.div>
@@ -110,13 +112,7 @@ export function Hero() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.3 }}
           >
-            <div 
-              className="aspect-video rounded-xl sm:rounded-2xl overflow-hidden"
-              style={{ 
-                backgroundColor: 'var(--color-bg-secondary)',
-                border: '1px solid var(--color-border)'
-              }}
-            >
+            <Card className="aspect-video overflow-hidden p-0">
               <video
                 autoPlay
                 loop
@@ -128,35 +124,36 @@ export function Hero() {
                   src="https://res.cloudinary.com/ddejtxqjq/video/upload/v1771212418/GMD_zqv1gd.mp4" 
                   type="video/mp4" 
                 />
-                {i18n.language === "es" 
-                  ? "Tu navegador no soporta el tag de video."
-                  : "Your browser does not support the video tag."}
               </video>
-            </div>
+            </Card>
 
             {/* Floating stats */}
             <motion.div
-              className="hidden sm:block absolute -bottom-3 sm:-bottom-4 -left-3 sm:-left-4 p-4 sm:p-5 rounded-xl glass glow-primary text-center min-w-[100px]"
+              className="hidden sm:block absolute -bottom-4 -left-4"
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.4, delay: 1 }}
             >
-              <p className="text-2xl sm:text-3xl font-bold gradient-text">8</p>
-              <p className="text-sm whitespace-nowrap" style={{ color: '#ffffff' }}>
-                {i18n.language === "es" ? "Traits únicos" : "Unique Traits"}
-              </p>
+              <Card className="p-4 text-center min-w-[100px] border-primary/50 bg-card/80 backdrop-blur">
+                <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">8</p>
+                <p className="text-sm text-muted-foreground whitespace-nowrap">
+                  {i18n.language === "es" ? "Traits únicos" : "Unique Traits"}
+                </p>
+              </Card>
             </motion.div>
 
             <motion.div
-              className="hidden sm:block absolute -top-3 sm:-top-4 -right-3 sm:-right-4 p-4 sm:p-5 rounded-xl glass glow-secondary text-center min-w-[130px]"
+              className="hidden sm:block absolute -top-4 -right-4"
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.4, delay: 1.2 }}
             >
-              <p className="text-2xl sm:text-3xl font-bold rotate-90" style={{ color: 'var(--color-secondary)' }}>∞</p>
-              <p className="text-sm whitespace-nowrap" style={{ color: '#ffffff' }}>
-                {i18n.language === "es" ? "Combinaciones" : "Combinations"}
-              </p>
+              <Card className="p-4 text-center min-w-[130px] border-secondary/50 bg-card/80 backdrop-blur">
+                <p className="text-2xl sm:text-3xl font-bold text-secondary">∞</p>
+                <p className="text-sm text-muted-foreground whitespace-nowrap">
+                  {i18n.language === "es" ? "Combinaciones" : "Combinations"}
+                </p>
+              </Card>
             </motion.div>
           </motion.div>
         </div>
