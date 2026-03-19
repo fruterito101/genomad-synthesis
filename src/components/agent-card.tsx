@@ -1,15 +1,16 @@
 "use client"
 
+import { useState } from "react"
 import { motion } from "framer-motion"
 import Link from "next/link"
 import { 
   Cpu, Palette, MessageSquare, Brain, Heart, TrendingUp, 
-  GraduationCap, Crown, Star, Eye, Dna, Zap, Check
+  GraduationCap, Crown, Star, Eye, Dna, Zap, Check, Loader2
 } from "lucide-react"
 import { Card, CardContent, CardHeader, Badge, Button } from "@/components/ui"
 import { Avatar, AvatarFallback } from "@/components/ui"
 import { CoOwnersDisplay } from "@/components/CoOwnersDisplay"
-import { ActivateAgentButton } from "@/components/ActivateAgentButton"
+import { useRegisterAgent } from "@/hooks/useGenomadNFT"
 import { cn } from "@/lib/utils"
 
 interface AgentTraits {
@@ -118,6 +119,72 @@ export function AgentCard({
   const topColor = topTrait ? traitColors[topTrait.key] : "#7B3FE4"
   
   const isOnChain = !!agent.tokenId
+  
+  // Activation state
+  const [activating, setActivating] = useState(false)
+  const [activationStatus, setActivationStatus] = useState<"idle" | "signing" | "confirming" | "done" | "error">("idle")
+  const { registerAsync } = useRegisterAgent()
+  
+  const handleActivate = async (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (activating || !agent.dnaHash) return
+    
+    try {
+      setActivating(true)
+      setActivationStatus("signing")
+      
+      // Generate DNA commitment from hash
+      const dnaCommitment = (agent.commitment || `0x${agent.dnaHash}`) as `0x${string}`
+      
+      // Register on-chain
+      const txHash = await registerAsync(dnaCommitment)
+      setActivationStatus("confirming")
+      
+      // Update in our API
+      if (getAccessToken) {
+        const token = await getAccessToken()
+        if (token) {
+          await fetch(`/api/agents/${agent.id}`, {
+            method: "PATCH",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ txHash }),
+          })
+        }
+      }
+      
+      setActivationStatus("done")
+      onActivated?.(txHash, txHash)
+      
+      // Reload page to show updated state
+      setTimeout(() => window.location.reload(), 2000)
+      
+    } catch (err) {
+      console.error("Activation error:", err)
+      setActivationStatus("error")
+      setTimeout(() => {
+        setActivating(false)
+        setActivationStatus("idle")
+      }, 3000)
+    }
+  }
+  
+  const getActivateButtonContent = () => {
+    switch (activationStatus) {
+      case "signing":
+        return (<><Loader2 className="w-3 h-3 sm:w-4 sm:h-4 mr-1 animate-spin" />Firmando...</>)
+      case "confirming":
+        return (<><Loader2 className="w-3 h-3 sm:w-4 sm:h-4 mr-1 animate-spin" />Confirmando...</>)
+      case "done":
+        return (<><Check className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />¡Activado!</>)
+      case "error":
+        return (<><Zap className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />Error - Reintentar</>)
+      default:
+        return (<><Zap className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />{labels.activate}</>)
+    }
+  }
 
   if (variant === "compact") {
     return (
@@ -252,14 +319,16 @@ export function AgentCard({
               {!isOnChain && agent.dnaHash && (
                 <Button 
                   size="sm" 
-                  className="flex-1 text-xs sm:text-sm bg-orange-500 hover:bg-orange-600 text-white"
-                  onClick={(e) => { 
-                    e.stopPropagation(); 
-                    // Trigger activation flow
-                  }}
+                  className={cn(
+                    "flex-1 text-xs sm:text-sm text-white",
+                    activationStatus === "done" ? "bg-emerald-500" :
+                    activationStatus === "error" ? "bg-red-500 hover:bg-red-600" :
+                    "bg-orange-500 hover:bg-orange-600"
+                  )}
+                  onClick={handleActivate}
+                  disabled={activating && activationStatus !== "error"}
                 >
-                  <Zap className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
-                  {labels.activate}
+                  {getActivateButtonContent()}
                 </Button>
               )}
               
