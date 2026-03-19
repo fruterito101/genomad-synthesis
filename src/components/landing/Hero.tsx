@@ -130,7 +130,7 @@ export function Hero() {
 
             {/* Floating stats - hidden on very small screens */}
             <motion.div
-              className="hidden sm:block absolute bottom-4 sm:bottom-6 left-4 sm:left-6 p-4 sm:p-5 rounded-xl glass glow-primary text-center min-w-[100px]"
+              className="hidden sm:block absolute -bottom-3 sm:-bottom-4 -left-3 sm:-left-4 p-4 sm:p-5 rounded-xl glass glow-primary text-center min-w-[100px]"
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.4, delay: 1 }}
@@ -140,7 +140,7 @@ export function Hero() {
             </motion.div>
 
             <motion.div
-              className="hidden sm:block absolute top-4 sm:top-6 right-4 sm:right-6 p-4 sm:p-5 rounded-xl glass glow-secondary text-center min-w-[130px]"
+              className="hidden sm:block absolute -top-3 sm:-top-4 -right-3 sm:-right-4 p-4 sm:p-5 rounded-xl glass glow-secondary text-center min-w-[130px]"
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.4, delay: 1.2 }}
