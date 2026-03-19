@@ -6,17 +6,19 @@ import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui";
-
-const navItems = [
-  { label: "About Us", href: "#about", ariaLabel: "Ir a sección Acerca de nosotros" },
-  { label: "Catalogue", href: "#catalogue", ariaLabel: "Ir a sección Catálogo de agentes" },
-  { label: "Guides", href: "#guides", ariaLabel: "Ir a sección Guías" },
-];
+import { useTranslation } from "react-i18next";
 
 export function Header() {
+  const { t, i18n } = useTranslation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("");
   const [isScrolled, setIsScrolled] = useState(false);
+
+  const navItems = [
+    { label: t("header.nav.about"), href: "#about", ariaLabel: i18n.language === "es" ? "Ir a sección Acerca de nosotros" : "Go to About section" },
+    { label: t("header.nav.catalogue"), href: "#catalogue", ariaLabel: i18n.language === "es" ? "Ir a sección Catálogo de agentes" : "Go to Catalogue section" },
+    { label: t("header.nav.guides"), href: "#guides", ariaLabel: i18n.language === "es" ? "Ir a sección Guías" : "Go to Guides section" },
+  ];
 
   useEffect(() => {
     const handleScroll = () => {
@@ -54,6 +56,11 @@ export function Header() {
     }
   };
 
+  const toggleLanguage = () => {
+    const newLang = i18n.language === "es" ? "en" : "es";
+    i18n.changeLanguage(newLang);
+  };
+
   return (
     <motion.header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
@@ -70,7 +77,7 @@ export function Header() {
           <Link 
             href="/" 
             className="flex items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 rounded-lg"
-            aria-label="Genomad - Ir al inicio"
+            aria-label="Genomad - Home"
           >
             <Image 
               src="/logo.png" 
@@ -83,14 +90,14 @@ export function Header() {
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-8" role="navigation" aria-label="Navegación principal">
+          <nav className="hidden md:flex items-center gap-6" role="navigation" aria-label={i18n.language === "es" ? "Navegación principal" : "Main navigation"}>
             {navItems.map((item) => {
               const sectionId = item.href.replace("#", "");
               const isActive = activeSection === sectionId;
               
               return (
                 <button
-                  key={item.label}
+                  key={`${item.label}-${i18n.language}`}
                   onClick={() => handleNavClick(item.href)}
                   className="text-sm font-medium transition-all duration-200 relative focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 rounded px-2 py-1"
                   style={{ 
@@ -111,8 +118,23 @@ export function Header() {
                 </button>
               );
             })}
+
+            {/* Language Switcher */}
+            <button
+              onClick={toggleLanguage}
+              className="px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 hover:opacity-80"
+              style={{ 
+                backgroundColor: "var(--color-bg-secondary)",
+                color: "var(--color-text-secondary)",
+                border: "1px solid var(--color-border)"
+              }}
+              aria-label={t("languageSwitcher.label")}
+            >
+              {i18n.language === "es" ? "EN" : "ES"}
+            </button>
+
             <Button variant="primary" size="sm" href="/dashboard">
-              Activación
+              {t("header.cta")}
             </Button>
           </nav>
 
@@ -120,7 +142,7 @@ export function Header() {
           <button
             className="md:hidden p-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 rounded-lg"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            aria-label={isMenuOpen ? "Cerrar menú" : "Abrir menú"}
+            aria-label={isMenuOpen ? (i18n.language === "es" ? "Cerrar menú" : "Close menu") : (i18n.language === "es" ? "Abrir menú" : "Open menu")}
             aria-expanded={isMenuOpen}
             aria-controls="mobile-menu"
           >
@@ -156,7 +178,7 @@ export function Header() {
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.3 }}
             role="navigation"
-            aria-label="Navegación móvil"
+            aria-label={i18n.language === "es" ? "Navegación móvil" : "Mobile navigation"}
           >
             <nav className="px-4 py-4 flex flex-col gap-4">
               {navItems.map((item) => {
@@ -165,7 +187,7 @@ export function Header() {
                 
                 return (
                   <button
-                    key={item.label}
+                    key={`mobile-${item.label}-${i18n.language}`}
                     onClick={() => handleNavClick(item.href)}
                     className="text-base font-medium py-2 text-left transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 rounded px-2"
                     style={{ 
@@ -178,8 +200,18 @@ export function Header() {
                   </button>
                 );
               })}
+
+              {/* Mobile Language Switcher */}
+              <button
+                onClick={toggleLanguage}
+                className="text-base font-medium py-2 text-left px-2"
+                style={{ color: "var(--color-text-secondary)" }}
+              >
+                🌐 {i18n.language === "es" ? "English" : "Español"}
+              </button>
+
               <Button variant="primary" size="md" href="/dashboard">
-                Activación
+                {t("header.cta")}
               </Button>
             </nav>
           </motion.div>

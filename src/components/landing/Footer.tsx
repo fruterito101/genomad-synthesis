@@ -3,24 +3,25 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { useTranslation } from "react-i18next";
 
 const footerLinks = {
   product: [
-    { label: "Dashboard", href: "/dashboard" },
-    { label: "Leaderboard", href: "/leaderboard" },
-    { label: "Breeding", href: "/breeding" },
-    { label: "Marketplace", href: "/marketplace" }
+    { labelKey: "Dashboard", href: "/dashboard" },
+    { labelKey: "Leaderboard", href: "/leaderboard" },
+    { labelKey: "Breeding", href: "/breeding" },
+    { labelKey: "Marketplace", href: "/marketplace" }
   ],
   resources: [
-    { label: "Docs", href: "/docs" },
-    { label: "API", href: "/api" },
-    { label: "GitHub", href: "https://github.com/fruterito101/genomad" },
-    { label: "Blog", href: "/blog" }
+    { labelKey: "Docs", href: "/docs" },
+    { labelKey: "API", href: "/api" },
+    { labelKey: "GitHub", href: "https://github.com/fruterito101/genomad" },
+    { labelKey: "Blog", href: "/blog" }
   ],
   community: [
-    { label: "GitHub", href: "https://github.com/fruterito101/genomad" },
-    { label: "Twitter", href: "https://twitter.com/genomad" },
-    { label: "Telegram", href: "https://t.me/genomad" }
+    { labelKey: "GitHub", href: "https://github.com/fruterito101/genomad" },
+    { labelKey: "Twitter", href: "https://twitter.com/genomad" },
+    { labelKey: "Telegram", href: "https://t.me/genomad" }
   ]
 };
 
@@ -32,6 +33,8 @@ const socialLinks = [
 ];
 
 export function Footer() {
+  const { t, i18n } = useTranslation();
+
   return (
     <footer 
       className="py-16 px-4"
@@ -47,6 +50,7 @@ export function Footer() {
           {/* Brand Column */}
           <div className="md:col-span-1">
             <motion.div
+              key={`footer-brand-${i18n.language}`}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -65,8 +69,7 @@ export function Footer() {
                 className="text-sm mb-6"
                 style={{ color: 'var(--color-text-secondary)' }}
               >
-                The first on-chain breeding protocol for AI agents. 
-                Create, evolve, and trade unique agents with verifiable DNA.
+                {t("footer.tagline")}
               </p>
               
               {/* Social Links */}
@@ -108,17 +111,17 @@ export function Footer() {
               className="font-semibold mb-4"
               style={{ color: 'var(--color-text-primary)' }}
             >
-              Product
+              {t("footer.sections.product")}
             </h4>
             <ul className="space-y-2">
               {footerLinks.product.map((link) => (
-                <li key={link.label}>
+                <li key={link.labelKey}>
                   <Link 
                     href={link.href}
                     className="text-sm transition-colors hover:opacity-80"
                     style={{ color: 'var(--color-text-secondary)' }}
                   >
-                    {link.label}
+                    {link.labelKey}
                   </Link>
                 </li>
               ))}
@@ -136,17 +139,17 @@ export function Footer() {
               className="font-semibold mb-4"
               style={{ color: 'var(--color-text-primary)' }}
             >
-              Resources
+              {t("footer.sections.resources")}
             </h4>
             <ul className="space-y-2">
               {footerLinks.resources.map((link) => (
-                <li key={link.label}>
+                <li key={link.labelKey}>
                   <Link 
                     href={link.href}
                     className="text-sm transition-colors hover:opacity-80"
                     style={{ color: 'var(--color-text-secondary)' }}
                   >
-                    {link.label}
+                    {link.labelKey}
                   </Link>
                 </li>
               ))}
@@ -164,11 +167,11 @@ export function Footer() {
               className="font-semibold mb-4"
               style={{ color: 'var(--color-text-primary)' }}
             >
-              Community
+              {t("footer.sections.community")}
             </h4>
             <ul className="space-y-2">
               {footerLinks.community.map((link) => (
-                <li key={link.label}>
+                <li key={link.labelKey}>
                   <a 
                     href={link.href}
                     target="_blank"
@@ -176,7 +179,7 @@ export function Footer() {
                     className="text-sm transition-colors hover:opacity-80"
                     style={{ color: 'var(--color-text-secondary)' }}
                   >
-                    {link.label}
+                    {link.labelKey}
                   </a>
                 </li>
               ))}
@@ -196,7 +199,7 @@ export function Footer() {
             className="text-sm"
             style={{ color: 'var(--color-text-muted)' }}
           >
-            © 2026 Genomad. Built on Monad.
+            {t("footer.copyright")}
           </p>
           
           <div className="flex items-center gap-4">
@@ -214,17 +217,25 @@ export function Footer() {
               className="text-sm hover:opacity-80"
               style={{ color: 'var(--color-text-secondary)' }}
             >
-              Terms
+              {i18n.language === "es" ? "Términos" : "Terms"}
             </a>
             <a 
               href="#"
               className="text-sm hover:opacity-80"
               style={{ color: 'var(--color-text-secondary)' }}
             >
-              Privacy
+              {i18n.language === "es" ? "Privacidad" : "Privacy"}
             </a>
           </div>
         </div>
+
+        {/* Disclaimer */}
+        <p 
+          className="text-xs text-center mt-6"
+          style={{ color: 'var(--color-text-muted)' }}
+        >
+          {t("footer.disclaimer")}
+        </p>
       </div>
     </footer>
   );

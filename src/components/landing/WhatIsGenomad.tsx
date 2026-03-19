@@ -4,31 +4,14 @@
 import { motion } from "framer-motion";
 import { SectionTitle, FeatureCard } from "@/components/ui";
 import { Dna, Link2, Bot, ShieldCheck } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
-const pillars = [
-  {
-    icon: Dna,
-    title: "Evolución",
-    description: "Algoritmos genéticos que simulan selección natural"
-  },
-  {
-    icon: Link2,
-    title: "Permanencia",
-    description: "Blockchain para propiedad inmutable"
-  },
-  {
-    icon: Bot,
-    title: "Identidad",
-    description: "Agentes AI con personalidad única"
-  },
-  {
-    icon: ShieldCheck,
-    title: "Privacidad",
-    description: "ZK proofs que verifican sin revelar"
-  }
-];
+const pillarIcons = [Dna, Link2, Bot, ShieldCheck];
+const pillarKeys = ["evolution", "permanence", "identity", "privacy"] as const;
 
 export function WhatIsGenomad() {
+  const { t, i18n } = useTranslation();
+
   return (
     <section 
       id="about"
@@ -39,13 +22,14 @@ export function WhatIsGenomad() {
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           {/* Content */}
           <motion.div
+            key={`whatis-content-${i18n.language}`}
             initial={{ opacity: 0, x: -30 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
           >
             <SectionTitle 
-              title="¿Qué es Genomad?" 
+              title={t("whatIs.title")} 
               align="left"
               gradient
             />
@@ -54,17 +38,7 @@ export function WhatIsGenomad() {
               className="text-lg leading-relaxed mb-6"
               style={{ color: '#ffffff' }}
             >
-              Genomad nace de una observación simple pero poderosa: las especies 
-              se adaptan y evolucionan, pero los agentes AI no tienen ese 
-              mecanismo... <span className="gradient-text font-semibold">hasta ahora.</span>
-            </p>
-            
-            <p 
-              className="text-lg leading-relaxed"
-              style={{ color: '#ffffff' }}
-            >
-              Genomad lo hace posible: agentes que heredan, mutan y evolucionan, 
-              donde los más aptos prosperan generación tras generación.
+              {t("whatIs.description")}
             </p>
           </motion.div>
 
@@ -93,11 +67,11 @@ export function WhatIsGenomad() {
 
         {/* Pillars Grid */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-20">
-          {pillars.map((pillar, index) => {
-            const Icon = pillar.icon;
+          {pillarKeys.map((key, index) => {
+            const Icon = pillarIcons[index];
             return (
               <motion.div
-                key={pillar.title}
+                key={`pillar-${key}-${i18n.language}`}
                 className="p-6 rounded-xl text-center"
                 style={{ 
                   backgroundColor: 'var(--color-bg-primary)',
@@ -115,10 +89,10 @@ export function WhatIsGenomad() {
                   <Icon className="w-8 h-8" style={{ color: 'var(--color-secondary)' }} />
                 </div>
                 <h3 className="text-lg font-bold mb-2" style={{ color: 'var(--color-text-primary)' }}>
-                  {pillar.title}
+                  {t(`whatIs.pillars.${key}.title`)}
                 </h3>
                 <p className="text-sm" style={{ color: '#ffffff' }}>
-                  {pillar.description}
+                  {t(`whatIs.pillars.${key}.description`)}
                 </p>
               </motion.div>
             );

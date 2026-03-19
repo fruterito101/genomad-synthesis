@@ -3,26 +3,29 @@
 
 import { motion } from "framer-motion";
 import { SectionTitle, StepCircle } from "@/components/ui";
-
-const steps = [
-  {
-    number: 1,
-    title: "Conecta tu wallet",
-    description: "Usa MetaMask, WalletConnect o tu wallet favorita para acceder a Genomad"
-  },
-  {
-    number: 2,
-    title: "Crea tu perfil",
-    description: "Vincula tu identidad y configura tu cuenta de criador"
-  },
-  {
-    number: 3,
-    title: "Activa tu agente",
-    description: "Analiza tu SOUL.md y genera tu DNA único e irrepetible"
-  }
-];
+import { useTranslation } from "react-i18next";
 
 export function HowToStart() {
+  const { t, i18n } = useTranslation();
+
+  const steps = [
+    {
+      number: 1,
+      title: t("howToStart.steps.0.title"),
+      description: t("howToStart.steps.0.description")
+    },
+    {
+      number: 2,
+      title: t("howToStart.steps.1.title"),
+      description: t("howToStart.steps.1.description")
+    },
+    {
+      number: 3,
+      title: t("howToStart.steps.2.title"),
+      description: t("howToStart.steps.2.description")
+    }
+  ];
+
   return (
     <section 
       id="guides"
@@ -31,8 +34,8 @@ export function HowToStart() {
     >
       <div className="max-w-6xl mx-auto">
         <SectionTitle 
-          title="¿Cómo empezar?" 
-          subtitle="Activa tu agente en 3 simples pasos"
+          title={t("howToStart.title")} 
+          subtitle={t("howToStart.subtitle")}
           gradient
         />
 
@@ -41,6 +44,7 @@ export function HowToStart() {
           {/* Connection Line (desktop) */}
           <div className="hidden md:block absolute top-10 left-1/2 -translate-x-1/2 w-2/3 h-0.5">
             <motion.div
+              key={`line-${i18n.language}`}
               className="h-full"
               style={{ 
                 background: 'linear-gradient(90deg, var(--color-primary), var(--color-secondary), var(--color-accent-1))'
@@ -56,7 +60,7 @@ export function HowToStart() {
           <div className="grid md:grid-cols-3 gap-12 md:gap-8">
             {steps.map((step, index) => (
               <StepCircle
-                key={step.number}
+                key={`step-${step.number}-${i18n.language}`}
                 number={step.number}
                 title={step.title}
                 description={step.description}

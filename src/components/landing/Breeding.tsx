@@ -4,31 +4,42 @@
 import { motion } from "framer-motion";
 import { SectionTitle, Button } from "@/components/ui";
 import { Dna, Zap, Dices, Lock, Sparkles } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
-const breedingFeatures = [
-  {
-    icon: Dna,
-    title: "DNA Heredable",
-    description: "Los hijos heredan traits de ambos padres con variaciones únicas"
-  },
-  {
-    icon: Zap,
-    title: "Evolución On-Chain",
-    description: "Cada breeding queda registrado permanentemente en Monad"
-  },
-  {
-    icon: Dices,
-    title: "Mutaciones Raras",
-    description: "Posibilidad de traits únicos que no tenían los padres"
-  },
-  {
-    icon: Lock,
-    title: "Privacidad Total",
-    description: "Solo los padres pueden ver el DNA de sus hijos"
-  }
-];
+const featureIcons = [Dna, Zap, Dices, Lock];
 
 export function Breeding() {
+  const { t, i18n } = useTranslation();
+
+  const breedingFeatures = [
+    {
+      icon: featureIcons[0],
+      title: t("breeding.features.0"),
+      description: i18n.language === "es" 
+        ? "Los hijos heredan traits de ambos padres con variaciones únicas"
+        : "Children inherit traits from both parents with unique variations"
+    },
+    {
+      icon: featureIcons[1],
+      title: i18n.language === "es" ? "Evolución On-Chain" : "On-Chain Evolution",
+      description: i18n.language === "es"
+        ? "Cada breeding queda registrado permanentemente en Monad"
+        : "Every breeding is permanently recorded on Monad"
+    },
+    {
+      icon: featureIcons[2],
+      title: i18n.language === "es" ? "Mutaciones Raras" : "Rare Mutations",
+      description: t("breeding.features.1")
+    },
+    {
+      icon: featureIcons[3],
+      title: i18n.language === "es" ? "Privacidad Total" : "Total Privacy",
+      description: i18n.language === "es"
+        ? "Solo los padres pueden ver el DNA de sus hijos"
+        : "Only parents can view their children's DNA"
+    }
+  ];
+
   return (
     <section 
       id="breeding"
@@ -37,8 +48,8 @@ export function Breeding() {
     >
       <div className="max-w-6xl mx-auto">
         <SectionTitle 
-          title="Sistema de Breeding" 
-          subtitle="Crea la próxima generación de agentes"
+          title={t("breeding.title")} 
+          subtitle={t("breeding.subtitle")}
           gradient
         />
 
@@ -47,6 +58,7 @@ export function Breeding() {
           
           {/* Left: Visual Representation */}
           <motion.div
+            key={`breeding-visual-${i18n.language}`}
             className="relative"
             initial={{ opacity: 0, x: -30 }}
             whileInView={{ opacity: 1, x: 0 }}
@@ -130,7 +142,7 @@ export function Breeding() {
                   className="mt-6 text-sm"
                   style={{ color: '#ffffff' }}
                 >
-                  Nuevo agente con DNA único
+                  {i18n.language === "es" ? "Nuevo agente con DNA único" : "New agent with unique DNA"}
                 </p>
               </div>
             </div>
@@ -142,7 +154,7 @@ export function Breeding() {
               const Icon = feature.icon;
               return (
                 <motion.div
-                  key={feature.title}
+                  key={`feature-${index}-${i18n.language}`}
                   className="flex gap-4 p-4 rounded-xl"
                   style={{ 
                     backgroundColor: 'var(--color-bg-secondary)',
@@ -187,7 +199,7 @@ export function Breeding() {
               transition={{ delay: 0.5 }}
             >
               <Button variant="secondary" size="md" href="/breeding">
-                Explorar Breeding →
+                {t("breeding.cta")} →
               </Button>
             </motion.div>
           </div>

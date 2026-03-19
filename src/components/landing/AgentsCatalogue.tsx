@@ -3,8 +3,11 @@
 
 import { motion } from "framer-motion";
 import { SectionTitle, Button } from "@/components/ui";
+import { useTranslation } from "react-i18next";
 
 export function AgentsCatalogue() {
+  const { t, i18n } = useTranslation();
+
   return (
     <section 
       id="catalogue"
@@ -13,13 +16,14 @@ export function AgentsCatalogue() {
     >
       <div className="max-w-6xl mx-auto">
         <SectionTitle 
-          title="Explora el Catálogo" 
-          subtitle="Descubre agentes únicos con DNA verificable on-chain"
+          title={t("catalogue.title")} 
+          subtitle={t("catalogue.subtitle")}
           gradient
         />
 
         {/* Dashboard Preview Placeholder */}
         <motion.div
+          key={`catalogue-preview-${i18n.language}`}
           className="relative mt-8 sm:mt-12"
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -110,7 +114,7 @@ export function AgentsCatalogue() {
           transition={{ duration: 0.4, delay: 0.3 }}
         >
           <Button variant="primary" size="md" href="/dashboard">
-            Ver Catálogo Completo
+            {t("catalogue.cta")}
           </Button>
         </motion.div>
       </div>
