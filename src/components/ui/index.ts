@@ -70,3 +70,8 @@ export {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "./alert-dialog"
+
+// Form components
+export { Input } from "./input"
+export { Label } from "./label"
+export { Textarea } from "./textarea"
