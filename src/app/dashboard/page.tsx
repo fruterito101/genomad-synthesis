@@ -1,191 +1,449 @@
 // src/app/dashboard/page.tsx
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect } from "react";
 import { usePrivy } from "@privy-io/react-auth";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 import { LoginButton } from "@/components/LoginButton";
+import { AppHeader } from "@/components/AppHeader";
+import { Button } from "@/components/ui";
+import { 
+  Dna, 
+  Sparkles, 
+  Users, 
+  TrendingUp,
+  ArrowRight,
+  Zap,
+  Shield,
+  Crown,
+  Activity
+} from "lucide-react";
 
-interface Agent {
-  id: string;
-  name: string;
-  botUsername: string | null;
-  dnaHash: string;
-  traits: { technical: number; creativity: number; social: number; analysis: number; empathy: number; trading: number; teaching: number; leadership: number; };
-  skillCount?: number;
-  fitness: number;
-  generation: number;
-  isActive: boolean;
-  createdAt: string;
-  isMine?: boolean;
-  owner?: { wallet: string | null; telegram: string | null; } | null;
-}
+const features = [
+  {
+    icon: Dna,
+    title: "DNA Único",
+    description: "8 traits que definen la personalidad de tu agente",
+    color: "var(--color-primary)",
+  },
+  {
+    icon: Sparkles,
+    title: "Evolución",
+    description: "Mejora generación tras generación",
+    color: "var(--color-secondary)",
+  },
+  {
+    icon: Users,
+    title: "Breeding",
+    description: "Combina agentes para crear nuevas especies",
+    color: "var(--color-accent-1)",
+  },
+  {
+    icon: TrendingUp,
+    title: "Rentabilidad",
+    description: "Gana $GMD rentando tus agentes",
+    color: "#F59E0B",
+  },
+];
+
+const stats = [
+  { label: "Agentes Activos", value: "2", icon: Activity },
+  { label: "Generaciones", value: "0", icon: Crown },
+  { label: "Breedings", value: "0", icon: Dna },
+];
 
 export default function DashboardPage() {
-  const { authenticated, ready, getAccessToken, logout, user } = usePrivy();
-  const [agents, setAgents] = useState<Agent[]>([]);
-  const [myCount, setMyCount] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [gmdBalance] = useState(0); // TODO: fetch real balance
+  const { authenticated, ready, user } = usePrivy();
+  const router = useRouter();
 
-  const fetchAgents = useCallback(async () => {
-    try {
-      setLoading(true);
-      const headers: Record<string, string> = {};
-      if (authenticated) {
-        try {
-          const token = await getAccessToken();
-          if (token) headers["Authorization"] = `Bearer ${token}`;
-        } catch (e) { console.log(e); }
-      }
-      const res = await fetch("/api/agents/register-skill", { headers });
-      const data = await res.json();
-      if (data.agents) { setAgents(data.agents); setMyCount(data.myCount || 0); }
-    } catch (err) { setError(String(err)); }
-    finally { setLoading(false); }
-  }, [authenticated, getAccessToken]);
+  useEffect(() => {
+    if (ready && authenticated) {
+      // Optionally redirect to profile if already logged in
+    }
+  }, [ready, authenticated]);
 
-  useEffect(() => { if (ready) fetchAgents(); }, [ready, authenticated, fetchAgents]);
+  if (!ready) {
+    return (
+      <div 
+        className="min-h-screen flex items-center justify-center"
+        style={{ backgroundColor: "var(--color-bg-primary)" }}
+      >
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="flex flex-col items-center gap-4"
+        >
+          <Dna className="w-12 h-12 animate-pulse" style={{ color: "var(--color-primary)" }} />
+          <p style={{ color: "var(--color-text-secondary)" }}>Loading...</p>
+        </motion.div>
+      </div>
+    );
+  }
 
-  const getTraitBar = (value: number) => {
-    const color = value >= 80 ? "bg-green-500" : value >= 50 ? "bg-yellow-500" : "bg-red-500";
-    return <div className="w-full bg-gray-700 rounded h-2"><div className={`${color} h-2 rounded`} style={{ width: `${Math.min(100, value)}%` }} /></div>;
-  };
+  // Not authenticated - show login
+  if (!authenticated) {
+    return (
+      <div 
+        className="min-h-screen"
+        style={{ backgroundColor: "var(--color-bg-primary)" }}
+      >
+        <div className="max-w-7xl mx-auto px-4 py-20">
+          {/* Hero */}
+          <motion.div
+            className="text-center mb-16"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            <motion.div
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-6"
+              style={{
+                backgroundColor: "var(--color-bg-secondary)",
+                border: "1px solid var(--color-border)",
+              }}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.2 }}
+            >
+              <Zap className="w-4 h-4" style={{ color: "var(--color-primary)" }} />
+              <span style={{ color: "var(--color-text-secondary)" }}>
+                Built on Monad
+              </span>
+            </motion.div>
 
-  const myAgents = agents.filter(a => a.isMine);
-  const walletAddress = user?.wallet?.address;
-  const shortWallet = walletAddress ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}` : null;
+            <h1 className="text-4xl md:text-6xl font-bold mb-6">
+              <span style={{ color: "var(--color-text-primary)" }}>
+                Evoluciona tu{" "}
+              </span>
+              <span className="gradient-text">Agente AI</span>
+            </h1>
 
-  if (!ready) return <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center"><div className="text-2xl">⏳ Loading...</div></div>;
+            <p 
+              className="text-lg md:text-xl max-w-2xl mx-auto mb-8"
+              style={{ color: "var(--color-text-secondary)" }}
+            >
+              El primer protocolo de breeding de agentes AI on-chain. 
+              Crea, evoluciona y comercia agentes únicos con DNA verificable.
+            </p>
 
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+            >
+              <LoginButton />
+            </motion.div>
+          </motion.div>
+
+          {/* Features Grid */}
+          <motion.div
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5 }}
+          >
+            {features.map((feature, index) => {
+              const Icon = feature.icon;
+              return (
+                <motion.div
+                  key={feature.title}
+                  className="p-6 rounded-xl card-hover"
+                  style={{
+                    backgroundColor: "var(--color-bg-secondary)",
+                    border: "1px solid var(--color-border)",
+                  }}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.6 + index * 0.1 }}
+                  whileHover={{
+                    borderColor: feature.color,
+                    boxShadow: `0 0 30px ${feature.color}20`,
+                  }}
+                >
+                  <div
+                    className="w-12 h-12 rounded-lg flex items-center justify-center mb-4"
+                    style={{ backgroundColor: `${feature.color}20` }}
+                  >
+                    <Icon className="w-6 h-6" style={{ color: feature.color }} />
+                  </div>
+                  <h3 
+                    className="text-lg font-bold mb-2"
+                    style={{ color: "var(--color-text-primary)" }}
+                  >
+                    {feature.title}
+                  </h3>
+                  <p style={{ color: "var(--color-text-secondary)" }}>
+                    {feature.description}
+                  </p>
+                </motion.div>
+              );
+            })}
+          </motion.div>
+
+          {/* Security Badge */}
+          <motion.div
+            className="flex items-center justify-center gap-4 p-4 rounded-xl mx-auto max-w-md"
+            style={{
+              backgroundColor: "var(--color-bg-secondary)",
+              border: "1px solid var(--color-border)",
+            }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.9 }}
+          >
+            <Shield className="w-6 h-6" style={{ color: "var(--color-secondary)" }} />
+            <span style={{ color: "var(--color-text-secondary)" }}>
+              DNA encriptado on-chain • Solo tú controlas tu agente
+            </span>
+          </motion.div>
+        </div>
+      </div>
+    );
+  }
+
+  // Authenticated - show dashboard
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
-      {/* Header */}
-      <header className="bg-gray-800 border-b border-gray-700 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-          <Link href="/" className="text-2xl font-bold">🧬 Genomad</Link>
-          <nav className="flex items-center gap-6">
-            <Link href="/dashboard" className="text-purple-400 font-medium">Dashboard</Link>
-            {authenticated && <>
-              <Link href="/profile" className="text-gray-400 hover:text-white">👤 Profile</Link>
-              <Link href="/breeding" className="text-gray-400 hover:text-white">🧬 Breeding</Link>
-            </>}
-          </nav>
-          <div className="flex items-center gap-4">
-            {authenticated && (
-              <>
-                {/* GMD Balance */}
-                <div className="flex items-center gap-2 bg-gradient-to-r from-yellow-900/50 to-yellow-800/50 border border-yellow-600/50 px-3 py-1.5 rounded-lg">
-                  <span className="text-yellow-400 font-bold">🪙</span>
-                  <span className="font-mono font-bold text-yellow-300">{gmdBalance.toLocaleString()}</span>
-                  <span className="text-yellow-400/70 text-sm">GMD</span>
-                </div>
-                {/* Wallet */}
-                <div className="flex items-center gap-2 bg-gray-700 px-3 py-1.5 rounded-lg">
-                  <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                  <code className="text-sm">{shortWallet}</code>
-                </div>
-                <button onClick={logout} className="text-red-400 hover:text-red-300 text-sm">Logout</button>
-              </>
-            )}
-            {!authenticated && <LoginButton />}
-          </div>
-        </div>
-      </header>
+    <div 
+      className="min-h-screen"
+      style={{ backgroundColor: "var(--color-bg-primary)" }}
+    >
+      <AppHeader />
 
-      <main className="max-w-7xl mx-auto px-4 py-8">
+      <main className="max-w-7xl mx-auto px-4 pt-24 pb-12">
+        {/* Welcome */}
+        <motion.div
+          className="mb-8"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          <h1 
+            className="text-3xl font-bold mb-2"
+            style={{ color: "var(--color-text-primary)" }}
+          >
+            Bienvenido a <span className="gradient-text">Genomad</span>
+          </h1>
+          <p style={{ color: "var(--color-text-secondary)" }}>
+            Tu centro de control para agentes AI evolutivos
+          </p>
+        </motion.div>
+
         {/* Stats */}
-        <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div>
-            <h1 className="text-4xl font-bold mb-2">Dashboard</h1>
-            <p className="text-gray-400">All Agents: {agents.length} | My Agents: {myCount}</p>
-          </div>
-          <button onClick={fetchAgents} className="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded transition">🔄 Refresh</button>
-        </div>
+        <motion.div
+          className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.1 }}
+        >
+          {stats.map((stat, index) => {
+            const Icon = stat.icon;
+            return (
+              <motion.div
+                key={stat.label}
+                className="p-6 rounded-xl"
+                style={{
+                  backgroundColor: "var(--color-bg-secondary)",
+                  border: "1px solid var(--color-border)",
+                }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 + index * 0.1 }}
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p 
+                      className="text-sm mb-1"
+                      style={{ color: "var(--color-text-muted)" }}
+                    >
+                      {stat.label}
+                    </p>
+                    <p 
+                      className="text-3xl font-bold"
+                      style={{ color: "var(--color-text-primary)" }}
+                    >
+                      {stat.value}
+                    </p>
+                  </div>
+                  <div
+                    className="w-12 h-12 rounded-lg flex items-center justify-center"
+                    style={{ backgroundColor: "rgba(123, 63, 228, 0.1)" }}
+                  >
+                    <Icon className="w-6 h-6" style={{ color: "var(--color-primary)" }} />
+                  </div>
+                </div>
+              </motion.div>
+            );
+          })}
+        </motion.div>
 
         {/* Quick Actions */}
-        {authenticated && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-            <Link href="/profile" className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-500 hover:to-purple-600 rounded-xl p-6 transition">
-              <div className="flex items-center gap-4"><span className="text-4xl">👤</span><div><h3 className="font-bold text-lg">My Profile</h3><p className="text-sm text-purple-200">View agents, link bots, get GMD</p></div></div>
-            </Link>
-            <Link href="/breeding" className="bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-500 hover:to-emerald-600 rounded-xl p-6 transition">
-              <div className="flex items-center gap-4"><span className="text-4xl">🧬</span><div><h3 className="font-bold text-lg">Breeding Lab</h3><p className="text-sm text-emerald-200">Cross agents to evolve</p></div></div>
-            </Link>
-            <div className="bg-gray-700 rounded-xl p-6 opacity-60 cursor-not-allowed">
-              <div className="flex items-center gap-4"><span className="text-4xl">🏪</span><div><h3 className="font-bold text-lg">Marketplace</h3><p className="text-sm text-gray-400">Coming soon...</p></div></div>
+        <motion.div
+          className="grid grid-cols-1 md:grid-cols-2 gap-6"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.4 }}
+        >
+          {/* Link Agent */}
+          <motion.div
+            className="p-6 rounded-xl gradient-border"
+            style={{ backgroundColor: "var(--color-bg-secondary)" }}
+            whileHover={{ y: -4 }}
+          >
+            <div className="flex items-start gap-4">
+              <div
+                className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0"
+                style={{ background: "linear-gradient(135deg, var(--color-secondary), var(--color-primary))" }}
+              >
+                <Dna className="w-7 h-7 text-white" />
+              </div>
+              <div className="flex-1">
+                <h3 
+                  className="text-xl font-bold mb-2"
+                  style={{ color: "var(--color-text-primary)" }}
+                >
+                  Vincula tu Agente
+                </h3>
+                <p 
+                  className="mb-4"
+                  style={{ color: "var(--color-text-secondary)" }}
+                >
+                  Conecta tu agente OpenClaw y extrae su DNA único
+                </p>
+                <Button variant="primary" size="sm" href="/profile">
+                  Ir a Profile
+                  <ArrowRight className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Start Breeding */}
+          <motion.div
+            className="p-6 rounded-xl"
+            style={{
+              backgroundColor: "var(--color-bg-secondary)",
+              border: "1px solid var(--color-border)",
+            }}
+            whileHover={{ 
+              y: -4,
+              borderColor: "var(--color-accent-1)",
+            }}
+          >
+            <div className="flex items-start gap-4">
+              <div
+                className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0"
+                style={{ background: "linear-gradient(135deg, var(--color-accent-1), var(--color-primary))" }}
+              >
+                <Sparkles className="w-7 h-7 text-white" />
+              </div>
+              <div className="flex-1">
+                <h3 
+                  className="text-xl font-bold mb-2"
+                  style={{ color: "var(--color-text-primary)" }}
+                >
+                  Inicia Breeding
+                </h3>
+                <p 
+                  className="mb-4"
+                  style={{ color: "var(--color-text-secondary)" }}
+                >
+                  Combina agentes para crear una nueva generación
+                </p>
+                <Button variant="secondary" size="sm" href="/breeding">
+                  Explorar
+                  <ArrowRight className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+          </motion.div>
+        </motion.div>
+
+        {/* Genesis Agents Preview */}
+        <motion.div
+          className="mt-8 p-6 rounded-xl"
+          style={{
+            backgroundColor: "var(--color-bg-secondary)",
+            border: "1px solid var(--color-border)",
+          }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
+        >
+          <div className="flex items-center justify-between mb-6">
+            <h3 
+              className="text-xl font-bold"
+              style={{ color: "var(--color-text-primary)" }}
+            >
+              Genesis Agents
+            </h3>
+            <span 
+              className="px-3 py-1 rounded-full text-xs font-medium"
+              style={{
+                backgroundColor: "rgba(123, 63, 228, 0.1)",
+                color: "var(--color-primary)",
+              }}
+            >
+              Generation 0
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Tiamat */}
+            <div
+              className="p-4 rounded-lg flex items-center gap-4"
+              style={{
+                backgroundColor: "var(--color-bg-tertiary)",
+                border: "1px solid var(--color-border)",
+              }}
+            >
+              <div
+                className="w-12 h-12 rounded-full flex items-center justify-center"
+                style={{ background: "linear-gradient(135deg, #8B5CF6, #EC4899)" }}
+              >
+                <Crown className="w-6 h-6 text-white" />
+              </div>
+              <div className="flex-1">
+                <h4 className="font-bold" style={{ color: "var(--color-text-primary)" }}>
+                  Tiamat
+                </h4>
+                <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>
+                  Fitness: 98.4 • Legendary
+                </p>
+              </div>
+              <div className="text-right">
+                <span className="text-2xl font-bold gradient-text">98.4</span>
+              </div>
+            </div>
+
+            {/* Apsu */}
+            <div
+              className="p-4 rounded-lg flex items-center gap-4"
+              style={{
+                backgroundColor: "var(--color-bg-tertiary)",
+                border: "1px solid var(--color-border)",
+              }}
+            >
+              <div
+                className="w-12 h-12 rounded-full flex items-center justify-center"
+                style={{ background: "linear-gradient(135deg, #06B6D4, #8B5CF6)" }}
+              >
+                <Zap className="w-6 h-6 text-white" />
+              </div>
+              <div className="flex-1">
+                <h4 className="font-bold" style={{ color: "var(--color-text-primary)" }}>
+                  Apsu
+                </h4>
+                <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>
+                  Fitness: 95.6 • Epic
+                </p>
+              </div>
+              <div className="text-right">
+                <span className="text-2xl font-bold gradient-text">95.6</span>
+              </div>
             </div>
           </div>
-        )}
-
-
-        {error && <div className="bg-red-900 border border-red-500 rounded p-4 mb-8">Error: {error}</div>}
-
-        {/* My Agents Preview */}
-        {authenticated && myAgents.length > 0 && (
-          <div className="mb-8">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-2xl font-bold">👤 My Agents</h2>
-              <Link href="/profile" className="text-purple-400 hover:text-purple-300 text-sm">View all in Profile →</Link>
-            </div>
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {myAgents.slice(0, 3).map((agent) => (
-                <AgentCard key={agent.id} agent={agent} getTraitBar={getTraitBar} isOwned showBreedButton />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* All Agents */}
-        <div>
-          <h2 className="text-2xl font-bold mb-4">🌍 All Registered Agents</h2>
-          {loading ? (
-            <div className="text-center py-20"><div className="text-4xl mb-4">🧬</div><p className="text-xl">Loading...</p></div>
-          ) : agents.length === 0 ? (
-            <div className="text-center py-20"><div className="text-6xl mb-4">🥚</div><h2 className="text-2xl mb-2">No agents yet</h2><p className="text-gray-400">Be the first to register!</p></div>
-          ) : (
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {agents.map((agent) => <AgentCard key={agent.id} agent={agent} getTraitBar={getTraitBar} isOwned={agent.isMine || false} />)}
-            </div>
-          )}
-        </div>
+        </motion.div>
       </main>
-    </div>
-  );
-}
-
-function AgentCard({ agent, getTraitBar, isOwned = false, showBreedButton = false }: { agent: Agent; getTraitBar: (v: number) => React.ReactNode; isOwned?: boolean; showBreedButton?: boolean; }) {
-  return (
-    <div className={`bg-gray-800 rounded-lg p-6 border transition ${isOwned ? "border-emerald-500 ring-2 ring-emerald-500/20" : "border-gray-700 hover:border-purple-500"}`}>
-      <div className="flex justify-between items-start mb-4">
-        <div><h2 className="text-xl font-bold flex items-center gap-2">{agent.name}{isOwned && <span className="text-emerald-400 text-sm">✓ Yours</span>}</h2>{agent.botUsername && <p className="text-gray-400 text-sm">@{agent.botUsername}</p>}</div>
-        <div className="text-right"><div className="text-2xl font-bold text-purple-400">{agent.fitness.toFixed(1)}</div><div className="text-xs text-gray-500">FITNESS</div></div>
-      </div>
-      <div className="mb-4 flex items-center gap-2">
-        <span className={`text-xs px-2 py-1 rounded ${agent.owner ? "bg-blue-900/50 text-blue-300" : "bg-gray-700 text-gray-400"}`}>
-          {agent.owner ? <>👤 {agent.owner.telegram ? `@${agent.owner.telegram}` : agent.owner.wallet || "Owner"}</> : <>🥚 Unclaimed</>}
-        </span>
-      </div>
-      <div className="mb-4 flex flex-wrap gap-2">
-        <span className="text-xs bg-gray-700 px-2 py-1 rounded">Gen {agent.generation}</span>
-        <span className={`text-xs px-2 py-1 rounded ${agent.isActive ? "bg-green-900 text-green-300" : "bg-red-900 text-red-300"}`}>{agent.isActive ? "🟢 Active" : "🔴 Inactive"}</span>
-        {agent.skillCount && agent.skillCount > 0 && <span className="text-xs bg-blue-900 text-blue-300 px-2 py-1 rounded">🔧 {agent.skillCount} Skills</span>}
-      </div>
-      <div className="space-y-2 text-sm">
-        <div className="flex items-center gap-2"><span className="w-20">🔧 Tech</span>{getTraitBar(agent.traits.technical)}<span className="w-8 text-right">{agent.traits.technical}</span></div>
-        <div className="flex items-center gap-2"><span className="w-20">🎨 Create</span>{getTraitBar(agent.traits.creativity)}<span className="w-8 text-right">{agent.traits.creativity}</span></div>
-        <div className="flex items-center gap-2"><span className="w-20">💬 Social</span>{getTraitBar(agent.traits.social)}<span className="w-8 text-right">{agent.traits.social}</span></div>
-        <div className="flex items-center gap-2"><span className="w-20">📊 Analysis</span>{getTraitBar(agent.traits.analysis)}<span className="w-8 text-right">{agent.traits.analysis}</span></div>
-        <div className="flex items-center gap-2"><span className="w-20">❤️ Empathy</span>{getTraitBar(agent.traits.empathy)}<span className="w-8 text-right">{agent.traits.empathy}</span></div>
-        <div className="flex items-center gap-2"><span className="w-20">📈 Trading</span>{getTraitBar(agent.traits.trading)}<span className="w-8 text-right">{agent.traits.trading}</span></div>
-        <div className="flex items-center gap-2"><span className="w-20">📚 Teach</span>{getTraitBar(agent.traits.teaching)}<span className="w-8 text-right">{agent.traits.teaching}</span></div>
-        <div className="flex items-center gap-2"><span className="w-20">👑 Lead</span>{getTraitBar(agent.traits.leadership)}<span className="w-8 text-right">{agent.traits.leadership}</span></div>
-      </div>
-      <div className="mt-4 pt-4 border-t border-gray-700">
-        <p className="text-xs text-gray-500 font-mono truncate">DNA: {agent.dnaHash.slice(0, 16)}...</p>
-        {showBreedButton && <Link href={`/breeding?parentA=${agent.id}`} className="mt-3 block w-full text-center py-2 bg-purple-600 hover:bg-purple-500 rounded-lg text-sm font-medium transition">🧬 Breed</Link>}
-      </div>
     </div>
   );
 }
