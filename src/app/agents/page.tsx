@@ -3,33 +3,61 @@ import { Suspense } from "react";
 import AgentsCatalog from "./AgentsCatalog";
 import { AppHeader } from "@/components/AppHeader";
 import { Dna } from "lucide-react";
+import { getDb } from "@/lib/db/client";
+import { agents } from "@/lib/db/schema";
+import { desc } from "drizzle-orm";
 
 // Force dynamic rendering
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-// Server-side data fetching
-async function getAgents() {
+interface Agent {
+  id: string;
+  name: string;
+  botUsername: string | null;
+  traits: Record<string, number>;
+  fitness: number;
+  generation: number;
+  isActive: boolean;
+}
+
+// Direct database query - no HTTP fetch needed
+async function getAgents(): Promise<Agent[]> {
   try {
-    const baseUrl = process.env.VERCEL_URL 
-      ? `https://${process.env.VERCEL_URL}` 
-      : process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    const db = getDb();
     
-    const res = await fetch(`${baseUrl}/api/leaderboard?limit=50`, {
-      cache: "no-store",
-      headers: { "Cache-Control": "no-cache" }
-    });
-    
-    if (!res.ok) {
-      console.error("[AgentsPage] Server fetch failed:", res.status);
-      return [];
-    }
-    
-    const data = await res.json();
-    console.log("[AgentsPage] Server fetched agents:", data.agents?.length || 0);
-    return data.agents || [];
+    const allAgents = await db
+      .select({
+        id: agents.id,
+        name: agents.name,
+        botUsername: agents.botUsername,
+        fitness: agents.fitness,
+        generation: agents.generation,
+        isActive: agents.isActive,
+        traits: agents.traits,
+      })
+      .from(agents)
+      .orderBy(desc(agents.fitness))
+      .limit(50);
+
+    const defaultTraits = {
+      technical: 50, creativity: 50, social: 50, analysis: 50,
+      empathy: 50, trading: 50, teaching: 50, leadership: 50,
+    };
+
+    return allAgents.map(agent => ({
+      id: agent.id,
+      name: agent.name,
+      botUsername: agent.botUsername,
+      fitness: agent.fitness,
+      generation: agent.generation,
+      isActive: agent.isActive,
+      traits: (agent.traits && typeof agent.traits === 'object' && Object.keys(agent.traits).length > 0) 
+        ? agent.traits as Record<string, number>
+        : defaultTraits,
+    }));
   } catch (error) {
-    console.error("[AgentsPage] Server fetch error:", error);
+    console.error("[AgentsPage] DB error:", error);
     return [];
   }
 }
@@ -49,11 +77,11 @@ function LoadingState() {
 }
 
 export default async function AgentsPage() {
-  const agents = await getAgents();
+  const agentsList = await getAgents();
   
   return (
     <Suspense fallback={<LoadingState />}>
-      <AgentsCatalog initialAgents={agents} />
+      <AgentsCatalog initialAgents={agentsList} />
     </Suspense>
   );
 }
