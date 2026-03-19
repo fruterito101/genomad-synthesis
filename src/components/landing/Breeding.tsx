@@ -2,41 +2,49 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { SectionTitle } from "@/components/ui";
+import { SectionTitle, Button } from "@/components/ui";
 
-const breedingSteps = [
+const breedingFeatures = [
   {
-    number: 1,
-    title: "Elige tu agente",
-    description: "Selecciona el agente que quieres cruzar de tu colección"
+    icon: "🧬",
+    title: "DNA Heredable",
+    description: "Los hijos heredan traits de ambos padres con variaciones únicas"
   },
   {
-    number: 2,
-    title: "Encuentra pareja",
-    description: "Busca un segundo agente compatible para el breeding"
+    icon: "⚡",
+    title: "Evolución On-Chain",
+    description: "Cada breeding queda registrado permanentemente en Monad"
   },
   {
-    number: 3,
-    title: "Ejecuta el breeding",
-    description: "Genera un hijo único con DNA irrepetible"
+    icon: "🎲",
+    title: "Mutaciones Raras",
+    description: "Posibilidad de traits únicos que no tenían los padres"
+  },
+  {
+    icon: "🔒",
+    title: "Privacidad Total",
+    description: "Solo los padres pueden ver el DNA de sus hijos"
   }
 ];
 
 export function Breeding() {
   return (
     <section 
-      className="py-16 sm:py-24 px-4"
+      id="breeding"
+      className="py-24 px-4"
       style={{ backgroundColor: 'var(--color-bg-primary)' }}
     >
       <div className="max-w-6xl mx-auto">
         <SectionTitle 
-          title="Breeding: Crea nuevos agentes" 
-          subtitle="Combina el DNA de dos agentes para crear uno completamente nuevo"
+          title="Sistema de Breeding" 
+          subtitle="Crea la próxima generación de agentes"
           gradient
         />
 
-        <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 items-center mt-8 sm:mt-12">
-          {/* Breeding Diagram */}
+        {/* Main Content Grid */}
+        <div className="grid lg:grid-cols-2 gap-12 mt-16 items-center">
+          
+          {/* Left: Visual Representation */}
           <motion.div
             className="relative"
             initial={{ opacity: 0, x: -30 }}
@@ -44,168 +52,135 @@ export function Breeding() {
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
           >
+            {/* Breeding Visualization Placeholder */}
             <div 
-              className="p-4 sm:p-8 rounded-xl sm:rounded-2xl"
+              className="aspect-square rounded-2xl p-8 flex items-center justify-center"
               style={{ 
-                backgroundColor: 'var(--color-bg-secondary)',
+                background: 'linear-gradient(135deg, var(--color-bg-secondary), var(--color-bg-tertiary))',
                 border: '1px solid var(--color-border)'
               }}
             >
-              {/* Parents */}
-              <div className="flex justify-around items-center mb-6 sm:mb-8">
-                {/* Parent A */}
-                <motion.div 
-                  className="text-center"
-                  whileHover={{ scale: 1.05 }}
-                >
-                  <div 
-                    className="w-14 h-14 sm:w-20 sm:h-20 rounded-full flex items-center justify-center text-2xl sm:text-4xl mb-2 glow-primary"
+              <div className="text-center">
+                {/* Parent Agents */}
+                <div className="flex justify-center gap-8 mb-8">
+                  <motion.div
+                    className="w-20 h-20 rounded-full flex items-center justify-center text-3xl"
                     style={{ 
-                      background: 'linear-gradient(135deg, var(--color-primary), var(--color-accent-1))'
+                      background: 'linear-gradient(135deg, var(--color-primary), var(--color-accent-1))',
+                      boxShadow: '0 0 30px var(--color-primary)'
                     }}
+                    animate={{ 
+                      scale: [1, 1.05, 1],
+                      boxShadow: [
+                        '0 0 30px var(--color-primary)',
+                        '0 0 50px var(--color-primary)',
+                        '0 0 30px var(--color-primary)'
+                      ]
+                    }}
+                    transition={{ duration: 2, repeat: Infinity }}
                   >
-                    🐉
-                  </div>
-                  <p className="text-xs sm:text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
-                    Padre A
-                  </p>
-                  <p className="text-xs hidden sm:block" style={{ color: 'var(--color-text-muted)' }}>
-                    Tiamat
-                  </p>
+                    🧬
+                  </motion.div>
+                  <motion.div
+                    className="w-20 h-20 rounded-full flex items-center justify-center text-3xl"
+                    style={{ 
+                      background: 'linear-gradient(135deg, var(--color-secondary), var(--color-accent-2))',
+                      boxShadow: '0 0 30px var(--color-secondary)'
+                    }}
+                    animate={{ 
+                      scale: [1, 1.05, 1],
+                      boxShadow: [
+                        '0 0 30px var(--color-secondary)',
+                        '0 0 50px var(--color-secondary)',
+                        '0 0 30px var(--color-secondary)'
+                      ]
+                    }}
+                    transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
+                  >
+                    🧬
+                  </motion.div>
+                </div>
+
+                {/* Connection Lines */}
+                <motion.div
+                  className="w-0.5 h-12 mx-auto"
+                  style={{ backgroundColor: 'var(--color-accent-1)' }}
+                  animate={{ opacity: [0.3, 1, 0.3] }}
+                  transition={{ duration: 1.5, repeat: Infinity }}
+                />
+
+                {/* Child Agent */}
+                <motion.div
+                  className="w-24 h-24 rounded-full flex items-center justify-center text-4xl mx-auto mt-4"
+                  style={{ 
+                    background: 'linear-gradient(135deg, var(--color-accent-1), var(--color-accent-2))',
+                    boxShadow: '0 0 40px var(--color-accent-1)'
+                  }}
+                  animate={{ 
+                    rotate: [0, 5, -5, 0],
+                    scale: [1, 1.1, 1]
+                  }}
+                  transition={{ duration: 3, repeat: Infinity }}
+                >
+                  ✨
                 </motion.div>
 
-                {/* Plus sign */}
-                <span 
-                  className="text-xl sm:text-3xl font-bold"
-                  style={{ color: 'var(--color-text-muted)' }}
+                <p 
+                  className="mt-6 text-sm"
+                  style={{ color: 'var(--color-text-secondary)' }}
                 >
-                  +
-                </span>
-
-                {/* Parent B */}
-                <motion.div 
-                  className="text-center"
-                  whileHover={{ scale: 1.05 }}
-                >
-                  <div 
-                    className="w-14 h-14 sm:w-20 sm:h-20 rounded-full flex items-center justify-center text-2xl sm:text-4xl mb-2 glow-secondary"
-                    style={{ 
-                      background: 'linear-gradient(135deg, var(--color-secondary), var(--color-primary))'
-                    }}
-                  >
-                    🌊
-                  </div>
-                  <p className="text-xs sm:text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
-                    Padre B
-                  </p>
-                  <p className="text-xs hidden sm:block" style={{ color: 'var(--color-text-muted)' }}>
-                    Apsu
-                  </p>
-                </motion.div>
+                  Nuevo agente con DNA único
+                </p>
               </div>
-
-              {/* Arrow */}
-              <motion.div 
-                className="flex justify-center mb-6 sm:mb-8"
-                initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.3 }}
-              >
-                <div className="flex flex-col items-center">
-                  <div 
-                    className="w-0.5 h-4 sm:h-8"
-                    style={{ backgroundColor: 'var(--color-border)' }}
-                  />
-                  <div 
-                    className="px-2 sm:px-4 py-1 sm:py-2 rounded-full text-xs sm:text-sm"
-                    style={{ 
-                      backgroundColor: 'var(--color-bg-tertiary)',
-                      color: 'var(--color-text-secondary)'
-                    }}
-                  >
-                    Crossover + Mutación
-                  </div>
-                  <div 
-                    className="w-0.5 h-4 sm:h-8"
-                    style={{ backgroundColor: 'var(--color-border)' }}
-                  />
-                  <div 
-                    className="w-0 h-0 border-l-4 sm:border-l-8 border-r-4 sm:border-r-8 border-t-4 sm:border-t-8"
-                    style={{ 
-                      borderLeftColor: 'transparent',
-                      borderRightColor: 'transparent',
-                      borderTopColor: 'var(--color-border)'
-                    }}
-                  />
-                </div>
-              </motion.div>
-
-              {/* Child */}
-              <motion.div 
-                className="flex justify-center"
-                initial={{ scale: 0.8, opacity: 0 }}
-                whileInView={{ scale: 1, opacity: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.5, type: "spring" }}
-              >
-                <div className="text-center">
-                  <div 
-                    className="w-16 h-16 sm:w-24 sm:h-24 rounded-full flex items-center justify-center text-3xl sm:text-5xl mb-2"
-                    style={{ 
-                      background: 'linear-gradient(135deg, var(--color-primary), var(--color-secondary), var(--color-accent-1))',
-                      boxShadow: '0 0 40px rgba(123, 63, 228, 0.4)'
-                    }}
-                  >
-                    ✨
-                  </div>
-                  <p className="text-xs sm:text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
-                    Hijo Único
-                  </p>
-                  <p className="text-xs" style={{ color: 'var(--color-accent-1)' }}>
-                    Nueva Generación
-                  </p>
-                </div>
-              </motion.div>
             </div>
           </motion.div>
 
-          {/* Steps */}
-          <div className="space-y-4 sm:space-y-8">
-            {breedingSteps.map((step, index) => (
+          {/* Right: Features */}
+          <div className="space-y-6">
+            {breedingFeatures.map((feature, index) => (
               <motion.div
-                key={step.number}
-                className="flex gap-3 sm:gap-4"
+                key={feature.title}
+                className="flex gap-4 p-4 rounded-xl"
+                style={{ 
+                  backgroundColor: 'var(--color-bg-secondary)',
+                  border: '1px solid var(--color-border)'
+                }}
                 initial={{ opacity: 0, x: 30 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.4, delay: index * 0.15 }}
+                transition={{ duration: 0.4, delay: index * 0.1 }}
+                whileHover={{ 
+                  scale: 1.02,
+                  borderColor: 'var(--color-primary)'
+                }}
               >
-                <div 
-                  className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center font-bold text-base sm:text-lg shrink-0"
-                  style={{ 
-                    background: 'linear-gradient(135deg, var(--color-primary), var(--color-accent-1))',
-                    color: 'white'
-                  }}
-                >
-                  {step.number}
-                </div>
+                <span className="text-3xl">{feature.icon}</span>
                 <div>
                   <h3 
-                    className="text-base sm:text-lg font-semibold mb-1"
+                    className="font-semibold text-lg mb-1"
                     style={{ color: 'var(--color-text-primary)' }}
                   >
-                    {step.title}
+                    {feature.title}
                   </h3>
-                  <p 
-                    className="text-sm"
-                    style={{ color: 'var(--color-text-secondary)' }}
-                  >
-                    {step.description}
+                  <p style={{ color: 'var(--color-text-secondary)' }}>
+                    {feature.description}
                   </p>
                 </div>
               </motion.div>
             ))}
+
+            {/* CTA */}
+            <motion.div
+              className="pt-4"
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.5 }}
+            >
+              <Button variant="secondary" size="lg">
+                Explorar Breeding →
+              </Button>
+            </motion.div>
           </div>
         </div>
       </div>
