@@ -259,6 +259,7 @@ export default function ProfilePage() {
                     showTopTraits
                     getAccessToken={getAccessToken}
                     onClick={() => setSelectedAgent(agent)}
+                    onActivated={fetchProfile}
                     onViewDetails={() => setSelectedAgent(agent)}
                     labels={{
                       breed: i18n.language === "es" ? "Criar" : "Breed",
