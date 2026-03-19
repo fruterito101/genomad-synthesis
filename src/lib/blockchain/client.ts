@@ -8,7 +8,7 @@ import { monadTestnet } from "./chains";
  */
 export const publicClient = createPublicClient({
   chain: monadTestnet,
-  transport: http(process.env.NEXT_PUBLIC_MONAD_RPC || "https://testnet-rpc.monad.xyz"),
+  transport: http(process.env.NEXT_PUBLIC_CHAIN_RPC || "https://testnet-rpc.monad.xyz"),
 });
 
 /**
@@ -25,7 +25,7 @@ export function createDeployerClient() {
   return createWalletClient({
     account,
     chain: monadTestnet,
-    transport: http(process.env.NEXT_PUBLIC_MONAD_RPC || "https://testnet-rpc.monad.xyz"),
+    transport: http(process.env.NEXT_PUBLIC_CHAIN_RPC || "https://testnet-rpc.monad.xyz"),
   });
 }
 

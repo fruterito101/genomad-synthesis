@@ -1,28 +1,59 @@
 import { defineChain } from "viem";
 
-// Ethereum Sepolia Testnet
-export const sepoliaTestnet = defineChain({
-  id: 11155111,
-  name: "Sepolia",
+// ============================================
+// MONAD TESTNET - Configuración Principal
+// ============================================
+export const monadTestnet = defineChain({
+  id: 10143,
+  name: "Monad Testnet",
   nativeCurrency: {
     decimals: 18,
-    name: "Sepolia ETH",
-    symbol: "ETH",
+    name: "Monad",
+    symbol: "MON",
   },
   rpcUrls: {
     default: {
-      http: ["https://rpc.sepolia.org"],
+      http: ["https://testnet-rpc.monad.xyz"],
     },
   },
   blockExplorers: {
-    default: { name: "Etherscan", url: "https://sepolia.etherscan.io" },
+    default: { 
+      name: "Monad Explorer", 
+      url: "https://testnet.monadexplorer.com" 
+    },
   },
   testnet: true,
 });
 
-// Alias for backwards compatibility
-export const monadTestnet = sepoliaTestnet;
-export const monadMainnet = sepoliaTestnet;
+// ============================================
+// MONAD MAINNET - Para futuro
+// ============================================
+export const monadMainnet = defineChain({
+  id: 10143, // Actualizar cuando salga mainnet
+  name: "Monad",
+  nativeCurrency: {
+    decimals: 18,
+    name: "Monad",
+    symbol: "MON",
+  },
+  rpcUrls: {
+    default: {
+      http: ["https://rpc.monad.xyz"],
+    },
+  },
+  blockExplorers: {
+    default: { 
+      name: "Monad Explorer", 
+      url: "https://monadexplorer.com" 
+    },
+  },
+  testnet: false,
+});
 
-// Active chain
-export const activeChain = sepoliaTestnet;
+// ============================================
+// CHAIN ACTIVA
+// ============================================
+export const activeChain = monadTestnet;
+
+// Legacy alias (para compatibilidad)
+export const sepoliaTestnet = monadTestnet;
