@@ -12,7 +12,7 @@ import { Button } from "@/components/ui";
 import { Dna, Plus, ArrowRight, Sparkles, Check, Clock, Shield, Zap, Crown, Activity, RefreshCw, AlertCircle, ChevronDown, Cpu, Palette, MessageSquare, Brain, Heart, TrendingUp, GraduationCap } from "lucide-react";
 import { SuccessModal } from "@/components/SuccessModal";
 
-interface Agent { id: string; name: string; botUsername: string | null; traits: { technical: number; creativity: number; social: number; analysis: number; empathy: number; trading: number; teaching: number; leadership: number; }; fitness: number; generation: number; isActive: boolean; ownerId: string; isMine?: boolean; }
+interface Agent { id: string; name: string; botUsername: string | null; traits: { technical: number; creativity: number; social: number; analysis: number; empathy: number; trading: number; teaching: number; leadership: number; }; fitness: number; generation: number; isActive: boolean; ownerId: string; isMine?: boolean; ownerDisplay?: string; }
 interface BreedingRequest { 
   id: string; 
   status: string; 
@@ -68,10 +68,10 @@ function BreedingContent() {
       const token = await getAccessToken();
       if (!token) return;
       const [agentsRes, requestsRes] = await Promise.all([
-        fetch("/api/agents", { headers: { Authorization: `Bearer ${token}` } }),
+        fetch("/api/agents/available", { headers: { Authorization: `Bearer ${token}` } }),
         fetch("/api/breeding/requests", { headers: { Authorization: `Bearer ${token}` } }),
       ]);
-      if (agentsRes.ok) { const data = await agentsRes.json(); setAllAgents(data.agents || []); setMyAgents(data.agents || []); }
+      if (agentsRes.ok) { const data = await agentsRes.json(); setAllAgents(data.allAgents || []); setMyAgents(data.myAgents || []); }
       if (requestsRes.ok) { const reqData = await requestsRes.json(); setPendingRequests(reqData.requests || []); }
     } catch (err) { console.error(err); } finally { setLoading(false); }
   }, [authenticated, getAccessToken]);
@@ -207,6 +207,21 @@ function BreedingContent() {
           </div>
 
           {/* Predicted Traits */}
+          {/* Cross-owner Warning */}
+          {parentA && parentB && (!parentA.isMine || !parentB.isMine) && (
+            <motion.div className="mt-4 p-3 sm:p-4 rounded-xl flex items-center gap-3" style={{ backgroundColor: "rgba(245, 158, 11, 0.1)", border: "1px solid var(--color-warning)" }} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+              <AlertCircle className="w-5 h-5 flex-shrink-0" style={{ color: "var(--color-warning)" }} />
+              <div>
+                <p className="text-sm font-medium" style={{ color: "var(--color-warning)" }}>Requiere Aprobación</p>
+                <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>
+                  {!parentA.isMine && parentA.ownerDisplay ? `${parentA.name} es de ${parentA.ownerDisplay}` : ""}
+                  {!parentA.isMine && !parentB.isMine ? " y " : ""}
+                  {!parentB.isMine && parentB.ownerDisplay ? `${parentB.name} es de ${parentB.ownerDisplay}` : ""}
+                  . Se enviará una solicitud.
+                </p>
+              </div>
+            </motion.div>
+          )}
           {parentA && parentB && (
             <motion.div className="mt-6 sm:mt-8 p-4 sm:p-6 rounded-xl" style={{ backgroundColor: "var(--color-bg-primary)" }} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0 mb-4">
