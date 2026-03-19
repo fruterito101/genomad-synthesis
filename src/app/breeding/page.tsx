@@ -51,6 +51,13 @@ function BreedingContent() {
   const [myAgents, setMyAgents] = useState<Agent[]>([]);
   const [parentA, setParentA] = useState<Agent | null>(null);
   const [parentB, setParentB] = useState<Agent | null>(null);
+  const [breedingCheck, setBreedingCheck] = useState<{
+    exists: boolean;
+    canBreed: boolean;
+    needsRequest: boolean;
+    requestId?: string;
+  } | null>(null);
+  const [checkingBreeding, setCheckingBreeding] = useState(false);
   const [crossoverType, setCrossoverType] = useState("weighted");
   const [childName, setChildName] = useState("");
   const [loading, setLoading] = useState(true);
@@ -194,19 +201,56 @@ function BreedingContent() {
               </div>
             </div>
 
-            {/* Cross-owner Warning */}
+            {/* Cross-owner Status */}
             {parentA && parentB && (!parentA.isMine || !parentB.isMine) && (
-              <motion.div className="mt-4 p-3 sm:p-4 rounded-xl flex items-center gap-3 bg-amber-500/10 border border-amber-500" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                <AlertCircle className="w-5 h-5 flex-shrink-0 text-amber-500" />
-                <div>
-                  <p className="text-sm font-medium text-amber-500">Requiere Aprobación</p>
-                  <p className="text-xs text-muted-foreground">
-                    {!parentA.isMine && parentA.ownerDisplay ? `${parentA.name} es de ${parentA.ownerDisplay}` : ""}
-                    {!parentA.isMine && !parentB.isMine ? " y " : ""}
-                    {!parentB.isMine && parentB.ownerDisplay ? `${parentB.name} es de ${parentB.ownerDisplay}` : ""}
-                    . Se enviará una solicitud.
-                  </p>
-                </div>
+              <motion.div 
+                className={`mt-4 p-3 sm:p-4 rounded-xl flex items-center gap-3 ${
+                  breedingCheck?.canBreed 
+                    ? "bg-emerald-500/10 border border-emerald-500" 
+                    : "bg-amber-500/10 border border-amber-500"
+                }`} 
+                initial={{ opacity: 0 }} 
+                animate={{ opacity: 1 }}
+              >
+                {breedingCheck?.canBreed ? (
+                  <>
+                    <Check className="w-5 h-5 flex-shrink-0 text-emerald-500" />
+                    <div>
+                      <p className="text-sm font-medium text-emerald-500">✅ Breeding Aprobado</p>
+                      <p className="text-xs text-muted-foreground">
+                        Ambos dueños han aprobado. ¡Puedes ejecutar el breeding!
+                      </p>
+                    </div>
+                  </>
+                ) : checkingBreeding ? (
+                  <>
+                    <Loader2 className="w-5 h-5 flex-shrink-0 animate-spin text-amber-500" />
+                    <p className="text-sm text-amber-500">Verificando estado...</p>
+                  </>
+                ) : breedingCheck?.exists && !breedingCheck?.canBreed ? (
+                  <>
+                    <Clock className="w-5 h-5 flex-shrink-0 text-amber-500" />
+                    <div>
+                      <p className="text-sm font-medium text-amber-500">⏳ Esperando Aprobación</p>
+                      <p className="text-xs text-muted-foreground">
+                        Ya existe una solicitud pendiente. Esperando que el otro dueño apruebe.
+                      </p>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <AlertCircle className="w-5 h-5 flex-shrink-0 text-amber-500" />
+                    <div>
+                      <p className="text-sm font-medium text-amber-500">Requiere Aprobación</p>
+                      <p className="text-xs text-muted-foreground">
+                        {!parentA.isMine && parentA.ownerDisplay ? `${parentA.name} es de ${parentA.ownerDisplay}` : ""}
+                        {!parentA.isMine && !parentB.isMine ? " y " : ""}
+                        {!parentB.isMine && parentB.ownerDisplay ? `${parentB.name} es de ${parentB.ownerDisplay}` : ""}
+                        . Se enviará una solicitud.
+                      </p>
+                    </div>
+                  </>
+                )}
               </motion.div>
             )}
 
