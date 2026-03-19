@@ -1,0 +1,13 @@
+{
+  "name": "genomad-relay",
+  "version": "1.0.0",
+  "description": "Connect OpenClaw to Genomad P2P network",
+  "type": "module",
+  "scripts": {
+    "connect": "npx tsx scripts/connect.ts",
+    "status": "npx tsx scripts/status.ts"
+  },
+  "dependencies": {
+    "tsx": "^4.7.0"
+  }
+}

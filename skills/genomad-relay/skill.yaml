@@ -1,0 +1,27 @@
+name: genomad-relay
+version: 1.0.0
+description: Connect OpenClaw to Genomad P2P network for agent provisioning
+author: Genomad
+repository: https://github.com/fruterito101/genomad
+
+triggers:
+  - genomad-relay
+  - genomad relay
+  - connect to genomad
+
+commands:
+  - name: connect
+    description: Connect to Genomad relay and listen for commands
+    script: scripts/connect.ts
+  - name: status
+    description: Check relay connection status and local agents
+    script: scripts/status.ts
+
+dependencies:
+  - node >= 18
+
+files:
+  - lib/
+  - scripts/
+  - SKILL.md
+  - package.json
