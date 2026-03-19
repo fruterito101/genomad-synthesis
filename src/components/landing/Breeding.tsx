@@ -2,7 +2,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { SectionTitle, StepCircle } from "@/components/ui";
+import { SectionTitle } from "@/components/ui";
 
 const breedingSteps = [
   {
@@ -25,7 +25,7 @@ const breedingSteps = [
 export function Breeding() {
   return (
     <section 
-      className="py-24 px-4"
+      className="py-16 sm:py-24 px-4"
       style={{ backgroundColor: 'var(--color-bg-primary)' }}
     >
       <div className="max-w-6xl mx-auto">
@@ -35,7 +35,7 @@ export function Breeding() {
           gradient
         />
 
-        <div className="grid lg:grid-cols-2 gap-16 items-center mt-12">
+        <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 items-center mt-8 sm:mt-12">
           {/* Breeding Diagram */}
           <motion.div
             className="relative"
@@ -45,38 +45,38 @@ export function Breeding() {
             transition={{ duration: 0.6 }}
           >
             <div 
-              className="p-8 rounded-2xl"
+              className="p-4 sm:p-8 rounded-xl sm:rounded-2xl"
               style={{ 
                 backgroundColor: 'var(--color-bg-secondary)',
                 border: '1px solid var(--color-border)'
               }}
             >
               {/* Parents */}
-              <div className="flex justify-around items-center mb-8">
+              <div className="flex justify-around items-center mb-6 sm:mb-8">
                 {/* Parent A */}
                 <motion.div 
                   className="text-center"
                   whileHover={{ scale: 1.05 }}
                 >
                   <div 
-                    className="w-20 h-20 rounded-full flex items-center justify-center text-4xl mb-2 glow-primary"
+                    className="w-14 h-14 sm:w-20 sm:h-20 rounded-full flex items-center justify-center text-2xl sm:text-4xl mb-2 glow-primary"
                     style={{ 
                       background: 'linear-gradient(135deg, var(--color-primary), var(--color-accent-1))'
                     }}
                   >
                     🐉
                   </div>
-                  <p className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+                  <p className="text-xs sm:text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
                     Padre A
                   </p>
-                  <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+                  <p className="text-xs hidden sm:block" style={{ color: 'var(--color-text-muted)' }}>
                     Tiamat
                   </p>
                 </motion.div>
 
                 {/* Plus sign */}
                 <span 
-                  className="text-3xl font-bold"
+                  className="text-xl sm:text-3xl font-bold"
                   style={{ color: 'var(--color-text-muted)' }}
                 >
                   +
@@ -88,17 +88,17 @@ export function Breeding() {
                   whileHover={{ scale: 1.05 }}
                 >
                   <div 
-                    className="w-20 h-20 rounded-full flex items-center justify-center text-4xl mb-2 glow-secondary"
+                    className="w-14 h-14 sm:w-20 sm:h-20 rounded-full flex items-center justify-center text-2xl sm:text-4xl mb-2 glow-secondary"
                     style={{ 
                       background: 'linear-gradient(135deg, var(--color-secondary), var(--color-primary))'
                     }}
                   >
                     🌊
                   </div>
-                  <p className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+                  <p className="text-xs sm:text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
                     Padre B
                   </p>
-                  <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+                  <p className="text-xs hidden sm:block" style={{ color: 'var(--color-text-muted)' }}>
                     Apsu
                   </p>
                 </motion.div>
@@ -106,7 +106,7 @@ export function Breeding() {
 
               {/* Arrow */}
               <motion.div 
-                className="flex justify-center mb-8"
+                className="flex justify-center mb-6 sm:mb-8"
                 initial={{ opacity: 0 }}
                 whileInView={{ opacity: 1 }}
                 viewport={{ once: true }}
@@ -114,11 +114,11 @@ export function Breeding() {
               >
                 <div className="flex flex-col items-center">
                   <div 
-                    className="w-0.5 h-8"
+                    className="w-0.5 h-4 sm:h-8"
                     style={{ backgroundColor: 'var(--color-border)' }}
                   />
                   <div 
-                    className="px-4 py-2 rounded-full text-sm"
+                    className="px-2 sm:px-4 py-1 sm:py-2 rounded-full text-xs sm:text-sm"
                     style={{ 
                       backgroundColor: 'var(--color-bg-tertiary)',
                       color: 'var(--color-text-secondary)'
@@ -127,11 +127,11 @@ export function Breeding() {
                     Crossover + Mutación
                   </div>
                   <div 
-                    className="w-0.5 h-8"
+                    className="w-0.5 h-4 sm:h-8"
                     style={{ backgroundColor: 'var(--color-border)' }}
                   />
                   <div 
-                    className="w-0 h-0 border-l-8 border-r-8 border-t-8"
+                    className="w-0 h-0 border-l-4 sm:border-l-8 border-r-4 sm:border-r-8 border-t-4 sm:border-t-8"
                     style={{ 
                       borderLeftColor: 'transparent',
                       borderRightColor: 'transparent',
@@ -151,7 +151,7 @@ export function Breeding() {
               >
                 <div className="text-center">
                   <div 
-                    className="w-24 h-24 rounded-full flex items-center justify-center text-5xl mb-2"
+                    className="w-16 h-16 sm:w-24 sm:h-24 rounded-full flex items-center justify-center text-3xl sm:text-5xl mb-2"
                     style={{ 
                       background: 'linear-gradient(135deg, var(--color-primary), var(--color-secondary), var(--color-accent-1))',
                       boxShadow: '0 0 40px rgba(123, 63, 228, 0.4)'
@@ -159,7 +159,7 @@ export function Breeding() {
                   >
                     ✨
                   </div>
-                  <p className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+                  <p className="text-xs sm:text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
                     Hijo Único
                   </p>
                   <p className="text-xs" style={{ color: 'var(--color-accent-1)' }}>
@@ -171,18 +171,18 @@ export function Breeding() {
           </motion.div>
 
           {/* Steps */}
-          <div className="space-y-8">
+          <div className="space-y-4 sm:space-y-8">
             {breedingSteps.map((step, index) => (
               <motion.div
                 key={step.number}
-                className="flex gap-4"
+                className="flex gap-3 sm:gap-4"
                 initial={{ opacity: 0, x: 30 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.4, delay: index * 0.15 }}
               >
                 <div 
-                  className="w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg shrink-0"
+                  className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center font-bold text-base sm:text-lg shrink-0"
                   style={{ 
                     background: 'linear-gradient(135deg, var(--color-primary), var(--color-accent-1))',
                     color: 'white'
@@ -192,12 +192,15 @@ export function Breeding() {
                 </div>
                 <div>
                   <h3 
-                    className="text-lg font-semibold mb-1"
+                    className="text-base sm:text-lg font-semibold mb-1"
                     style={{ color: 'var(--color-text-primary)' }}
                   >
                     {step.title}
                   </h3>
-                  <p style={{ color: 'var(--color-text-secondary)' }}>
+                  <p 
+                    className="text-sm"
+                    style={{ color: 'var(--color-text-secondary)' }}
+                  >
                     {step.description}
                   </p>
                 </div>

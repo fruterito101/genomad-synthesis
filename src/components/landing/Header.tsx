@@ -1,7 +1,7 @@
 // src/components/landing/Header.tsx
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { Button } from "@/components/ui";
@@ -14,10 +14,53 @@ const navItems = [
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState("");
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  // Detect scroll for background change
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 50);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // Detect active section
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setActiveSection(entry.target.id);
+          }
+        });
+      },
+      { rootMargin: "-50% 0px -50% 0px" }
+    );
+
+    const sections = document.querySelectorAll("section[id]");
+    sections.forEach((section) => observer.observe(section));
+
+    return () => {
+      sections.forEach((section) => observer.unobserve(section));
+    };
+  }, []);
+
+  const handleNavClick = (href: string) => {
+    setIsMenuOpen(false);
+    // Smooth scroll to section
+    const element = document.querySelector(href);
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth" });
+    }
+  };
 
   return (
     <motion.header
-      className="fixed top-0 left-0 right-0 z-50 glass"
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        isScrolled ? "glass" : "bg-transparent"
+      }`}
       initial={{ y: -100 }}
       animate={{ y: 0 }}
       transition={{ duration: 0.5 }}
@@ -35,16 +78,33 @@ export function Header() {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-8">
-            {navItems.map((item) => (
-              <Link
-                key={item.label}
-                href={item.href}
-                className="text-sm font-medium transition-colors hover:opacity-80"
-                style={{ color: 'var(--color-text-secondary)' }}
-              >
-                {item.label}
-              </Link>
-            ))}
+            {navItems.map((item) => {
+              const sectionId = item.href.replace("#", "");
+              const isActive = activeSection === sectionId;
+              
+              return (
+                <button
+                  key={item.label}
+                  onClick={() => handleNavClick(item.href)}
+                  className="text-sm font-medium transition-all duration-200 relative"
+                  style={{ 
+                    color: isActive 
+                      ? 'var(--color-primary)' 
+                      : 'var(--color-text-secondary)' 
+                  }}
+                >
+                  {item.label}
+                  {isActive && (
+                    <motion.div
+                      className="absolute -bottom-1 left-0 right-0 h-0.5"
+                      style={{ backgroundColor: 'var(--color-primary)' }}
+                      layoutId="activeNav"
+                      transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                    />
+                  )}
+                </button>
+              );
+            })}
             <Button variant="primary" size="sm" href="/dashboard">
               Activación
             </Button>
@@ -88,17 +148,25 @@ export function Header() {
             transition={{ duration: 0.3 }}
           >
             <nav className="px-4 py-4 flex flex-col gap-4">
-              {navItems.map((item) => (
-                <Link
-                  key={item.label}
-                  href={item.href}
-                  className="text-base font-medium py-2"
-                  style={{ color: 'var(--color-text-secondary)' }}
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  {item.label}
-                </Link>
-              ))}
+              {navItems.map((item) => {
+                const sectionId = item.href.replace("#", "");
+                const isActive = activeSection === sectionId;
+                
+                return (
+                  <button
+                    key={item.label}
+                    onClick={() => handleNavClick(item.href)}
+                    className="text-base font-medium py-2 text-left transition-colors"
+                    style={{ 
+                      color: isActive 
+                        ? 'var(--color-primary)' 
+                        : 'var(--color-text-secondary)' 
+                    }}
+                  >
+                    {isActive && "→ "}{item.label}
+                  </button>
+                );
+              })}
               <Button variant="primary" size="md" href="/dashboard">
                 Activación
               </Button>
