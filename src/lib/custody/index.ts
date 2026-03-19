@@ -177,3 +177,7 @@ export async function getCoOwners(agentId: string): Promise<{
 }[]> {
   return await getAgentCustody(agentId);
 }
+
+// Re-export approvals
+export * from "./approvals";
+
