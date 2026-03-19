@@ -321,17 +321,23 @@ SidebarRail.displayName = "SidebarRail"
 const SidebarInset = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<"main">
->(({ className, ...props }, ref) => {
-  const { state } = useSidebar()
+>(({ className, style, ...props }, ref) => {
+  const { state, isMobile } = useSidebar()
+  const isCollapsed = state === "collapsed"
+  
+  // Calculate margin based on state (only on desktop)
+  const marginLeft = isMobile ? 0 : (isCollapsed ? "var(--sidebar-width-icon)" : "var(--sidebar-width)")
   
   return (
     <main
       ref={ref}
       data-state={state}
+      style={{
+        ...style,
+        marginLeft: marginLeft,
+      }}
       className={cn(
         "relative flex min-h-svh flex-1 flex-col bg-background overflow-x-hidden transition-[margin] duration-200",
-        "md:ml-[--sidebar-width]",
-        "data-[state=collapsed]:md:ml-[--sidebar-width-icon]",
         className
       )}
       {...props}
