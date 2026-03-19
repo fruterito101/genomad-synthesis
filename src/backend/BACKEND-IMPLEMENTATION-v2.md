@@ -873,3 +873,49 @@ export async function createGenoToken({
 *Documento generado para Monad Moltiverse Hackathon 2026*
 *Evaluado con skills: hackathon-mode, monad-development, nad-fun*
 *Genomad — Gene + Monad*
+
+---
+
+# 📈 ROADMAP DE ESCALABILIDAD
+
+> Arquitectura diseñada para crecer: MVP → Producción → Scale
+
+## Estrategia: "Ship Fast, Scale Later"
+
+| Componente | MVP (Hackathon) | Producción (Post-launch) |
+|------------|-----------------|--------------------------|
+| **Database** | SQLite (local) | PostgreSQL (Neon/Supabase) |
+| **Cache** | Ninguno | Redis (Upstash) |
+| **Queue** | Síncrono | BullMQ / Inngest |
+| **File Storage** | IPFS (nad.fun) | IPFS + Cloudflare R2 |
+| **API** | Next.js routes | Edge functions + rate limiting |
+
+## Por qué este approach:
+
+1. **SQLite MVP** → 0 config, funciona ya, migrable a PostgreSQL con Drizzle
+2. **Sin cache MVP** → Menos complejidad, DB aguanta primeros 1000 users
+3. **Sin queue MVP** → Breeding síncrono (~5 seg), aceptable para demo
+4. **IPFS via nad.fun** → Ya integrado para $GENO token
+5. **Next.js routes** → Suficiente para hackathon, fácil migrar a edge
+
+## Migración a Producción (Fase 2 post-hackathon)
+
+```
+Paso 1: Database
+└── Cambiar connection string a Neon
+└── Drizzle migra automáticamente
+
+Paso 2: Cache
+└── Agregar Redis para hot data
+└── TTL 5min para listings
+
+Paso 3: Queue
+└── Breeding async con BullMQ
+└── Webhook cuando termina
+
+Paso 4: Edge
+└── Mover API routes a Vercel Edge
+└── Rate limiting con Upstash
+```
+
+---
