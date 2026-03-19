@@ -1,6 +1,6 @@
 // src/lib/wagmi/config.ts
 import { createConfig, http } from "wagmi";
-import { monadTestnet } from "viem/chains";
+import { monadTestnet } from "@/lib/blockchain/chains";
 
 export const wagmiConfig = createConfig({
   chains: [monadTestnet],
