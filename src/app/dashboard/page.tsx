@@ -1,7 +1,7 @@
 // src/app/dashboard/page.tsx
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { usePrivy } from "@privy-io/react-auth";
 import { LoginButton } from "@/components/LoginButton";
 
@@ -26,12 +26,14 @@ interface Agent {
   isActive: boolean;
   createdAt: string;
   ownerId?: string;
+  isMine?: boolean;
+  isLinked?: boolean;
 }
 
 export default function DashboardPage() {
   const { authenticated, ready, getAccessToken, user } = usePrivy();
   const [agents, setAgents] = useState<Agent[]>([]);
-  const [myAgents, setMyAgents] = useState<Agent[]>([]);
+  const [myCount, setMyCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
@@ -41,31 +43,43 @@ export default function DashboardPage() {
   const [codeExpiry, setCodeExpiry] = useState<Date | null>(null);
   const [codeError, setCodeError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchAgents();
-  }, []);
-
-  // Filter my agents when user or agents change
-  useEffect(() => {
-    if (user?.id && agents.length > 0) {
-      const mine = agents.filter(a => a.ownerId === user.id);
-      setMyAgents(mine);
-    }
-  }, [user, agents]);
-
-  const fetchAgents = async () => {
+  const fetchAgents = useCallback(async () => {
     try {
-      const res = await fetch("/api/agents/register-skill");
+      setLoading(true);
+      
+      // Obtener token si está autenticado
+      const headers: Record<string, string> = {};
+      if (authenticated) {
+        try {
+          const token = await getAccessToken();
+          if (token) {
+            headers["Authorization"] = `Bearer ${token}`;
+          }
+        } catch (e) {
+          console.log("Could not get token:", e);
+        }
+      }
+      
+      const res = await fetch("/api/agents/register-skill", { headers });
       const data = await res.json();
+      
       if (data.agents) {
         setAgents(data.agents);
+        setMyCount(data.myCount || 0);
       }
     } catch (err) {
       setError(String(err));
     } finally {
       setLoading(false);
     }
-  };
+  }, [authenticated, getAccessToken]);
+
+  // Fetch on mount and when auth changes
+  useEffect(() => {
+    if (ready) {
+      fetchAgents();
+    }
+  }, [ready, authenticated, fetchAgents]);
 
   const generateCode = async () => {
     setGeneratingCode(true);
@@ -129,6 +143,9 @@ export default function DashboardPage() {
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
+  // Get my agents from the list (using isMine from API)
+  const myAgents = agents.filter(a => a.isMine);
+
   if (!ready) {
     return (
       <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">
@@ -145,7 +162,7 @@ export default function DashboardPage() {
           <div>
             <h1 className="text-4xl font-bold mb-2">🧬 Genomad Dashboard</h1>
             <p className="text-gray-400">
-              All Agents: {agents.length} | My Agents: {myAgents.length}
+              All Agents: {agents.length} | My Agents: {myCount}
             </p>
           </div>
           <div className="flex items-center gap-4">
@@ -283,7 +300,7 @@ export default function DashboardPage() {
                   key={agent.id} 
                   agent={agent} 
                   getTraitBar={getTraitBar}
-                  isOwned={myAgents.some(a => a.id === agent.id)}
+                  isOwned={agent.isMine || false}
                 />
               ))}
             </div>

@@ -3,10 +3,11 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/db/client";
-import { agents, verificationCodes } from "@/lib/db/schema";
+import { agents, verificationCodes, users } from "@/lib/db/schema";
 import { calculateTotalFitness } from "@/lib/genetic";
 import { eq, or, sql, and, gt } from "drizzle-orm";
 import { v4 as uuidv4 } from "uuid";
+import { PrivyClient } from "@privy-io/server-auth";
 
 const UNLINKED_OWNER = "00000000-0000-0000-0000-000000000000";
 
@@ -212,9 +213,37 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
     const db = getDb();
+    
+    // Verificar auth opcional para saber cuál es el usuario actual
+    let currentUserId: string | null = null;
+    const authHeader = request.headers.get("authorization");
+    if (authHeader?.startsWith("Bearer ")) {
+      const token = authHeader.replace("Bearer ", "");
+      try {
+        const privy = new PrivyClient(
+          process.env.NEXT_PUBLIC_PRIVY_APP_ID!,
+          process.env.PRIVY_APP_SECRET!
+        );
+        const verifiedClaims = await privy.verifyAuthToken(token);
+        const privyId = verifiedClaims.userId;
+        
+        // Buscar usuario por privyId
+        const [user] = await db
+          .select()
+          .from(users)
+          .where(eq(users.privyId, privyId))
+          .limit(1);
+        
+        if (user) {
+          currentUserId = user.id;
+        }
+      } catch (e) {
+        // Token inválido, ignorar
+      }
+    }
     
     const allAgents = await db
       .select({
@@ -232,7 +261,7 @@ export async function GET(_request: NextRequest) {
       .from(agents)
       .orderBy(agents.createdAt);
 
-    const agentsWithSkills = allAgents.map(agent => {
+    const agentsWithMine = allAgents.map(agent => {
       const traitsObj = agent.traits as any;
       const { skillCount, ...pureTraits } = traitsObj || {};
       return {
@@ -241,12 +270,16 @@ export async function GET(_request: NextRequest) {
         traits: pureTraits,
         skillCount: skillCount || 0,
         isLinked: agent.ownerId !== UNLINKED_OWNER,
+        isMine: currentUserId ? agent.ownerId === currentUserId : false,
       };
     });
 
+    const myCount = agentsWithMine.filter(a => a.isMine).length;
+
     return NextResponse.json({
-      total: agentsWithSkills.length,
-      agents: agentsWithSkills,
+      total: agentsWithMine.length,
+      myCount,
+      agents: agentsWithMine,
     });
 
   } catch (error) {
