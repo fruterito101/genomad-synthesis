@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
     // 1. RATE LIMITING
     // ═══════════════════════════════════════════════════════════
     const ip = getClientIP(request);
-    const rateCheck = checkRateLimit(ip, "register");
+    const rateCheck = await checkRateLimit(ip, "register");
     
     if (!rateCheck.allowed) {
       console.warn(`🚫 Rate limited: ${ip}`);
