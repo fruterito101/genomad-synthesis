@@ -178,7 +178,7 @@ function BreedingContent() {
             <Link href="/dashboard" className="text-gray-400 hover:text-white">Dashboard</Link>
             <Link href="/profile" className="text-gray-400 hover:text-white">Profile</Link>
             <Link href="/breeding" className="text-purple-400 font-medium">Breeding</Link>
-            <button onClick={logout} className="text-red-400 hover:text-red-300 text-sm">Logout</button>
+            <div className="flex items-center gap-2 bg-gradient-to-r from-yellow-900/50 to-yellow-800/50 border border-yellow-600/50 px-3 py-1.5 rounded-lg"><span className="text-yellow-400 font-bold">🪙</span><span className="font-mono font-bold text-yellow-300">0</span><span className="text-yellow-400/70 text-sm">GMD</span></div><button onClick={logout} className="text-red-400 hover:text-red-300 text-sm">Logout</button>
           </nav>
         </div>
       </header>
