@@ -4,6 +4,7 @@
 import { 
   Header, 
   Hero, 
+  InteractiveGlobe,
   WhatIsGenomad, 
   AgentsCatalogue, 
   HowToStart, 
@@ -16,6 +17,7 @@ export default function Home() {
     <main className="bg-background">
       <Header />
       <Hero />
+      <InteractiveGlobe className="border-t border-border" />
       <WhatIsGenomad />
       <AgentsCatalogue />
       <HowToStart />
