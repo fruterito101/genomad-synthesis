@@ -122,7 +122,9 @@ export function useRegisterAgent() {
               log.topics?.[0] === transferTopic
             );
             
+            console.log("[ACTIVATION] Receipt logs:", JSON.stringify(receipt.logs));
             if (transferLog && transferLog.topics?.[3]) {
+              console.log("[ACTIVATION] Found tokenId:", transferLog.topics[3]);
               tokenId = parseInt(transferLog.topics[3], 16).toString();
             }
             break;

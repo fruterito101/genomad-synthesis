@@ -62,6 +62,7 @@ export function ActivateAgentButton({
       
       // Registrar on-chain
       const { txHash, tokenId } = await registerAsync(dnaCommitment);
+      console.log("[ACTIVATION] Got result - txHash:", txHash, "tokenId:", tokenId);
       setStatus("confirming");
       
       // Esperar confirmación (el hook maneja esto)
@@ -69,20 +70,17 @@ export function ActivateAgentButton({
       setStatus("updating");
       
       const token = await getAccessToken();
-      if (token) {
-        // Actualizar el agente en la DB con el txHash
-        await fetch(`/api/agents/${agent.id}`, {
+      if (token && tokenId) {
+        console.log("[ACTIVATION] Saving tokenId:", tokenId);
+        const patchRes = await fetch(`/api/agents/${agent.id}`, {
           method: "PATCH",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            txHash,
-            tokenId,
-            
-          }),
+          headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+          body: JSON.stringify({ txHash, tokenId }),
         });
+        if (!patchRes.ok) console.error("[ACTIVATION] PATCH failed");
+        else console.log("[ACTIVATION] ✅ Saved!");
+      } else {
+        console.warn("[ACTIVATION] ⚠️ No tokenId to save");
       }
       
       setStatus("done");
