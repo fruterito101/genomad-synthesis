@@ -1,7 +1,4 @@
 // src/app/api/agents/register-skill/route.ts
-// Endpoint para registro desde genomad-verify skill
-// NO requiere auth de Privy - acepta datos pre-calculados del skill
-
 import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/db/client";
 import { agents } from "@/lib/db/schema";
@@ -23,44 +20,47 @@ export async function POST(request: NextRequest) {
       source = "genomad-verify-skill"
     } = body;
 
-    // Validaciones básicas
     if (!name) {
-      return NextResponse.json(
-        { error: "Agent name is required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Agent name is required" }, { status: 400 });
     }
 
     if (!traits || !dnaHash) {
-      return NextResponse.json(
-        { error: "Traits and dnaHash are required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Traits and dnaHash are required" }, { status: 400 });
     }
 
-    // Verificar que traits tiene los 8 campos
     const requiredTraits = ["technical", "creativity", "social", "analysis", "empathy", "trading", "teaching", "leadership"];
     for (const trait of requiredTraits) {
       if (typeof traits[trait] !== "number") {
-        return NextResponse.json(
-          { error: `Missing or invalid trait: ${trait}` },
-          { status: 400 }
-        );
+        return NextResponse.json({ error: `Missing or invalid trait: ${trait}` }, { status: 400 });
       }
     }
 
     const db = getDb();
 
-    // Verificar si ya existe un agente con este hash
+    // Verificar si ya existe
     const [existing] = await db
       .select()
       .from(agents)
       .where(eq(agents.dnaHash, dnaHash))
       .limit(1);
 
+    // Calcular fitness
+    const fitness = calculateTotalFitness(traits);
+    const traitsWithSkills = { ...traits, skillCount: skillCount || 0 };
+
     if (existing) {
-      // Actualizar si ya existe
-      const existingTraits = existing.traits as any;
+      // ACTUALIZAR el agente existente con nuevos datos
+      await db
+        .update(agents)
+        .set({
+          traits: traitsWithSkills,
+          fitness,
+          updatedAt: new Date(),
+        })
+        .where(eq(agents.id, existing.id));
+
+      console.log(`🔄 Agent updated: ${name} (skills: ${skillCount}, fitness: ${fitness.toFixed(1)})`);
+
       return NextResponse.json({
         success: true,
         action: "updated",
@@ -68,29 +68,20 @@ export async function POST(request: NextRequest) {
           id: existing.id,
           name: existing.name,
           dnaHash: existing.dnaHash,
-          traits: existingTraits,
-          skillCount: existingTraits?.skillCount || 0,
-          fitness: existing.fitness,
+          traits: traits,
+          skillCount: skillCount,
+          fitness: fitness,
           generation: existing.generation,
           createdAt: existing.createdAt,
         },
-        message: "Agent already registered. No changes made.",
+        message: "Agent updated with latest traits!",
       });
     }
 
-    // Calcular fitness
-    const fitness = calculateTotalFitness(traits);
-
-    // Guardar skillCount dentro de traits (para no modificar schema)
-    const traitsWithSkills = {
-      ...traits,
-      skillCount: skillCount || 0,
-    };
-
-    // Crear nuevo agente (sin owner por ahora - se vincula después)
+    // Crear nuevo agente
     const newAgent = {
       id: uuidv4(),
-      ownerId: "00000000-0000-0000-0000-000000000000", // Placeholder - se actualiza al vincular
+      ownerId: "00000000-0000-0000-0000-000000000000",
       name,
       botUsername: botUsername || null,
       dnaHash,
@@ -125,14 +116,10 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error("Register skill error:", error);
-    return NextResponse.json(
-      { error: "Internal server error", details: String(error) },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Internal server error", details: String(error) }, { status: 500 });
   }
 }
 
-// GET: Lista todos los agentes registrados (para debug/dashboard)
 export async function GET(_request: NextRequest) {
   try {
     const db = getDb();
@@ -152,7 +139,6 @@ export async function GET(_request: NextRequest) {
       .from(agents)
       .orderBy(agents.createdAt);
 
-    // Extraer skillCount del JSON de traits para cada agente
     const agentsWithSkills = allAgents.map(agent => {
       const traitsObj = agent.traits as any;
       const { skillCount, ...pureTraits } = traitsObj || {};
@@ -170,9 +156,6 @@ export async function GET(_request: NextRequest) {
 
   } catch (error) {
     console.error("List agents error:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
