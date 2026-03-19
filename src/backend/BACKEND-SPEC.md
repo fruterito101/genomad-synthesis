@@ -1258,3 +1258,126 @@ rentals_cache (sync from chain)
 *Documento generado para Monad Moltiverse Hackathon 2026*
 *Genomad — Gene + Monad*
 *La evolución de la inteligencia artificial*
+
+---
+
+## 16. Configuración Crítica para Monad
+
+### ⚠️ REQUERIDO: evmVersion prague
+
+Monad REQUIERE configuración específica o los contratos **FALLAN AL DEPLOY**:
+
+**foundry.toml:**
+```toml
+[profile.default]
+src = "src"
+out = "out"
+libs = ["lib"]
+solc_version = "0.8.27"
+evm_version = "prague"
+optimizer = true
+optimizer_runs = 200
+
+[rpc_endpoints]
+monad_testnet = "https://testnet-rpc.monad.xyz"
+monad_mainnet = "https://rpc.monad.xyz"
+```
+
+### ⚠️ REQUERIDO: Wallet Persistence
+
+**NUNCA** generar wallets sin persistir. Si se genera una wallet:
+
+```typescript
+// ❌ INCORRECTO - wallet perdida al reiniciar
+const wallet = Wallet.createRandom();
+
+// ✅ CORRECTO - persistir inmediatamente
+const wallet = Wallet.createRandom();
+await fs.writeFile(
+  ".wallet.json",
+  JSON.stringify({ 
+    address: wallet.address,
+    privateKey: wallet.privateKey 
+  })
+);
+// Agregar .wallet.json a .gitignore!
+```
+
+### ⚠️ REQUERIDO: Import Paths
+
+Los imports con `@/` requieren tsconfig.json configurado:
+
+```json
+// tsconfig.json
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  }
+}
+```
+
+---
+
+## 17. Token Creation con nad.fun (4 Pasos)
+
+### Paso 1: Preparar Metadata
+```typescript
+const metadata = {
+  name: "Genomad Token",
+  symbol: "GENO",
+  description: "Token del ecosistema Genomad - Breeding de AI Agents",
+  image: "ipfs://...", // Logo
+  twitter: "@genomad",
+  website: "https://genomad.app"
+};
+```
+
+### Paso 2: Crear Token en nad.fun
+```typescript
+import { createToken } from "nad-fun-sdk";
+
+const token = await createToken({
+  ...metadata,
+  initialBuy: "0.1", // MON para liquidez inicial
+  creatorReward: 5   // % de rewards al creator
+});
+```
+
+### Paso 3: Configurar Slippage
+```typescript
+// Para trading, SIEMPRE usar slippage y deadline
+const tx = await buy({
+  token: GENO_ADDRESS,
+  amount: "1.0",
+  slippage: 0.5,      // 0.5% max slippage
+  deadline: Math.floor(Date.now() / 1000) + 300 // 5 min
+});
+```
+
+### Paso 4: Integrar en App
+```typescript
+// src/config/tokens.ts
+export const GENO_TOKEN = {
+  address: "0x...", // Address del token creado
+  decimals: 18,
+  symbol: "GENO"
+};
+```
+
+---
+
+## 18. Gas Estimation para Monad
+
+```typescript
+// Siempre estimar gas antes de enviar
+const gasEstimate = await contract.breed.estimateGas(parentA, parentB);
+const gasWithBuffer = gasEstimate * 120n / 100n; // +20% buffer
+
+const tx = await contract.breed(parentA, parentB, {
+  gasLimit: gasWithBuffer
+});
+```
+
