@@ -1,0 +1,14 @@
+{
+  "name": "genomad-cli",
+  "version": "1.0.0",
+  "description": "CLI para ejecutar agentes Genomad con capacidades on-chain",
+  "bin": {
+    "genomad": "./run-chain-agent.ts"
+  },
+  "scripts": {
+    "genomad": "tsx run-chain-agent.ts"
+  },
+  "dependencies": {
+    "tsx": "^4.19.0"
+  }
+}
