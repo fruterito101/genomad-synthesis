@@ -78,6 +78,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
                   accentColor: "#7B3FE4",
                   logo: "/logo.png",
                 },
+                walletConnectors: ["detected_wallets", "metamask", "rainbow", "wallet_connect"],
                 embeddedWallets: {
                   ethereum: {
                     createOnLogin: "users-without-wallets",
