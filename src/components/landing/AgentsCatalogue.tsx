@@ -109,7 +109,7 @@ export function AgentsCatalogue() {
           viewport={{ once: true }}
           transition={{ duration: 0.4, delay: 0.3 }}
         >
-          <Button variant="primary" size="lg" href="/dashboard">
+          <Button variant="primary" size="md" href="/dashboard">
             Ver Catálogo Completo
           </Button>
         </motion.div>

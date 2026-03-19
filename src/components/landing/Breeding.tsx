@@ -186,7 +186,7 @@ export function Breeding() {
               viewport={{ once: true }}
               transition={{ delay: 0.5 }}
             >
-              <Button variant="secondary" size="lg" href="/breeding">
+              <Button variant="secondary" size="md" href="/breeding">
                 Explorar Breeding →
               </Button>
             </motion.div>
