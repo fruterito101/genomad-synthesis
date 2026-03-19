@@ -7,9 +7,9 @@ import Link from "next/link";
 import { Button } from "@/components/ui";
 
 const navItems = [
-  { label: "About Us", href: "#about" },
-  { label: "Catalogue", href: "#catalogue" },
-  { label: "Guides", href: "#guides" },
+  { label: "About Us", href: "#about", ariaLabel: "Ir a sección Acerca de nosotros" },
+  { label: "Catalogue", href: "#catalogue", ariaLabel: "Ir a sección Catálogo de agentes" },
+  { label: "Guides", href: "#guides", ariaLabel: "Ir a sección Guías" },
 ];
 
 export function Header() {
@@ -17,7 +17,6 @@ export function Header() {
   const [activeSection, setActiveSection] = useState("");
   const [isScrolled, setIsScrolled] = useState(false);
 
-  // Detect scroll for background change
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 50);
@@ -26,7 +25,6 @@ export function Header() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Detect active section
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -49,7 +47,6 @@ export function Header() {
 
   const handleNavClick = (href: string) => {
     setIsMenuOpen(false);
-    // Smooth scroll to section
     const element = document.querySelector(href);
     if (element) {
       element.scrollIntoView({ behavior: "smooth" });
@@ -64,12 +61,17 @@ export function Header() {
       initial={{ y: -100 }}
       animate={{ y: 0 }}
       transition={{ duration: 0.5 }}
+      role="banner"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 sm:h-20">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2">
-            <span className="text-2xl">🧬</span>
+          <Link 
+            href="/" 
+            className="flex items-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 rounded-lg"
+            aria-label="Genomad - Ir al inicio"
+          >
+            <span className="text-2xl" role="img" aria-hidden="true">🧬</span>
             <span className="text-xl font-bold">
               <span className="gradient-text">Geno</span>
               <span style={{ color: 'var(--color-text-primary)' }}>mad</span>
@@ -77,7 +79,7 @@ export function Header() {
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-8">
+          <nav className="hidden md:flex items-center gap-8" role="navigation" aria-label="Navegación principal">
             {navItems.map((item) => {
               const sectionId = item.href.replace("#", "");
               const isActive = activeSection === sectionId;
@@ -86,12 +88,14 @@ export function Header() {
                 <button
                   key={item.label}
                   onClick={() => handleNavClick(item.href)}
-                  className="text-sm font-medium transition-all duration-200 relative"
+                  className="text-sm font-medium transition-all duration-200 relative focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 rounded px-2 py-1"
                   style={{ 
                     color: isActive 
                       ? 'var(--color-primary)' 
                       : 'var(--color-text-secondary)' 
                   }}
+                  aria-label={item.ariaLabel}
+                  aria-current={isActive ? "page" : undefined}
                 >
                   {item.label}
                   {isActive && (
@@ -112,9 +116,11 @@ export function Header() {
 
           {/* Mobile Menu Button */}
           <button
-            className="md:hidden p-2"
+            className="md:hidden p-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 rounded-lg"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            aria-label="Toggle menu"
+            aria-label={isMenuOpen ? "Cerrar menú" : "Abrir menú"}
+            aria-expanded={isMenuOpen}
+            aria-controls="mobile-menu"
           >
             <div className="w-6 h-5 relative flex flex-col justify-between">
               <motion.span
@@ -141,11 +147,14 @@ export function Header() {
       <AnimatePresence>
         {isMenuOpen && (
           <motion.div
+            id="mobile-menu"
             className="md:hidden glass"
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.3 }}
+            role="navigation"
+            aria-label="Navegación móvil"
           >
             <nav className="px-4 py-4 flex flex-col gap-4">
               {navItems.map((item) => {
@@ -156,12 +165,14 @@ export function Header() {
                   <button
                     key={item.label}
                     onClick={() => handleNavClick(item.href)}
-                    className="text-base font-medium py-2 text-left transition-colors"
+                    className="text-base font-medium py-2 text-left transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 rounded px-2"
                     style={{ 
                       color: isActive 
                         ? 'var(--color-primary)' 
                         : 'var(--color-text-secondary)' 
                     }}
+                    aria-label={item.ariaLabel}
+                    aria-current={isActive ? "page" : undefined}
                   >
                     {isActive && "→ "}{item.label}
                   </button>

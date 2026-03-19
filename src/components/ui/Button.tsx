@@ -13,6 +13,7 @@ interface ButtonProps {
   className?: string;
   disabled?: boolean;
   type?: "button" | "submit" | "reset";
+  ariaLabel?: string;
 }
 
 const sizeClasses = {
@@ -35,9 +36,10 @@ export function Button({
   href,
   className = "",
   disabled = false,
-  type = "button"
+  type = "button",
+  ariaLabel
 }: ButtonProps) {
-  const baseClasses = "font-semibold rounded-lg transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed";
+  const baseClasses = "font-semibold rounded-lg transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B0F2F]";
   
   const classes = `${baseClasses} ${sizeClasses[size]} ${variantClasses[variant]} ${className}`;
 
@@ -60,12 +62,13 @@ export function Button({
 
   if (href && !disabled) {
     return (
-      <Link href={href}>
+      <Link href={href} aria-label={ariaLabel}>
         <motion.span
           className={classes}
           style={style}
           whileHover={hoverEffect}
           whileTap={tapEffect}
+          role="button"
         >
           {children}
         </motion.span>
@@ -82,6 +85,8 @@ export function Button({
       disabled={disabled}
       whileHover={hoverEffect}
       whileTap={tapEffect}
+      aria-label={ariaLabel}
+      aria-disabled={disabled}
     >
       {children}
     </motion.button>
