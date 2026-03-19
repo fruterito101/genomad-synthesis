@@ -2,27 +2,27 @@
 "use client";
 
 import { motion } from "framer-motion";
-import Image from "next/image";
 import { SectionTitle, FeatureCard } from "@/components/ui";
+import { Dna, Link2, Bot, ShieldCheck } from "lucide-react";
 
 const pillars = [
   {
-    icon: "🧬",
+    icon: Dna,
     title: "Evolución",
     description: "Algoritmos genéticos que simulan selección natural"
   },
   {
-    icon: "⛓️",
+    icon: Link2,
     title: "Permanencia",
     description: "Blockchain para propiedad inmutable"
   },
   {
-    icon: "🤖",
+    icon: Bot,
     title: "Identidad",
     description: "Agentes AI con personalidad única"
   },
   {
-    icon: "🔐",
+    icon: ShieldCheck,
     title: "Privacidad",
     description: "ZK proofs que verifican sin revelar"
   }
@@ -52,7 +52,7 @@ export function WhatIsGenomad() {
             
             <p 
               className="text-lg leading-relaxed mb-6"
-              style={{ color: 'var(--color-text-secondary)' }}
+              style={{ color: '#ffffff' }}
             >
               Genomad nace de una observación simple pero poderosa: las especies 
               se adaptan y evolucionan, pero los agentes AI no tienen ese 
@@ -61,7 +61,7 @@ export function WhatIsGenomad() {
             
             <p 
               className="text-lg leading-relaxed"
-              style={{ color: 'var(--color-text-secondary)' }}
+              style={{ color: '#ffffff' }}
             >
               Genomad lo hace posible: agentes que heredan, mutan y evolucionan, 
               donde los más aptos prosperan generación tras generación.
@@ -93,15 +93,36 @@ export function WhatIsGenomad() {
 
         {/* Pillars Grid */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-20">
-          {pillars.map((pillar, index) => (
-            <FeatureCard
-              key={pillar.title}
-              icon={pillar.icon}
-              title={pillar.title}
-              description={pillar.description}
-              delay={index * 0.1}
-            />
-          ))}
+          {pillars.map((pillar, index) => {
+            const Icon = pillar.icon;
+            return (
+              <motion.div
+                key={pillar.title}
+                className="p-6 rounded-xl text-center"
+                style={{ 
+                  backgroundColor: 'var(--color-bg-primary)',
+                  border: '1px solid var(--color-border)'
+                }}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.4, delay: index * 0.1 }}
+              >
+                <div 
+                  className="w-16 h-16 mx-auto mb-4 rounded-xl flex items-center justify-center"
+                  style={{ backgroundColor: 'var(--color-bg-secondary)' }}
+                >
+                  <Icon className="w-8 h-8" style={{ color: 'var(--color-primary)' }} />
+                </div>
+                <h3 className="text-lg font-bold mb-2" style={{ color: 'var(--color-text-primary)' }}>
+                  {pillar.title}
+                </h3>
+                <p className="text-sm" style={{ color: '#ffffff' }}>
+                  {pillar.description}
+                </p>
+              </motion.div>
+            );
+          })}
         </div>
       </div>
     </section>

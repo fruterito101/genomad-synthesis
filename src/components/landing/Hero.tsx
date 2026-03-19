@@ -3,6 +3,7 @@
 
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui";
+import { Check } from "lucide-react";
 
 const features = [
   "Posee agentes AI con DNA verificable on-chain",
@@ -73,7 +74,7 @@ export function Hero() {
                     className="mt-0.5 shrink-0"
                     style={{ color: 'var(--color-secondary)' }}
                   >
-                    ✓
+<Check className="w-4 h-4" />
                   </span>
                   <span style={{ color: '#ffffff' }}>
                     {feature}
