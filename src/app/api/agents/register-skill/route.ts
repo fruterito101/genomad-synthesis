@@ -3,13 +3,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/db/client";
 import { agents } from "@/lib/db/schema";
 import { calculateTotalFitness } from "@/lib/genetic";
-import { eq } from "drizzle-orm";
+import { eq, or } from "drizzle-orm";
 import { v4 as uuidv4 } from "uuid";
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { 
+    let { 
       name, 
       traits, 
       dnaHash, 
@@ -19,6 +19,10 @@ export async function POST(request: NextRequest) {
       telegramId,
       source = "genomad-verify-skill"
     } = body;
+
+    // Limpiar espacios en nombre y username
+    name = name?.trim();
+    botUsername = botUsername?.trim();
 
     if (!name) {
       return NextResponse.json({ error: "Agent name is required" }, { status: 400 });
@@ -37,11 +41,16 @@ export async function POST(request: NextRequest) {
 
     const db = getDb();
 
-    // Buscar por NOMBRE (no por hash) - así el agente puede evolucionar
+    // Buscar por NOMBRE o BOTUSERNAME (sin duplicados)
+    const conditions = [eq(agents.name, name)];
+    if (botUsername) {
+      conditions.push(eq(agents.botUsername, botUsername));
+    }
+
     const [existing] = await db
       .select()
       .from(agents)
-      .where(eq(agents.name, name))
+      .where(or(...conditions))
       .limit(1);
 
     // Calcular fitness
@@ -49,11 +58,12 @@ export async function POST(request: NextRequest) {
     const traitsWithSkills = { ...traits, skillCount: skillCount || 0 };
 
     if (existing) {
-      // ACTUALIZAR el agente existente (DNA puede cambiar/evolucionar)
+      // ACTUALIZAR el agente existente
       await db
         .update(agents)
         .set({
-          dnaHash,  // Actualizar hash si cambió
+          name,  // Actualizar nombre limpio
+          dnaHash,
           traits: traitsWithSkills,
           fitness,
           botUsername: botUsername || existing.botUsername,
@@ -69,6 +79,7 @@ export async function POST(request: NextRequest) {
         agent: {
           id: existing.id,
           name: name,
+          botUsername: botUsername || existing.botUsername,
           dnaHash: dnaHash,
           traits: traits,
           skillCount: skillCount,
@@ -98,7 +109,7 @@ export async function POST(request: NextRequest) {
 
     await db.insert(agents).values(newAgent);
 
-    console.log(`✅ New agent registered: ${name} (skills: ${skillCount}, fitness: ${fitness.toFixed(1)})`);
+    console.log(`✅ New agent: ${name} @${botUsername} (skills: ${skillCount}, fitness: ${fitness.toFixed(1)})`);
 
     return NextResponse.json({
       success: true,
@@ -106,6 +117,7 @@ export async function POST(request: NextRequest) {
       agent: {
         id: newAgent.id,
         name: newAgent.name,
+        botUsername: newAgent.botUsername,
         dnaHash: newAgent.dnaHash,
         traits: traits,
         skillCount: skillCount,
@@ -146,6 +158,7 @@ export async function GET(_request: NextRequest) {
       const { skillCount, ...pureTraits } = traitsObj || {};
       return {
         ...agent,
+        name: agent.name?.trim(),  // Limpiar por si acaso
         traits: pureTraits,
         skillCount: skillCount || 0,
       };
@@ -162,7 +175,6 @@ export async function GET(_request: NextRequest) {
   }
 }
 
-// DELETE: Borrar agente por ID (para limpiar duplicados)
 export async function DELETE(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
