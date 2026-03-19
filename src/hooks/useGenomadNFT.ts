@@ -103,14 +103,48 @@ export function useRegisterAgent() {
       setIsPending(false);
       setIsConfirming(true);
       
-      // Esperar confirmación (simplificado)
-      // En producción, usar un loop o websocket para verificar
-      await new Promise(resolve => setTimeout(resolve, 5000));
+      // Esperar receipt y obtener tokenId del evento Transfer
+      let tokenId: string | undefined;
+      let attempts = 0;
+      const maxAttempts = 30; // 30 intentos x 2s = 60s máximo
+      
+      while (attempts < maxAttempts) {
+        try {
+          const receipt = await provider.request({
+            method: "eth_getTransactionReceipt",
+            params: [txHash],
+          }) as any;
+          
+          if (receipt && receipt.status === "0x1") {
+            // Buscar evento Transfer (ERC721): Transfer(address,address,uint256)
+            const transferTopic = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
+            const transferLog = receipt.logs?.find((log: any) => 
+              log.topics?.[0] === transferTopic
+            );
+            
+            if (transferLog && transferLog.topics?.[3]) {
+              tokenId = parseInt(transferLog.topics[3], 16).toString();
+            }
+            break;
+          } else if (receipt && receipt.status === "0x0") {
+            throw new Error("Transaction failed on-chain");
+          }
+        } catch (e) {
+          // Receipt not ready yet, continue polling
+        }
+        
+        attempts++;
+        await new Promise(resolve => setTimeout(resolve, 2000));
+      }
+      
+      if (!tokenId && attempts >= maxAttempts) {
+        console.warn("Could not get tokenId from receipt, transaction may still be pending");
+      }
       
       setIsConfirming(false);
       setIsSuccess(true);
       
-      return txHash;
+      return { txHash, tokenId };
       
     } catch (err) {
       console.error("Registration error:", err);

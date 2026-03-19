@@ -61,7 +61,7 @@ export function ActivateAgentButton({
       const dnaCommitment = (agent.commitment || `0x${agent.dnaHash}`) as `0x${string}`;
       
       // Registrar on-chain
-      const txHash = await registerAsync(dnaCommitment);
+      const { txHash, tokenId } = await registerAsync(dnaCommitment);
       setStatus("confirming");
       
       // Esperar confirmación (el hook maneja esto)
@@ -79,13 +79,14 @@ export function ActivateAgentButton({
           },
           body: JSON.stringify({
             txHash,
-            // El tokenId se actualizará via event listener o manualmente
+            tokenId,
+            
           }),
         });
       }
       
       setStatus("done");
-      onActivated?.(txHash, txHash);
+      onActivated?.(tokenId || "", txHash || "");
       
     } catch (err) {
       setStatus("error");

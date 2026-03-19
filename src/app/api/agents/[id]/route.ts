@@ -129,6 +129,16 @@ export async function PATCH(
     }
 
     // Update name
+
+    // Update tokenId (from blockchain activation)
+    if (typeof body.tokenId === "string" && body.tokenId) {
+      updates.tokenId = body.tokenId;
+    }
+
+    // Update txHash (from blockchain activation)
+    if (typeof body.txHash === "string" && body.txHash) {
+      updates.txHash = body.txHash;
+    }
     if (typeof body.name === "string" && body.name.trim()) {
       updates.name = body.name.trim();
     }
