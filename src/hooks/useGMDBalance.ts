@@ -1,11 +1,10 @@
 // src/hooks/useGMDBalance.ts
 "use client";
 
-import { useEffect, useState } from "react";
-import { useAccount } from "wagmi";
+import { useState, useCallback } from "react";
 
 //  Token Address (Monad Testnet)
-// NOTE: Currently disabled because wagmi is on Sepolia
+// NOTE: Currently disabled because wagmi is on Sepolia, contracts on Monad
 // const GMD_TOKEN_ADDRESS = "0x03DD45bA22F57b715a2F30C3C945E57DA0AC7777" as const;
 
 export interface GMDBalanceResult {
@@ -19,17 +18,16 @@ export interface GMDBalanceResult {
 }
 
 export function useGMDBalance(): GMDBalanceResult {
-  const { isConnected } = useAccount();
   const [isLoading, setIsLoading] = useState(false);
 
   // TEMPORARILY DISABLED: GMD token is on Monad but wagmi is configured for Sepolia
   // When we fix the Privy+Monad integration, we can re-enable this
+  // Removed wagmi imports to prevent SSR issues
   
-  const refetch = () => {
-    // No-op for now
+  const refetch = useCallback(() => {
     setIsLoading(true);
     setTimeout(() => setIsLoading(false), 500);
-  };
+  }, []);
 
   return {
     balance: BigInt(0),

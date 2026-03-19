@@ -1,8 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  experimental: {
-    serverComponentsExternalPackages: ["@noble/hashes", "@noble/curves"],
-  },
+  // Next.js 16+ uses serverExternalPackages at root level
+  serverExternalPackages: ["@noble/hashes", "@noble/curves"],
 };
 
 export default nextConfig;
