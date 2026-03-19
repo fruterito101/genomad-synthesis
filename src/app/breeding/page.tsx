@@ -73,10 +73,37 @@ function BreedingContent() {
     try {
       const token = await getAccessToken();
       if (!token) return;
+      
+      // 1. Crear breeding request
       const res = await fetch("/api/breeding/request", { method: "POST", headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" }, body: JSON.stringify({ parentAId: parentA.id, parentBId: parentB.id, crossoverType, childName: childName || undefined }) });
       const data = await res.json();
-      if (!res.ok) setError(data.error || "Breeding failed");
-      else { setResult(data.request); fetchAgents(); }
+      
+      if (!res.ok) {
+        setError(data.error || "Breeding failed");
+        return;
+      }
+      
+      // 2. Si auto-approved (ambos padres míos), ejecutar inmediatamente
+      if (data.autoApproved && data.request?.id) {
+        const execRes = await fetch(`/api/breeding/${data.request.id}/execute`, { 
+          method: "POST", 
+          headers: { Authorization: `Bearer ${token}` } 
+        });
+        const execData = await execRes.json();
+        
+        if (!execRes.ok) {
+          setError(execData.error || "Breeding execution failed");
+          return;
+        }
+        
+        // Mostrar resultado con el child creado
+        setResult({ ...data.request, child: execData.child, breeding: execData.breeding, executed: true });
+      } else {
+        // Request pendiente de aprobación del otro owner
+        setResult(data.request);
+      }
+      
+      fetchAgents();
     } catch (err) { setError(String(err)); } finally { setBreeding(false); }
   };
 
