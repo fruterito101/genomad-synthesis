@@ -66,12 +66,6 @@ export function HowToStart() {
             ))}
           </div>
         </div>
-
-        {/* Additional Info */}
-        <motion.div
-          className="mt-16 p-6 rounded-xl text-center"
-          style={{ 
-            backgroundColor: 'var(--color-bg-tertiary)',
       </div>
     </section>
   );
