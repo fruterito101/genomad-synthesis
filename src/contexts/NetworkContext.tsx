@@ -37,6 +37,25 @@ const EXPLORER_URLS = {
   mainnet: "https://monadexplorer.com",
 };
 
+// Default SSR-safe client (testnet)
+const defaultPublicClient = createPublicClient({
+  chain: monadTestnet,
+  transport: http(RPC_URLS.testnet),
+});
+
+// Default values for SSR
+const defaultNetworkValue: NetworkContextType = {
+  network: "testnet",
+  switchNetwork: () => {},
+  chain: monadTestnet,
+  contracts: CONTRACTS.testnet,
+  rpcUrl: RPC_URLS.testnet,
+  publicClient: defaultPublicClient,
+  isMainnet: false,
+  isTestnet: true,
+  explorerUrl: EXPLORER_URLS.testnet,
+};
+
 export function NetworkProvider({ children }: { children: ReactNode }) {
   const [network, setNetworkState] = useState<Network>("testnet");
   const [publicClient, setPublicClient] = useState<PublicClient>(() => 
@@ -102,10 +121,11 @@ export function NetworkProvider({ children }: { children: ReactNode }) {
   );
 }
 
-export function useNetwork() {
+export function useNetwork(): NetworkContextType {
   const context = useContext(NetworkContext);
+  // Return default values for SSR/prerendering instead of throwing
   if (!context) {
-    throw new Error("useNetwork must be used within NetworkProvider");
+    return defaultNetworkValue;
   }
   return context;
 }
