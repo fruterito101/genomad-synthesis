@@ -135,7 +135,7 @@ export default function AgentsPage() {
   // Show nothing until mounted (prevents hydration mismatch)
   if (!mounted) {
     return (
-      <div className="min-h-screen" style={{ backgroundColor: "var(--color-bg-primary)" }}>
+      <div suppressHydrationWarning className="min-h-screen" style={{ backgroundColor: "var(--color-bg-primary)" }}>
         <AppHeader />
         <main className="max-w-7xl mx-auto px-4 pt-20 sm:pt-24 pb-8 sm:pb-12">
           <div className="text-center py-12">
@@ -147,7 +147,7 @@ export default function AgentsPage() {
   }
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: "var(--color-bg-primary)" }}>
+    <div suppressHydrationWarning className="min-h-screen" style={{ backgroundColor: "var(--color-bg-primary)" }}>
       <AppHeader />
       
       <main className="max-w-7xl mx-auto px-4 pt-20 sm:pt-24 pb-8 sm:pb-12">
