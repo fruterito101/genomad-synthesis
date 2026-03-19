@@ -129,3 +129,30 @@ docs/dev/tickets/
 ├── FASE-2-WEB3.md          ← Tickets 2.1-2.6
 └── FASE-3-BACKEND.md       ← Tickets 3.1-3.6
 ```
+
+---
+
+## 🔗 FASE 4: Full On-Chain + ZK (NUEVA)
+
+La arquitectura final de Genomad: 100% on-chain con privacidad ZK.
+
+| # | Ticket | Tiempo | Estado |
+|---|--------|--------|--------|
+| 4.1 | Storage On-Chain | 5-6h | ⬜ |
+| 4.2 | Custodia On-Chain | 4-5h | ⬜ |
+| 4.3 | TraitVerifier.sol | 3-4h | ⬜ |
+| 4.4 | Mint con Proof | 5-6h | ⬜ |
+| 4.5 | Setup Circom/Noir | 4-5h | ⬜ |
+| 4.6 | TraitProof Circuit | 8-10h | ⬜ |
+| 4.7 | BreedProof Circuit | 6-8h | ⬜ |
+| 4.8 | CustodyProof Circuit | 4-5h | ⬜ |
+| 4.9 | Encriptación Wallet | 4-5h | ⬜ |
+| 4.10 | genomad-verify + ZK | 6-8h | ⬜ |
+| 4.11 | UI Mint Encriptado | 5-6h | ⬜ |
+| 4.12 | UI Breeding + ZK | 5-6h | ⬜ |
+| 4.13 | Plugin chain-agent | 6-8h | ⬜ |
+| 4.14 | CLI run-chain-agent | 4-5h | ⬜ |
+| 4.15 | Tests E2E | 5-6h | ⬜ |
+| 4.16 | Documentación | 3-4h | ⬜ |
+
+**Archivo:** [FASE-4-ONCHAIN-ZK.md](./FASE-4-ONCHAIN-ZK.md)
