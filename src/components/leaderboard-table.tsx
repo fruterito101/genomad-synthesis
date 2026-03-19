@@ -11,7 +11,7 @@ import {
 import { Badge } from "@/components/ui"
 import { Avatar, AvatarFallback } from "@/components/ui"
 import { 
-  Crown, Medal, Award,
+  Crown, Medal, Award, Link2,
   Cpu, Palette, MessageSquare, Brain, Heart, TrendingUp, GraduationCap
 } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -23,6 +23,7 @@ interface Agent {
   generation: number
   traits: Record<string, number>
   isActive?: boolean
+  tokenId?: string | null
 }
 
 interface LeaderboardTableProps {
@@ -124,6 +125,16 @@ export function LeaderboardTable({ agents, onAgentClick }: LeaderboardTableProps
                     >
                       {rarity.label}
                     </Badge>
+                    {agent.tokenId && (
+                      <Badge 
+                        variant="outline" 
+                        className="text-[10px] px-1.5 py-0 ml-1"
+                        style={{ borderColor: "#10B981", color: "#10B981" }}
+                      >
+                        <Link2 className="w-3 h-3 mr-0.5" />
+                        On-Chain
+                      </Badge>
+                    )}
                   </div>
                 </div>
               </TableCell>

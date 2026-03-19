@@ -5,7 +5,7 @@ import { motion } from "framer-motion"
 import Link from "next/link"
 import { 
   Cpu, Palette, MessageSquare, Brain, Heart, TrendingUp, 
-  GraduationCap, Crown, Star, Eye, Dna, Zap, Check, Loader2
+  GraduationCap, Crown, Star, Eye, Dna, Zap, Check, Loader2, Link2
 } from "lucide-react"
 import { Card, CardContent, CardHeader, Badge, Button } from "@/components/ui"
 import { Avatar, AvatarFallback } from "@/components/ui"
@@ -219,7 +219,7 @@ export function AgentCard({
               </div>
             )}
             <div className="flex items-center justify-between">
-              <Badge variant="outline" style={{ borderColor: rarity.color, color: rarity.color }}>{rarity.label}</Badge>
+              <div className="flex items-center gap-1"><Badge variant="outline" style={{ borderColor: rarity.color, color: rarity.color }}>{rarity.label}</Badge>{agent.tokenId && <Badge variant="outline" className="text-[10px]" style={{ borderColor: "#10B981", color: "#10B981" }}><Link2 className="w-3 h-3" /></Badge>}</div>
               <span className="text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">{agent.fitness.toFixed(1)}</span>
             </div>
             {agent.isActive && (
@@ -265,7 +265,11 @@ export function AgentCard({
               <span className={`w-1.5 h-1.5 rounded-full mr-1 ${agent.isActive ? "bg-emerald-500" : "bg-red-500"}`} />
               {agent.isActive ? labels.active : labels.inactive}
             </Badge>
-            {/* On-Chain Badge */}
+            {agent.tokenId && (
+              <Badge variant="outline" className="text-[10px] sm:text-xs" style={{ borderColor: "#10B981", color: "#10B981" }}>
+                <Link2 className="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-1" />On-Chain
+              </Badge>
+            )}
             {isOnChain && (
               <Badge variant="outline" className="text-[10px] sm:text-xs border-amber-500 text-amber-500">
                 <Zap className="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-1" />
