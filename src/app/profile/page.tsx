@@ -263,6 +263,8 @@ export default function ProfilePage() {
                       viewDetails: t("dashboard.actions.viewDetails"),
                       active: i18n.language === "es" ? "Activo" : "Active",
                       inactive: "Off",
+                      activate: i18n.language === "es" ? "Activar Monad" : "Activate Monad",
+                      onChain: "On-Chain",
                     }}
                   />
                 ))}

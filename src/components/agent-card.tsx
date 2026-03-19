@@ -4,11 +4,12 @@ import { motion } from "framer-motion"
 import Link from "next/link"
 import { 
   Cpu, Palette, MessageSquare, Brain, Heart, TrendingUp, 
-  GraduationCap, Crown, Star, Eye, Dna 
+  GraduationCap, Crown, Star, Eye, Dna, Zap, Check
 } from "lucide-react"
 import { Card, CardContent, CardHeader, Badge, Button } from "@/components/ui"
 import { Avatar, AvatarFallback } from "@/components/ui"
 import { CoOwnersDisplay } from "@/components/CoOwnersDisplay"
+import { ActivateAgentButton } from "@/components/ActivateAgentButton"
 import { cn } from "@/lib/utils"
 
 interface AgentTraits {
@@ -33,10 +34,12 @@ interface AgentCardProps {
     traits: AgentTraits | Record<string, number>
     dnaHash?: string
     commitment?: string | null
+    tokenId?: string | null
   }
   isMine?: boolean
   onClick?: () => void
   onViewDetails?: () => void
+  onActivated?: (tokenId: string, txHash: string) => void
   showActions?: boolean
   showCoOwners?: boolean
   showTopTraits?: boolean
@@ -49,6 +52,8 @@ interface AgentCardProps {
     viewDetails?: string
     active?: string
     inactive?: string
+    activate?: string
+    onChain?: string
   }
 }
 
@@ -88,6 +93,7 @@ export function AgentCard({
   isMine,
   onClick,
   onViewDetails,
+  onActivated,
   showActions = false,
   showCoOwners = false,
   showTopTraits = true,
@@ -95,7 +101,14 @@ export function AgentCard({
   className,
   index = 0,
   variant = "compact",
-  labels = { breed: "Breed", viewDetails: "View Details", active: "Active", inactive: "Off" },
+  labels = { 
+    breed: "Criar", 
+    viewDetails: "Ver Detalles", 
+    active: "Activo", 
+    inactive: "Off",
+    activate: "Activar Monad",
+    onChain: "On-Chain"
+  },
 }: AgentCardProps) {
   const traits = agent.traits as Record<string, number>
   const rarity = getRarity(traits)
@@ -103,6 +116,8 @@ export function AgentCard({
   const topTrait = topTraits[0]
   const TopIcon = topTrait ? traitIcons[topTrait.key] : Dna
   const topColor = topTrait ? traitColors[topTrait.key] : "#7B3FE4"
+  
+  const isOnChain = !!agent.tokenId
 
   if (variant === "compact") {
     return (
@@ -183,6 +198,13 @@ export function AgentCard({
               <span className={`w-1.5 h-1.5 rounded-full mr-1 ${agent.isActive ? "bg-emerald-500" : "bg-red-500"}`} />
               {agent.isActive ? labels.active : labels.inactive}
             </Badge>
+            {/* On-Chain Badge */}
+            {isOnChain && (
+              <Badge variant="outline" className="text-[10px] sm:text-xs border-amber-500 text-amber-500">
+                <Zap className="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-1" />
+                {labels.onChain}
+              </Badge>
+            )}
           </div>
 
           {/* Co-owners */}
@@ -225,11 +247,30 @@ export function AgentCard({
               <Button size="sm" className="flex-1 text-xs sm:text-sm" onClick={(e) => { e.stopPropagation(); onViewDetails?.(); }}>
                 <Eye className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />{labels.viewDetails}
               </Button>
-              <Link href={`/breeding?parentA=${agent.id}`} className="flex-1" onClick={(e) => e.stopPropagation()}>
-                <Button variant="secondary" size="sm" className="w-full text-xs sm:text-sm">
-                  <Dna className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />{labels.breed}
+              
+              {/* Activate on Monad Button - Orange if not on-chain */}
+              {!isOnChain && agent.dnaHash && (
+                <Button 
+                  size="sm" 
+                  className="flex-1 text-xs sm:text-sm bg-orange-500 hover:bg-orange-600 text-white"
+                  onClick={(e) => { 
+                    e.stopPropagation(); 
+                    // Trigger activation flow
+                  }}
+                >
+                  <Zap className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                  {labels.activate}
                 </Button>
-              </Link>
+              )}
+              
+              {/* If on-chain, show breed button */}
+              {isOnChain && (
+                <Link href={`/breeding?parentA=${agent.id}`} className="flex-1" onClick={(e) => e.stopPropagation()}>
+                  <Button variant="secondary" size="sm" className="w-full text-xs sm:text-sm">
+                    <Dna className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />{labels.breed}
+                  </Button>
+                </Link>
+              )}
             </div>
           )}
         </CardContent>
