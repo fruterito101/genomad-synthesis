@@ -1,0 +1,193 @@
+# 🔐 Genomad ZK Module
+
+Zero-Knowledge proof generation and verification for Genomad.
+
+## Overview
+
+This module provides ZK proofs for:
+- **Trait Proofs**: Prove agent traits without revealing values
+- **Breed Proofs**: Prove valid breeding between agents
+- **Custody Proofs**: Prove custody share without revealing all shareholders
+- **Content Proofs**: Prove SOUL/IDENTITY ownership
+
+## Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                     ZK PROOF FLOW                           │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│  Frontend                                                    │
+│     │                                                        │
+│     ▼                                                        │
+│  client.ts ──► POST /api/zk/prove                           │
+│                     │                                        │
+│                     ▼                                        │
+│               ┌──────────┐                                   │
+│               │ Dev Mode │                                   │
+│               └────┬─────┘                                   │
+│                    │                                         │
+│         ┌─────────┴─────────┐                               │
+│         ▼                   ▼                                │
+│    Mock Proof          RISC Zero                             │
+│    (instant)           (heavy compute)                       │
+│         │                   │                                │
+│         └─────────┬─────────┘                               │
+│                   ▼                                          │
+│              ProofResponse                                   │
+│              { seal, journal, output }                       │
+│                   │                                          │
+│                   ▼                                          │
+│  verifier.ts ──► On-chain verify (TraitVerifier.sol)        │
+│                                                              │
+└─────────────────────────────────────────────────────────────┘
+```
+
+## Files
+
+| File | Purpose |
+|------|---------|
+| `index.ts` | Re-exports all public functions |
+| `client.ts` | Proof generation (API calls + mock) |
+| `verifier.ts` | On-chain verification |
+| `__tests__/zk.test.ts` | Unit tests |
+
+## Usage
+
+### Generate Trait Proof
+
+```typescript
+import { generateTraitProof } from "@/lib/zk";
+
+const traits = {
+  technical: 80,
+  creativity: 65,
+  social: 70,
+  analysis: 55,
+  empathy: 60,
+  trading: 45,
+  teaching: 75,
+  leadership: 50,
+};
+
+const result = await generateTraitProof(traits);
+// result.proof.seal, result.proof.journal, result.output.fitness
+```
+
+### Generate Breed Proof
+
+```typescript
+import { generateBreedProof } from "@/lib/zk";
+
+const result = await generateBreedProof(
+  parentATraits,
+  parentBTraits,
+  childTraits,
+  crossoverMask, // optional
+  10 // maxMutation
+);
+```
+
+### Verify On-Chain
+
+```typescript
+import { verifyBreedingProof } from "@/lib/zk";
+
+const verification = await verifyBreedingProof({
+  seal: proof.seal,
+  journal: proof.journal,
+});
+
+if (verification.valid && verification.onChain) {
+  // Proof verified on Monad!
+}
+```
+
+## API Endpoint
+
+### POST /api/zk/prove
+
+Generate ZK proof.
+
+**Request:**
+```json
+{
+  "type": "breed",
+  "parentA": [80, 65, 70, 55, 60, 45, 75, 50],
+  "parentB": [70, 75, 60, 65, 55, 50, 80, 45],
+  "child": [75, 70, 65, 60, 58, 48, 78, 48],
+  "crossoverMask": [true, false, true, false, true, false, true, false],
+  "maxMutation": 10
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "type": "breed",
+  "proof": {
+    "seal": "0x...",
+    "journal": "0x...",
+    "imageId": "0x..."
+  },
+  "output": {
+    "valid": true,
+    "fitness": 520,
+    "hybridVigor": true
+  },
+  "metadata": {
+    "proofTimeMs": 500,
+    "mode": "mock"
+  }
+}
+```
+
+### GET /api/zk/prove
+
+Documentation endpoint.
+
+## Contracts
+
+| Contract | Address (Testnet) |
+|----------|-------------------|
+| TraitVerifier | `0xaccaE8B19AD67df4Ce91638855c9B41A5Da90be3` |
+
+## Modes
+
+| Mode | Env Var | Description |
+|------|---------|-------------|
+| Mock | `NEXT_PUBLIC_ZK_DEV_MODE=true` | Instant proofs, no compute |
+| RISC Zero | `NEXT_PUBLIC_ZK_DEV_MODE=false` | Real ZK proofs |
+
+## Privacy Guarantees
+
+### What\'s Public (revealed by proof)
+- Trait commitment hash (not values)
+- Parent IDs and generation
+- Fitness score and rarity tier
+- Validity of breeding
+
+### What\'s Private (never revealed)
+- Exact trait values
+- Which parent contributed which traits
+- Mutation values
+- SOUL/IDENTITY content
+- Encryption keys
+
+## Testing
+
+```bash
+bun run test src/lib/zk
+```
+
+## Production Deployment
+
+1. Deploy RISC Zero host to compute server
+2. Set `NEXT_PUBLIC_ZK_API_URL` to host URL
+3. Set `NEXT_PUBLIC_ZK_DEV_MODE=false`
+4. Proofs will be generated by real zkVM
+
+---
+
+*Genomad ZK v3.0 — Privacy by default* 🔐
