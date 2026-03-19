@@ -13,10 +13,11 @@ import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/s
 import { Button } from "@/components/ui";
 import { Dna, Plus, Loader2, ArrowRight, Sparkles, Check, Clock, Shield, Zap, Crown, Activity, RefreshCw, AlertCircle, ChevronDown, Cpu, Palette, MessageSquare, Brain, Heart, TrendingUp, GraduationCap } from "lucide-react";
 import { SuccessModal } from "@/components/SuccessModal";
+import { ActivateAgentButton } from "@/components/ActivateAgentButton";
 import { useBreedingFlow, useBreedingFee, useIsMounted } from "@/hooks";
 import { NetworkSwitcher } from "@/components/NetworkSwitcher";
 
-interface Agent { id: string; name: string; tokenId?: string; botUsername: string | null; traits: { technical: number; creativity: number; social: number; analysis: number; empathy: number; trading: number; teaching: number; leadership: number; }; fitness: number; generation: number; isActive: boolean; ownerId: string; isMine?: boolean; ownerDisplay?: string; }
+interface Agent { id: string; name: string; tokenId?: string; dnaHash?: string; commitment?: string; botUsername: string | null; traits: { technical: number; creativity: number; social: number; analysis: number; empathy: number; trading: number; teaching: number; leadership: number; }; fitness: number; generation: number; isActive: boolean; ownerId: string; isMine?: boolean; ownerDisplay?: string; }
 interface BreedingRequest { 
   id: string; 
   status: string; 
@@ -387,8 +388,40 @@ function BreedingContent() {
               </motion.div>
             )}
 
-            {/* Breed Button */}
-            {parentA && parentB && (
+            {/* Activation Required Check */}
+            {parentA && parentB && (!parentA.tokenId || !parentB.tokenId) && (
+              <motion.div className="mt-6 sm:mt-8 p-4 rounded-xl bg-amber-500/10 border border-amber-500/30" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                <p className="text-sm font-medium mb-3 text-amber-500 flex items-center gap-2">
+                  <Zap className="w-4 h-4" />
+                  Activa tus agentes en Monad para hacer breeding
+                </p>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  {!parentA.tokenId && (
+                    <div className="flex items-center gap-3 p-3 rounded-lg bg-card">
+                      <span className="text-sm">{parentA.name}</span>
+                      <ActivateAgentButton 
+                        agent={parentA} 
+                        size="sm"
+                        onActivated={() => fetchAgents()}
+                      />
+                    </div>
+                  )}
+                  {!parentB.tokenId && (
+                    <div className="flex items-center gap-3 p-3 rounded-lg bg-card">
+                      <span className="text-sm">{parentB.name}</span>
+                      <ActivateAgentButton 
+                        agent={parentB} 
+                        size="sm"
+                        onActivated={() => fetchAgents()}
+                      />
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            )}
+
+            {/* Breed Button - Only if both activated */}
+            {parentA && parentB && parentA.tokenId && parentB.tokenId && (
               <motion.div className="mt-6 sm:mt-8 flex justify-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                 <Button onClick={startBreeding} disabled={breeding} variant="primary" size="lg" className="w-full sm:w-auto px-8 sm:px-12">
                   {breeding ? <><RefreshCw className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />Breeding...</> : <><Sparkles className="w-4 h-4 sm:w-5 sm:h-5" />Start Breeding<ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" /></>}

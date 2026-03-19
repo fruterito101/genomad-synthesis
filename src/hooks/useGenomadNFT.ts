@@ -1,18 +1,24 @@
 // src/hooks/useGenomadNFT.ts
 "use client";
 
+import { useState, useEffect } from "react";
 import { useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 import { useNetwork } from "@/contexts/NetworkContext";
 import { GENOMAD_NFT_ABI } from "@/lib/blockchain/contracts";
 import { type Address } from "viem";
 
 // ============================================
-// useRegisterAgent
+// useRegisterAgent (SSR-safe)
 // Registra un nuevo agente on-chain
 // ============================================
 export function useRegisterAgent() {
+  const [isMounted, setIsMounted] = useState(false);
   const { contracts } = useNetwork();
   const address = contracts.genomadNFT as Address;
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const {
     writeContract,
@@ -30,7 +36,7 @@ export function useRegisterAgent() {
   } = useWaitForTransactionReceipt({ hash });
 
   const register = (dnaCommitment: `0x${string}`) => {
-    if (!address) throw new Error("GenomadNFT not configured");
+    if (!isMounted || !address) return;
     
     writeContract({
       address,
@@ -41,7 +47,7 @@ export function useRegisterAgent() {
   };
 
   const registerAsync = async (dnaCommitment: `0x${string}`) => {
-    if (!address) throw new Error("GenomadNFT not configured");
+    if (!isMounted || !address) throw new Error("Not ready");
     
     return writeContractAsync({
       address,
@@ -50,6 +56,20 @@ export function useRegisterAgent() {
       args: [dnaCommitment],
     });
   };
+
+  if (!isMounted) {
+    return {
+      register: () => {},
+      registerAsync: async () => { throw new Error("Not mounted"); },
+      hash: undefined,
+      isPending: false,
+      isConfirming: false,
+      isSuccess: false,
+      isError: false,
+      error: null,
+      reset: () => {},
+    };
+  }
 
   return {
     register,
@@ -65,12 +85,16 @@ export function useRegisterAgent() {
 }
 
 // ============================================
-// useActivateAgent
-// Activa un agente (cambia isActive a true)
+// useActivateAgent (SSR-safe)
 // ============================================
 export function useActivateAgent() {
+  const [isMounted, setIsMounted] = useState(false);
   const { contracts } = useNetwork();
   const address = contracts.genomadNFT as Address;
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const {
     writeContract,
@@ -88,7 +112,7 @@ export function useActivateAgent() {
   } = useWaitForTransactionReceipt({ hash });
 
   const activate = (tokenId: bigint) => {
-    if (!address) throw new Error("GenomadNFT not configured");
+    if (!isMounted || !address) return;
     
     writeContract({
       address,
@@ -99,7 +123,7 @@ export function useActivateAgent() {
   };
 
   const activateAsync = async (tokenId: bigint) => {
-    if (!address) throw new Error("GenomadNFT not configured");
+    if (!isMounted || !address) throw new Error("Not ready");
     
     return writeContractAsync({
       address,
@@ -108,6 +132,20 @@ export function useActivateAgent() {
       args: [tokenId],
     });
   };
+
+  if (!isMounted) {
+    return {
+      activate: () => {},
+      activateAsync: async () => { throw new Error("Not mounted"); },
+      hash: undefined,
+      isPending: false,
+      isConfirming: false,
+      isSuccess: false,
+      isError: false,
+      error: null,
+      reset: () => {},
+    };
+  }
 
   return {
     activate,
@@ -123,12 +161,16 @@ export function useActivateAgent() {
 }
 
 // ============================================
-// useDeactivateAgent
-// Desactiva un agente (cambia isActive a false)
+// useDeactivateAgent (SSR-safe)
 // ============================================
 export function useDeactivateAgent() {
+  const [isMounted, setIsMounted] = useState(false);
   const { contracts } = useNetwork();
   const address = contracts.genomadNFT as Address;
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const {
     writeContract,
@@ -146,7 +188,7 @@ export function useDeactivateAgent() {
   } = useWaitForTransactionReceipt({ hash });
 
   const deactivate = (tokenId: bigint) => {
-    if (!address) throw new Error("GenomadNFT not configured");
+    if (!isMounted || !address) return;
     
     writeContract({
       address,
@@ -157,7 +199,7 @@ export function useDeactivateAgent() {
   };
 
   const deactivateAsync = async (tokenId: bigint) => {
-    if (!address) throw new Error("GenomadNFT not configured");
+    if (!isMounted || !address) throw new Error("Not ready");
     
     return writeContractAsync({
       address,
@@ -166,6 +208,20 @@ export function useDeactivateAgent() {
       args: [tokenId],
     });
   };
+
+  if (!isMounted) {
+    return {
+      deactivate: () => {},
+      deactivateAsync: async () => { throw new Error("Not mounted"); },
+      hash: undefined,
+      isPending: false,
+      isConfirming: false,
+      isSuccess: false,
+      isError: false,
+      error: null,
+      reset: () => {},
+    };
+  }
 
   return {
     deactivate,
@@ -181,12 +237,16 @@ export function useDeactivateAgent() {
 }
 
 // ============================================
-// useTransferAgent
-// Transfiere un agente a otra wallet
+// useTransferAgent (SSR-safe)
 // ============================================
 export function useTransferAgent() {
+  const [isMounted, setIsMounted] = useState(false);
   const { contracts } = useNetwork();
   const address = contracts.genomadNFT as Address;
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const {
     writeContract,
@@ -204,7 +264,7 @@ export function useTransferAgent() {
   } = useWaitForTransactionReceipt({ hash });
 
   const transfer = (from: Address, to: Address, tokenId: bigint) => {
-    if (!address) throw new Error("GenomadNFT not configured");
+    if (!isMounted || !address) return;
     
     writeContract({
       address,
@@ -215,7 +275,7 @@ export function useTransferAgent() {
   };
 
   const transferAsync = async (from: Address, to: Address, tokenId: bigint) => {
-    if (!address) throw new Error("GenomadNFT not configured");
+    if (!isMounted || !address) throw new Error("Not ready");
     
     return writeContractAsync({
       address,
@@ -224,6 +284,20 @@ export function useTransferAgent() {
       args: [from, to, tokenId],
     });
   };
+
+  if (!isMounted) {
+    return {
+      transfer: () => {},
+      transferAsync: async () => { throw new Error("Not mounted"); },
+      hash: undefined,
+      isPending: false,
+      isConfirming: false,
+      isSuccess: false,
+      isError: false,
+      error: null,
+      reset: () => {},
+    };
+  }
 
   return {
     transfer,
