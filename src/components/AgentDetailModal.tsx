@@ -2,15 +2,20 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Dna, Shield, Clock, Crown, Cpu, Palette, MessageSquare, Brain, Heart, TrendingUp, GraduationCap, Star, ExternalLink, Copy, Check, Activity } from "lucide-react";
+import { X, Dna, Shield, Clock, Crown, Cpu, Palette, MessageSquare, Brain, Heart, TrendingUp, GraduationCap, Star, ExternalLink, Copy, Check, Activity, Trash2, Unlink, Power, AlertTriangle, Loader2 } from "lucide-react";
 import { useState, useMemo } from "react";
 import { Button } from "@/components/ui";
 import Link from "next/link";
 import { useTranslation } from "react-i18next";
 
 interface AgentTraits { technical: number; creativity: number; social: number; analysis: number; empathy: number; trading: number; teaching: number; leadership: number; }
-interface Agent { id: string; name: string; botUsername: string | null; dnaHash: string; traits: AgentTraits | string | null; fitness: number; generation: number; isActive: boolean; createdAt?: string; commitment?: string | null; tokenId?: string | null; parentAId?: string | null; parentBId?: string | null; owner?: { wallet: string | null } | null; }
-interface AgentDetailModalProps { agent: Agent | null; isOpen: boolean; onClose: () => void; }
+interface Agent { id: string; name: string; botUsername: string | null; dnaHash: string; traits: AgentTraits | string | null; fitness: number; generation: number; isActive: boolean; createdAt?: string; commitment?: string | null; tokenId?: string | null; parentAId?: string | null; parentBId?: string | null; owner?: { wallet: string | null } | null; isMine?: boolean; }
+interface AgentDetailModalProps { 
+  agent: Agent | null; 
+  isOpen: boolean; 
+  onClose: () => void;
+  onAgentUpdated?: () => void; // Callback to refresh data after actions
+}
 
 const defaultTraits: AgentTraits = { technical: 50, creativity: 50, social: 50, analysis: 50, empathy: 50, trading: 50, teaching: 50, leadership: 50 };
 
@@ -20,9 +25,13 @@ function parseTraits(traits: AgentTraits | string | null | undefined): AgentTrai
   return { ...defaultTraits, ...traits };
 }
 
-export function AgentDetailModal({ agent, isOpen, onClose }: AgentDetailModalProps) {
+export function AgentDetailModal({ agent, isOpen, onClose, onAgentUpdated }: AgentDetailModalProps) {
   const { t, i18n } = useTranslation();
   const [copied, setCopied] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showUnlinkConfirm, setShowUnlinkConfirm] = useState(false);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   const traitConfig: Record<string, { icon: React.ElementType; color: string; labelKey: string }> = {
     technical: { icon: Cpu, color: "#3B82F6", labelKey: "dashboard.traits.technical" },
@@ -51,9 +60,82 @@ export function AgentDetailModal({ agent, isOpen, onClose }: AgentDetailModalPro
   const rarity = useMemo(() => getRarity(safeTraits), [safeTraits, i18n.language]);
   const sortedTraits = useMemo(() => Object.entries(safeTraits).sort(([, a], [, b]) => b - a), [safeTraits]);
 
+  const isMine = agent?.isMine ?? false;
+  const canDelete = isMine && !agent?.tokenId; // Can't delete minted agents
+  const canUnlink = isMine;
+  const canToggle = isMine;
+
   if (!agent) return null;
 
   const copyHash = () => { navigator.clipboard.writeText(agent.dnaHash || ""); setCopied(true); setTimeout(() => setCopied(false), 2000); };
+
+  const handleToggleActive = async () => {
+    setActionLoading("toggle");
+    setActionError(null);
+    try {
+      const token = localStorage.getItem("privy:token");
+      const res = await fetch(`/api/agents/${agent.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ isActive: !agent.isActive }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Error al actualizar");
+      }
+      onAgentUpdated?.();
+    } catch (err: any) {
+      setActionError(err.message);
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleDelete = async () => {
+    setActionLoading("delete");
+    setActionError(null);
+    try {
+      const token = localStorage.getItem("privy:token");
+      const res = await fetch(`/api/agents/${agent.id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.message || data.error || "Error al eliminar");
+      }
+      onAgentUpdated?.();
+      onClose();
+    } catch (err: any) {
+      setActionError(err.message);
+      setShowDeleteConfirm(false);
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleUnlink = async () => {
+    setActionLoading("unlink");
+    setActionError(null);
+    try {
+      const token = localStorage.getItem("privy:token");
+      const res = await fetch(`/api/agents/${agent.id}/unlink`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Error al desvincular");
+      }
+      onAgentUpdated?.();
+      onClose();
+    } catch (err: any) {
+      setActionError(err.message);
+      setShowUnlinkConfirm(false);
+    } finally {
+      setActionLoading(null);
+    }
+  };
 
   return (
     <AnimatePresence>
@@ -72,6 +154,7 @@ export function AgentDetailModal({ agent, isOpen, onClose }: AgentDetailModalPro
                   <div className="flex items-center gap-2 mt-1">
                     {agent.botUsername && <span className="text-sm" style={{ color: "var(--color-text-muted)" }}>@{agent.botUsername}</span>}
                     <span className="px-2 py-0.5 rounded text-xs font-medium" style={{ backgroundColor: rarity.bg, color: rarity.color }}><Star className="w-3 h-3 inline mr-1" />{rarity.label}</span>
+                    {isMine && <span className="px-2 py-0.5 rounded text-xs font-medium" style={{ backgroundColor: "rgba(249, 115, 22, 0.15)", color: "#f97316" }}>Mío</span>}
                   </div>
                 </div>
               </div>
@@ -79,6 +162,14 @@ export function AgentDetailModal({ agent, isOpen, onClose }: AgentDetailModalPro
             </div>
 
             <div className="p-4 sm:p-6 space-y-6">
+              {/* Error Display */}
+              {actionError && (
+                <div className="p-3 rounded-xl flex items-center gap-2" style={{ backgroundColor: "rgba(239, 68, 68, 0.1)", border: "1px solid var(--color-error)" }}>
+                  <AlertTriangle className="w-4 h-4" style={{ color: "var(--color-error)" }} />
+                  <span className="text-sm" style={{ color: "var(--color-error)" }}>{actionError}</span>
+                </div>
+              )}
+
               {/* Stats Row */}
               <div className="grid grid-cols-3 gap-3">
                 <div className="p-4 rounded-xl text-center" style={{ backgroundColor: "var(--color-bg-tertiary)" }}>
@@ -149,6 +240,119 @@ export function AgentDetailModal({ agent, isOpen, onClose }: AgentDetailModalPro
                   <h3 className="text-sm font-medium mb-3 flex items-center gap-2" style={{ color: "var(--color-text-muted)" }}><Dna className="w-4 h-4" /> {t("agentDetail.lineage")}</h3>
                   <div className="p-4 rounded-xl" style={{ backgroundColor: "var(--color-bg-tertiary)" }}>
                     <p className="text-sm" style={{ color: "var(--color-text-secondary)" }}>{i18n.language === "es" ? "Criado de" : "Bred from"} Parent A ({agent.parentAId?.slice(0, 8)}...) × Parent B ({agent.parentBId?.slice(0, 8)}...)</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Agent Management (only for owner) */}
+              {isMine && (
+                <div>
+                  <h3 className="text-sm font-medium mb-3 flex items-center gap-2" style={{ color: "var(--color-text-muted)" }}>
+                    <Shield className="w-4 h-4" /> {i18n.language === "es" ? "GESTIÓN" : "MANAGEMENT"}
+                  </h3>
+                  <div className="p-4 rounded-xl space-y-3" style={{ backgroundColor: "var(--color-bg-tertiary)" }}>
+                    {/* Toggle Active */}
+                    {canToggle && (
+                      <button
+                        onClick={handleToggleActive}
+                        disabled={actionLoading === "toggle"}
+                        className="w-full p-3 rounded-lg flex items-center justify-between transition-colors hover:bg-white/5"
+                        style={{ border: "1px solid var(--color-border)" }}
+                      >
+                        <div className="flex items-center gap-3">
+                          <Power className="w-5 h-5" style={{ color: agent.isActive ? "var(--color-warning)" : "var(--color-success)" }} />
+                          <div className="text-left">
+                            <p className="text-sm font-medium" style={{ color: "var(--color-text-primary)" }}>
+                              {agent.isActive ? (i18n.language === "es" ? "Desactivar Agente" : "Deactivate Agent") : (i18n.language === "es" ? "Activar Agente" : "Activate Agent")}
+                            </p>
+                            <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>
+                              {agent.isActive ? (i18n.language === "es" ? "El agente dejará de estar activo" : "Agent will go offline") : (i18n.language === "es" ? "El agente volverá a estar activo" : "Agent will go online")}
+                            </p>
+                          </div>
+                        </div>
+                        {actionLoading === "toggle" && <Loader2 className="w-5 h-5 animate-spin" style={{ color: "var(--color-text-muted)" }} />}
+                      </button>
+                    )}
+
+                    {/* Unlink */}
+                    {canUnlink && !showUnlinkConfirm && (
+                      <button
+                        onClick={() => setShowUnlinkConfirm(true)}
+                        className="w-full p-3 rounded-lg flex items-center justify-between transition-colors hover:bg-white/5"
+                        style={{ border: "1px solid var(--color-border)" }}
+                      >
+                        <div className="flex items-center gap-3">
+                          <Unlink className="w-5 h-5" style={{ color: "var(--color-warning)" }} />
+                          <div className="text-left">
+                            <p className="text-sm font-medium" style={{ color: "var(--color-text-primary)" }}>{i18n.language === "es" ? "Desvincular Agente" : "Unlink Agent"}</p>
+                            <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>{i18n.language === "es" ? "Quitar de tu cuenta (puede re-vincularse)" : "Remove from your account (can re-link)"}</p>
+                          </div>
+                        </div>
+                      </button>
+                    )}
+
+                    {/* Unlink Confirmation */}
+                    {showUnlinkConfirm && (
+                      <div className="p-3 rounded-lg" style={{ backgroundColor: "rgba(245, 158, 11, 0.1)", border: "1px solid var(--color-warning)" }}>
+                        <p className="text-sm mb-3" style={{ color: "var(--color-warning)" }}>
+                          {i18n.language === "es" ? "¿Seguro que quieres desvincular este agente? Podrás volver a vincularlo con un código." : "Are you sure? You can re-link with a new code later."}
+                        </p>
+                        <div className="flex gap-2">
+                          <button onClick={handleUnlink} disabled={actionLoading === "unlink"} className="flex-1 px-3 py-2 rounded-lg text-sm font-medium flex items-center justify-center gap-2" style={{ backgroundColor: "var(--color-warning)", color: "#000" }}>
+                            {actionLoading === "unlink" ? <Loader2 className="w-4 h-4 animate-spin" /> : <Unlink className="w-4 h-4" />}
+                            {i18n.language === "es" ? "Sí, desvincular" : "Yes, unlink"}
+                          </button>
+                          <button onClick={() => setShowUnlinkConfirm(false)} className="px-3 py-2 rounded-lg text-sm" style={{ color: "var(--color-text-secondary)" }}>
+                            {i18n.language === "es" ? "Cancelar" : "Cancel"}
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Delete */}
+                    {canDelete && !showDeleteConfirm && (
+                      <button
+                        onClick={() => setShowDeleteConfirm(true)}
+                        className="w-full p-3 rounded-lg flex items-center justify-between transition-colors hover:bg-white/5"
+                        style={{ border: "1px solid var(--color-error)" }}
+                      >
+                        <div className="flex items-center gap-3">
+                          <Trash2 className="w-5 h-5" style={{ color: "var(--color-error)" }} />
+                          <div className="text-left">
+                            <p className="text-sm font-medium" style={{ color: "var(--color-error)" }}>{i18n.language === "es" ? "Eliminar Agente" : "Delete Agent"}</p>
+                            <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>{i18n.language === "es" ? "Eliminar permanentemente (irreversible)" : "Delete permanently (irreversible)"}</p>
+                          </div>
+                        </div>
+                      </button>
+                    )}
+
+                    {/* Delete Confirmation */}
+                    {showDeleteConfirm && (
+                      <div className="p-3 rounded-lg" style={{ backgroundColor: "rgba(239, 68, 68, 0.1)", border: "1px solid var(--color-error)" }}>
+                        <p className="text-sm mb-3" style={{ color: "var(--color-error)" }}>
+                          {i18n.language === "es" ? "⚠️ Esta acción es IRREVERSIBLE. El agente será eliminado permanentemente." : "⚠️ This action is IRREVERSIBLE. Agent will be deleted permanently."}
+                        </p>
+                        <div className="flex gap-2">
+                          <button onClick={handleDelete} disabled={actionLoading === "delete"} className="flex-1 px-3 py-2 rounded-lg text-sm font-medium flex items-center justify-center gap-2" style={{ backgroundColor: "var(--color-error)", color: "#fff" }}>
+                            {actionLoading === "delete" ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                            {i18n.language === "es" ? "Sí, eliminar" : "Yes, delete"}
+                          </button>
+                          <button onClick={() => setShowDeleteConfirm(false)} className="px-3 py-2 rounded-lg text-sm" style={{ color: "var(--color-text-secondary)" }}>
+                            {i18n.language === "es" ? "Cancelar" : "Cancel"}
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Warning for minted */}
+                    {agent.tokenId && (
+                      <div className="p-3 rounded-lg" style={{ backgroundColor: "rgba(139, 92, 246, 0.1)" }}>
+                        <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>
+                          <Shield className="w-3 h-3 inline mr-1" />
+                          {i18n.language === "es" ? "Este agente está minteado on-chain. No puede ser eliminado, solo desvinculado." : "This agent is minted on-chain. Cannot be deleted, only unlinked."}
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}

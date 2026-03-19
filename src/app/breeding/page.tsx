@@ -10,9 +10,20 @@ import { LoginButton } from "@/components/LoginButton";
 import { AppHeader } from "@/components/AppHeader";
 import { Button } from "@/components/ui";
 import { Dna, Plus, ArrowRight, Sparkles, Check, Clock, Shield, Zap, Crown, Activity, RefreshCw, AlertCircle, ChevronDown, Cpu, Palette, MessageSquare, Brain, Heart, TrendingUp, GraduationCap } from "lucide-react";
+import { SuccessModal } from "@/components/SuccessModal";
 
 interface Agent { id: string; name: string; botUsername: string | null; traits: { technical: number; creativity: number; social: number; analysis: number; empathy: number; trading: number; teaching: number; leadership: number; }; fitness: number; generation: number; isActive: boolean; ownerId: string; isMine?: boolean; }
-interface BreedingRequest { id: string; status: string; parentA?: { id: string; name: string } | null; parentB?: { id: string; name: string } | null; createdAt: string; childName?: string; }
+interface BreedingRequest { 
+  id: string; 
+  status: string; 
+  parentA?: { id: string; name: string } | null; 
+  parentB?: { id: string; name: string } | null; 
+  createdAt: string; 
+  childName?: string;
+  executed?: boolean;
+  child?: { id: string; name: string; fitness?: number; traits?: Record<string, number>; generation?: number } | null;
+  breeding?: { parentAFitness?: number; parentBFitness?: number; childFitness?: number; improved?: boolean; mutationsApplied?: number } | null;
+}
 
 const CROSSOVER_TYPES = [
   { id: "weighted", name: "Weighted", desc: "Dominant traits", icon: Crown },
@@ -48,6 +59,7 @@ function BreedingContent() {
   const [pendingRequests, setPendingRequests] = useState<BreedingRequest[]>([]);
   const [showParentASelector, setShowParentASelector] = useState(false);
   const [showParentBSelector, setShowParentBSelector] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const fetchAgents = useCallback(async () => {
     if (!authenticated) return;
@@ -98,6 +110,7 @@ function BreedingContent() {
         
         // Mostrar resultado con el child creado
         setResult({ ...data.request, child: execData.child, breeding: execData.breeding, executed: true });
+        setShowSuccessModal(true);
       } else {
         // Request pendiente de aprobación del otro owner
         setResult(data.request);
@@ -267,6 +280,20 @@ function BreedingContent() {
           </motion.div>
         )}
       </main>
+      
+      {/* Success Modal */}
+      <SuccessModal
+        isOpen={showSuccessModal}
+        onClose={() => {
+          setShowSuccessModal(false);
+          setResult(null);
+          setParentA(null);
+          setParentB(null);
+          setChildName("");
+        }}
+        child={result?.child || null}
+        breeding={result?.breeding || undefined}
+      />
     </div>
   );
 }
