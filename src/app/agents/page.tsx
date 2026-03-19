@@ -1,179 +1,366 @@
 // src/app/agents/page.tsx
-// Dashboard público de agentes registrados
-
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import Link from "next/link";
+import { AppHeader } from "@/components/AppHeader";
+import { Button } from "@/components/ui";
+import { useTranslation } from "react-i18next";
+import { 
+  Search, Filter, ExternalLink, Star, Crown, Cpu, Palette, 
+  MessageSquare, Brain, Heart, TrendingUp, GraduationCap,
+  ChevronDown, X, Dna, Sparkles, Activity
+} from "lucide-react";
 
 interface Agent {
   id: string;
   name: string;
-  botUsername?: string;
-  dnaHash: string;
+  botUsername: string | null;
   traits: {
-    technical: number;
-    creativity: number;
-    social: number;
-    analysis: number;
-    empathy: number;
-    trading: number;
-    teaching: number;
-    leadership: number;
+    technical: number; creativity: number; social: number; analysis: number;
+    empathy: number; trading: number; teaching: number; leadership: number;
   };
   fitness: number;
   generation: number;
   isActive: boolean;
-  createdAt: string;
+  owner?: { wallet: string | null } | null;
 }
 
-function TraitBar({ name, value }: { name: string; value: number }) {
-  const emoji: Record<string, string> = {
-    technical: "💻",
-    creativity: "🎨",
-    social: "🤝",
-    analysis: "📊",
-    empathy: "💜",
-    trading: "📈",
-    teaching: "📚",
-    leadership: "👑",
-  };
+const traitConfig: Record<string, { icon: React.ElementType; color: string; label: string }> = {
+  technical: { icon: Cpu, color: "#3B82F6", label: "Técnico" },
+  creativity: { icon: Palette, color: "#EC4899", label: "Creativo" },
+  social: { icon: MessageSquare, color: "#8B5CF6", label: "Social" },
+  analysis: { icon: Brain, color: "#06B6D4", label: "Analítico" },
+  empathy: { icon: Heart, color: "#EF4444", label: "Empático" },
+  trading: { icon: TrendingUp, color: "#10B981", label: "Trader" },
+  teaching: { icon: GraduationCap, color: "#F59E0B", label: "Maestro" },
+  leadership: { icon: Crown, color: "#F97316", label: "Líder" },
+};
 
-  return (
-    <div className="flex items-center gap-2 text-sm">
-      <span className="w-6">{emoji[name] || "•"}</span>
-      <span className="w-20 text-zinc-400">{name}</span>
-      <div className="flex-1 bg-zinc-800 rounded-full h-2 overflow-hidden">
-        <div 
-          className="h-full bg-emerald-500 rounded-full transition-all"
-          style={{ width: `${value}%` }}
-        />
-      </div>
-      <span className="w-8 text-right text-zinc-300">{value}</span>
-    </div>
-  );
+function getRarity(traits: Agent["traits"]): { label: string; color: string; bg: string; priority: number } {
+  const values = Object.values(traits);
+  const avg = values.reduce((a, b) => a + b, 0) / values.length;
+  const max = Math.max(...values);
+  const spread = max - Math.min(...values);
+  
+  if (avg >= 80 && spread <= 20) return { label: "Legendario", color: "#FBBF24", bg: "rgba(251, 191, 36, 0.15)", priority: 4 };
+  if (avg >= 75 || max >= 95) return { label: "Épico", color: "#A855F7", bg: "rgba(168, 85, 247, 0.15)", priority: 3 };
+  if (avg >= 60 || max >= 85) return { label: "Raro", color: "#3B82F6", bg: "rgba(59, 130, 246, 0.15)", priority: 2 };
+  if (avg >= 40) return { label: "Poco Común", color: "#10B981", bg: "rgba(16, 185, 129, 0.15)", priority: 1 };
+  return { label: "Común", color: "#6B7280", bg: "rgba(107, 114, 128, 0.15)", priority: 0 };
 }
 
-function AgentCard({ agent }: { agent: Agent }) {
-  return (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 hover:border-emerald-500/50 transition-all">
-      <div className="flex items-start justify-between mb-4">
-        <div>
-          <h3 className="text-xl font-bold text-white">{agent.name}</h3>
-          {agent.botUsername && (
-            <p className="text-zinc-500 text-sm">@{agent.botUsername}</p>
-          )}
-        </div>
-        <div className="text-right">
-          <div className="text-2xl font-bold text-emerald-400">
-            {agent.fitness.toFixed(1)}
-          </div>
-          <div className="text-xs text-zinc-500">FITNESS</div>
-        </div>
-      </div>
+function getTopTraits(traits: Agent["traits"], count: number = 3): { key: string; value: number }[] {
+  return Object.entries(traits)
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, count)
+    .map(([key, value]) => ({ key, value }));
+}
 
-      <div className="flex items-center gap-4 mb-4 text-sm">
-        <span className="px-2 py-1 bg-zinc-800 rounded text-zinc-300">
-          Gen {agent.generation}
-        </span>
-        <span className={`px-2 py-1 rounded ${agent.isActive ? "bg-emerald-500/20 text-emerald-400" : "bg-zinc-800 text-zinc-500"}`}>
-          {agent.isActive ? "🟢 Online" : "⚫ Offline"}
-        </span>
-      </div>
-
-      <div className="space-y-2 mb-4">
-        {Object.entries(agent.traits).map(([name, value]) => (
-          <TraitBar key={name} name={name} value={value} />
-        ))}
-      </div>
-
-      <div className="pt-4 border-t border-zinc-800">
-        <p className="text-xs text-zinc-600 font-mono">
-          🧬 {agent.dnaHash.slice(0, 16)}...
-        </p>
-        <p className="text-xs text-zinc-600 mt-1">
-          Registrado: {new Date(agent.createdAt).toLocaleString()}
-        </p>
-      </div>
-    </div>
-  );
+function getSpecialization(traits: Agent["traits"]): { key: string; label: string; color: string } {
+  const top = Object.entries(traits).sort(([, a], [, b]) => b - a)[0];
+  const config = traitConfig[top[0]];
+  return { key: top[0], label: config?.label || top[0], color: config?.color || "#7B3FE4" };
 }
 
 export default function AgentsPage() {
+  const { i18n } = useTranslation();
   const [agents, setAgents] = useState<Agent[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterTrait, setFilterTrait] = useState<string | null>(null);
+  const [showFilterMenu, setShowFilterMenu] = useState(false);
 
   useEffect(() => {
-    fetch("/api/agents/register-skill")
-      .then(res => res.json())
-      .then(data => {
-        setAgents(data.agents || []);
+    const fetchAgents = async () => {
+      try {
+        const res = await fetch("/api/leaderboard?limit=50");
+        if (res.ok) {
+          const data = await res.json();
+          setAgents(data.agents || []);
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
         setLoading(false);
-      })
-      .catch(err => {
-        setError(err.message);
-        setLoading(false);
-      });
+      }
+    };
+    fetchAgents();
   }, []);
 
-  const refresh = () => {
-    setLoading(true);
-    fetch("/api/agents/register-skill")
-      .then(res => res.json())
-      .then(data => {
-        setAgents(data.agents || []);
-        setLoading(false);
+  // Filter and sort agents
+  const filteredAgents = useMemo(() => {
+    let result = [...agents];
+    
+    // Search filter
+    if (searchQuery) {
+      result = result.filter(a => 
+        a.name.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+    
+    // Trait filter
+    if (filterTrait) {
+      result = result.filter(a => {
+        const top = getSpecialization(a.traits);
+        return top.key === filterTrait;
       });
-  };
+    }
+    
+    // Sort by fitness (best first)
+    result.sort((a, b) => b.fitness - a.fitness);
+    
+    return result;
+  }, [agents, searchQuery, filterTrait]);
 
   return (
-    <div className="min-h-screen bg-black text-white p-8">
-      <div className="max-w-6xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-4xl font-bold">🧬 Genomad Agents</h1>
-            <p className="text-zinc-400 mt-2">
-              {agents.length} agentes registrados
+    <div className="min-h-screen" style={{ backgroundColor: "var(--color-bg-primary)" }}>
+      <AppHeader />
+      
+      <main className="max-w-7xl mx-auto px-4 pt-20 sm:pt-24 pb-8 sm:pb-12">
+        {/* Header */}
+        <motion.div 
+          className="text-center mb-8 sm:mb-12"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-3 sm:mb-4">
+            <span className="gradient-text">Catálogo de Agentes</span>
+          </h1>
+          <p className="text-sm sm:text-base md:text-lg" style={{ color: "var(--color-text-secondary)" }}>
+            Explora los agentes disponibles para adopción y breeding
+          </p>
+        </motion.div>
+
+        {/* Filters Bar */}
+        <motion.div 
+          className="rounded-xl p-4 sm:p-6 mb-6 sm:mb-8"
+          style={{ backgroundColor: "var(--color-bg-secondary)", border: "1px solid var(--color-border)" }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.1 }}
+        >
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+            {/* Search */}
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: "var(--color-text-muted)" }} />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Buscar por nombre..."
+                className="w-full pl-10 pr-4 py-3 rounded-xl text-sm outline-none"
+                style={{ 
+                  backgroundColor: "var(--color-bg-primary)", 
+                  border: "2px solid var(--color-border)",
+                  color: "var(--color-text-primary)"
+                }}
+              />
+            </div>
+
+            {/* Filter by Trait */}
+            <div className="relative">
+              <button
+                onClick={() => setShowFilterMenu(!showFilterMenu)}
+                className="flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-medium w-full sm:w-auto justify-center"
+                style={{ 
+                  backgroundColor: filterTrait ? "rgba(123, 63, 228, 0.1)" : "var(--color-bg-primary)",
+                  border: filterTrait ? "2px solid var(--color-primary)" : "2px solid var(--color-border)",
+                  color: filterTrait ? "var(--color-primary)" : "var(--color-text-secondary)"
+                }}
+              >
+                <Filter className="w-4 h-4" />
+                {filterTrait ? traitConfig[filterTrait]?.label : "Tipo de Agente"}
+                <ChevronDown className="w-4 h-4" />
+              </button>
+              
+              <AnimatePresence>
+                {showFilterMenu && (
+                  <motion.div
+                    className="absolute top-full left-0 right-0 sm:right-auto mt-2 rounded-xl overflow-hidden z-20 min-w-[200px]"
+                    style={{ backgroundColor: "var(--color-bg-secondary)", border: "1px solid var(--color-border)" }}
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                  >
+                    <button
+                      onClick={() => { setFilterTrait(null); setShowFilterMenu(false); }}
+                      className="w-full p-3 text-left text-sm flex items-center gap-2 hover:bg-[var(--color-bg-tertiary)]"
+                      style={{ color: "var(--color-text-secondary)", borderBottom: "1px solid var(--color-border)" }}
+                    >
+                      <X className="w-4 h-4" />
+                      Todos
+                    </button>
+                    {Object.entries(traitConfig).map(([key, config]) => {
+                      const Icon = config.icon;
+                      return (
+                        <button
+                          key={key}
+                          onClick={() => { setFilterTrait(key); setShowFilterMenu(false); }}
+                          className="w-full p-3 text-left text-sm flex items-center gap-2 hover:bg-[var(--color-bg-tertiary)]"
+                          style={{ color: "var(--color-text-primary)", borderBottom: "1px solid var(--color-border)" }}
+                        >
+                          <Icon className="w-4 h-4" style={{ color: config.color }} />
+                          {config.label}
+                        </button>
+                      );
+                    })}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* Visit Button */}
+            <Link href="/breeding">
+              <Button variant="primary" size="md" className="w-full sm:w-auto">
+                <Sparkles className="w-4 h-4" />
+                Iniciar Breeding
+              </Button>
+            </Link>
+          </div>
+        </motion.div>
+
+        {/* Stats */}
+        <motion.div 
+          className="flex flex-wrap gap-4 mb-6"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.15 }}
+        >
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg" style={{ backgroundColor: "var(--color-bg-secondary)" }}>
+            <Dna className="w-4 h-4" style={{ color: "var(--color-primary)" }} />
+            <span className="text-sm" style={{ color: "var(--color-text-secondary)" }}>
+              {filteredAgents.length} agentes
+            </span>
+          </div>
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg" style={{ backgroundColor: "var(--color-bg-secondary)" }}>
+            <Activity className="w-4 h-4" style={{ color: "var(--color-success)" }} />
+            <span className="text-sm" style={{ color: "var(--color-text-secondary)" }}>
+              {filteredAgents.filter(a => a.isActive).length} online
+            </span>
+          </div>
+        </motion.div>
+
+        {/* Agents Grid */}
+        {loading ? (
+          <div className="text-center py-12">
+            <Dna className="w-12 h-12 mx-auto animate-pulse" style={{ color: "var(--color-primary)" }} />
+          </div>
+        ) : filteredAgents.length === 0 ? (
+          <div className="text-center py-12">
+            <Star className="w-16 h-16 mx-auto mb-4" style={{ color: "var(--color-text-muted)" }} />
+            <p className="text-lg" style={{ color: "var(--color-text-secondary)" }}>
+              No se encontraron agentes
             </p>
           </div>
-          <button 
-            onClick={refresh}
-            className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 rounded-lg font-medium transition-colors"
+        ) : (
+          <motion.div 
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
           >
-            🔄 Actualizar
-          </button>
-        </div>
-
-        {loading && (
-          <div className="text-center py-20">
-            <div className="text-4xl animate-pulse">🧬</div>
-            <p className="text-zinc-500 mt-4">Cargando agentes...</p>
-          </div>
+            {filteredAgents.map((agent, index) => {
+              const rarity = getRarity(agent.traits);
+              const topTraits = getTopTraits(agent.traits, 3);
+              const specialization = getSpecialization(agent.traits);
+              const SpecIcon = traitConfig[specialization.key]?.icon || Star;
+              
+              return (
+                <motion.div
+                  key={agent.id}
+                  className="rounded-xl overflow-hidden cursor-pointer group"
+                  style={{ backgroundColor: "var(--color-bg-secondary)", border: "1px solid var(--color-border)" }}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.03 }}
+                  whileHover={{ borderColor: "var(--color-primary)", y: -4 }}
+                >
+                  {/* Avatar Circle */}
+                  <div className="p-6 pb-4 flex flex-col items-center">
+                    <div 
+                      className="w-20 h-20 sm:w-24 sm:h-24 rounded-full flex items-center justify-center mb-4 relative"
+                      style={{ background: `linear-gradient(135deg, ${specialization.color}, var(--color-primary))` }}
+                    >
+                      <SpecIcon className="w-10 h-10 sm:w-12 sm:h-12 text-white" />
+                      {agent.isActive && (
+                        <span className="absolute bottom-1 right-1 w-4 h-4 rounded-full bg-green-500 border-2" style={{ borderColor: "var(--color-bg-secondary)" }} />
+                      )}
+                    </div>
+                    
+                    {/* Name */}
+                    <h3 className="text-lg font-bold text-center mb-1" style={{ color: "var(--color-text-primary)" }}>
+                      {agent.name}
+                    </h3>
+                    
+                    {/* Fitness */}
+                    <p className="text-2xl font-bold gradient-text mb-2">{agent.fitness.toFixed(1)}</p>
+                    
+                    {/* Rarity Badge */}
+                    <span 
+                      className="px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1"
+                      style={{ backgroundColor: rarity.bg, color: rarity.color }}
+                    >
+                      <Star className="w-3 h-3" />
+                      {rarity.label}
+                    </span>
+                  </div>
+                  
+                  {/* Info Section */}
+                  <div className="p-4 pt-0">
+                    {/* Top Traits */}
+                    <div className="mb-3">
+                      <p className="text-[10px] mb-2" style={{ color: "var(--color-text-muted)" }}>MEJORES CUALIDADES</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {topTraits.map(({ key, value }) => {
+                          const config = traitConfig[key];
+                          const Icon = config?.icon || Star;
+                          return (
+                            <span 
+                              key={key}
+                              className="text-xs px-2 py-1 rounded flex items-center gap-1"
+                              style={{ backgroundColor: `${config?.color}15`, color: config?.color }}
+                            >
+                              <Icon className="w-3 h-3" />
+                              {value}
+                            </span>
+                          );
+                        })}
+                      </div>
+                    </div>
+                    
+                    {/* Specialization */}
+                    <div className="flex items-center justify-between pt-3" style={{ borderTop: "1px solid var(--color-border)" }}>
+                      <div className="flex items-center gap-2">
+                        <SpecIcon className="w-4 h-4" style={{ color: specialization.color }} />
+                        <span className="text-xs font-medium" style={{ color: "var(--color-text-secondary)" }}>
+                          {specialization.label}
+                        </span>
+                      </div>
+                      <span className="text-xs" style={{ color: "var(--color-text-muted)" }}>
+                        Gen {agent.generation}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  {/* Hover Action */}
+                  <div 
+                    className="p-4 pt-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <Link href={`/breeding?parentB=${agent.id}`}>
+                      <Button variant="primary" size="sm" className="w-full">
+                        <ExternalLink className="w-4 h-4" />
+                        Visitar
+                      </Button>
+                    </Link>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </motion.div>
         )}
-
-        {error && (
-          <div className="bg-red-500/10 border border-red-500/50 rounded-lg p-4 text-red-400">
-            Error: {error}
-          </div>
-        )}
-
-        {!loading && agents.length === 0 && (
-          <div className="text-center py-20 bg-zinc-900 rounded-xl border border-zinc-800">
-            <div className="text-6xl mb-4">🤖</div>
-            <h2 className="text-2xl font-bold mb-2">No hay agentes registrados</h2>
-            <p className="text-zinc-500 max-w-md mx-auto">
-              Instala el skill <code className="text-emerald-400">genomad-verify</code> en tu bot 
-              y ejecuta <code className="text-emerald-400">/genomad-verify</code> para registrar tu agente.
-            </p>
-          </div>
-        )}
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {agents.map(agent => (
-            <AgentCard key={agent.id} agent={agent} />
-          ))}
-        </div>
-      </div>
+      </main>
     </div>
   );
 }
