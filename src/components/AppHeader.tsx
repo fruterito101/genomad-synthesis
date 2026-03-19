@@ -10,6 +10,7 @@ import { usePrivy } from "@privy-io/react-auth";
 import { useGMDBalance } from "@/hooks/useGMDBalance";
 import { useTranslation } from "react-i18next";
 import { Dna, LayoutDashboard, User, LogOut, Wallet, Coins, RefreshCw, Menu, X } from "lucide-react";
+import { NetworkSwitcher } from "./NetworkSwitcher";
 
 export function AppHeader() {
   const { t, i18n } = useTranslation();
@@ -71,6 +72,9 @@ export function AppHeader() {
           {/* Desktop Right Side */}
           {authenticated && (
             <div className="hidden md:flex items-center gap-2 lg:gap-3">
+              {/* 🌐 Network Switcher (Testnet/Mainnet) */}
+              <NetworkSwitcher />
+
               {/* Language Switcher */}
               <button
                 onClick={toggleLanguage}
@@ -153,6 +157,12 @@ export function AppHeader() {
 
               {authenticated && (
                 <div className="pt-4 mt-4 border-t border-border">
+                  {/* Mobile Network Switcher */}
+                  <div className="px-4 py-3 mb-2">
+                    <p className="text-xs text-muted-foreground mb-2">Network</p>
+                    <NetworkSwitcher />
+                  </div>
+
                   {/* Mobile Language Switcher */}
                   <button
                     onClick={toggleLanguage}
