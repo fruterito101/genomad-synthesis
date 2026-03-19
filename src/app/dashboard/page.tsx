@@ -1,8 +1,5 @@
-"use client";
-export const dynamic = "force-dynamic";
-
-export const dynamic = "force-dynamic";
 // src/app/dashboard/page.tsx
+"use client";
 
 import { useEffect, useState, useCallback } from "react";
 import { usePrivy } from "@privy-io/react-auth";
