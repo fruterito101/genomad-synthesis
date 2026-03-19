@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/db/client";
 import { agents } from "@/lib/db/schema";
 import { calculateTotalFitness } from "@/lib/genetic";
-import { eq, or } from "drizzle-orm";
+import { eq, or, sql } from "drizzle-orm";
 import { v4 as uuidv4 } from "uuid";
 
 export async function POST(request: NextRequest) {
@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
       source = "genomad-verify-skill"
     } = body;
 
-    // Limpiar espacios en nombre y username
+    // Limpiar espacios
     name = name?.trim();
     botUsername = botUsername?.trim();
 
@@ -41,16 +41,18 @@ export async function POST(request: NextRequest) {
 
     const db = getDb();
 
-    // Buscar por NOMBRE o BOTUSERNAME (sin duplicados)
-    const conditions = [eq(agents.name, name)];
-    if (botUsername) {
-      conditions.push(eq(agents.botUsername, botUsername));
-    }
-
+    // Buscar por nombre (con trim) O botUsername O dnaHash
     const [existing] = await db
       .select()
       .from(agents)
-      .where(or(...conditions))
+      .where(
+        or(
+          sql`TRIM(${agents.name}) = ${name}`,
+          eq(agents.name, name),
+          botUsername ? eq(agents.botUsername, botUsername) : sql`false`,
+          eq(agents.dnaHash, dnaHash)
+        )
+      )
       .limit(1);
 
     // Calcular fitness
@@ -62,7 +64,7 @@ export async function POST(request: NextRequest) {
       await db
         .update(agents)
         .set({
-          name,  // Actualizar nombre limpio
+          name,  // Guardar nombre limpio
           dnaHash,
           traits: traitsWithSkills,
           fitness,
@@ -158,7 +160,7 @@ export async function GET(_request: NextRequest) {
       const { skillCount, ...pureTraits } = traitsObj || {};
       return {
         ...agent,
-        name: agent.name?.trim(),  // Limpiar por si acaso
+        name: agent.name?.trim(),
         traits: pureTraits,
         skillCount: skillCount || 0,
       };
