@@ -2,6 +2,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Image from "next/image";
 import { SectionTitle, FeatureCard } from "@/components/ui";
 
 const pillars = [
@@ -67,7 +68,7 @@ export function WhatIsGenomad() {
             </p>
           </motion.div>
 
-          {/* Image Placeholder */}
+          {/* Image */}
           <motion.div
             className="relative"
             initial={{ opacity: 0, x: 30 }}
@@ -76,26 +77,16 @@ export function WhatIsGenomad() {
             transition={{ duration: 0.6, delay: 0.2 }}
           >
             <div 
-              className="aspect-square rounded-2xl flex items-center justify-center"
+              className="aspect-square rounded-2xl overflow-hidden"
               style={{ 
-                backgroundColor: 'var(--color-bg-tertiary)',
                 border: '1px solid var(--color-border)'
               }}
             >
-              <motion.div 
-                className="text-9xl"
-                animate={{ 
-                  scale: [1, 1.1, 1],
-                  rotate: [0, 5, -5, 0]
-                }}
-                transition={{ 
-                  duration: 4, 
-                  repeat: Infinity, 
-                  ease: "easeInOut" 
-                }}
-              >
-                🧬
-              </motion.div>
+              <img
+                src="https://res.cloudinary.com/ddejtxqjq/image/upload/v1771212819/MONAD_fby2ja.jpg"
+                alt="Genomad - AI Agent Evolution on Monad"
+                className="w-full h-full object-cover"
+              />
             </div>
           </motion.div>
         </div>
