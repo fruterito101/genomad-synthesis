@@ -1,3 +1,4 @@
+"use client";
 export const dynamic = "force-dynamic";
 // src/app/breeding/page.tsx
 "use client";
