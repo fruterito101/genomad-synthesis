@@ -1,0 +1,208 @@
+{
+  "header": {
+    "nav": {
+      "about": "Nosotros",
+      "catalogue": "Catálogo",
+      "guides": "Guías",
+      "dashboard": "Dashboard",
+      "profile": "Perfil"
+    },
+    "cta": "Activar Agente",
+    "connectWallet": "Conectar Wallet"
+  },
+  "hero": {
+    "title": "Los humanos evolucionan.",
+    "titleHighlight": "Ahora los agentes también.",
+    "subtitle": "El primer protocolo de breeding de agentes AI — on-chain.",
+    "features": {
+      "0": "Poseer agentes AI con DNA verificable on-chain",
+      "1": "Criar nuevos agentes combinando dos existentes",
+      "2": "Evolucionar agentes a través de generaciones",
+      "3": "Comerciar agentes únicos en un Marketplace",
+      "4": "Verificar el linaje y autenticidad con ZK proofs"
+    },
+    "cta": "Empieza Ahora",
+    "stats": {
+      "agents": "Agentes",
+      "generations": "Generaciones",
+      "breedings": "Breedings"
+    }
+  },
+  "whatIs": {
+    "title": "¿Qué es Genomad?",
+    "description": "Las especies se adaptan y evolucionan, pero los agentes AI no tenían ese mecanismo... hasta ahora. Genomad hace posible que los agentes hereden, muten y evolucionen, donde los más aptos prosperan generación tras generación.",
+    "pillars": {
+      "evolution": {
+        "title": "Evolución",
+        "description": "Algoritmos genéticos que simulan selección natural"
+      },
+      "permanence": {
+        "title": "Permanencia",
+        "description": "Blockchain para propiedad inmutable"
+      },
+      "identity": {
+        "title": "Identidad",
+        "description": "Agentes AI con personalidad única"
+      },
+      "privacy": {
+        "title": "Privacidad",
+        "description": "ZK proofs que verifican sin revelar"
+      }
+    }
+  },
+  "catalogue": {
+    "title": "Catálogo de Agentes",
+    "subtitle": "Explora los agentes disponibles para adopción y breeding",
+    "cta": "Ver Catálogo Completo",
+    "empty": "Próximamente: agentes únicos listos para adopción",
+    "filters": {
+      "all": "Todos",
+      "available": "Disponibles",
+      "breeding": "En Breeding"
+    }
+  },
+  "howToStart": {
+    "title": "¿Cómo Empezar?",
+    "subtitle": "Tres simples pasos para activar tu primer agente",
+    "steps": {
+      "0": {
+        "title": "Conecta tu Wallet",
+        "description": "Vincula tu wallet compatible con Monad para comenzar"
+      },
+      "1": {
+        "title": "Crea tu Perfil",
+        "description": "Configura tu identidad y preferencias de agente"
+      },
+      "2": {
+        "title": "Activa tu Agente",
+        "description": "Despliega tu primer agente AI con DNA único"
+      }
+    }
+  },
+  "breeding": {
+    "title": "Breeding",
+    "subtitle": "Combina agentes para crear descendencia única con traits heredados y mutaciones",
+    "steps": {
+      "0": {
+        "title": "Elige tu Agente",
+        "description": "Selecciona el agente que quieres cruzar"
+      },
+      "1": {
+        "title": "Elige el Segundo",
+        "description": "Selecciona el agente con el que se va a cruzar"
+      },
+      "2": {
+        "title": "Haz el Breeding",
+        "description": "Confirma y crea un nuevo agente con DNA combinado"
+      }
+    },
+    "features": {
+      "0": "Herencia de traits de ambos padres",
+      "1": "Mutaciones aleatorias para diversidad",
+      "2": "Linaje verificable on-chain",
+      "3": "Nuevas generaciones más fuertes"
+    },
+    "cta": "Iniciar Breeding"
+  },
+  "footer": {
+    "tagline": "El futuro de los agentes AI es evolutivo.",
+    "sections": {
+      "product": "Producto",
+      "resources": "Recursos",
+      "community": "Comunidad"
+    },
+    "links": {
+      "about": "Nosotros",
+      "catalogue": "Catálogo",
+      "guides": "Guías",
+      "docs": "Documentación",
+      "discord": "Discord",
+      "twitter": "Twitter"
+    },
+    "copyright": "© 2026 Genomad. Todos los derechos reservados.",
+    "disclaimer": "Genomad es un proyecto experimental construido durante el Monad Moltiverse Hackathon."
+  },
+  "dashboard": {
+    "welcome": "Bienvenido a Genomad",
+    "welcomeBack": "Bienvenido de vuelta",
+    "noAgents": "Aún no tienes agentes",
+    "createFirst": "Crea tu primer agente para comenzar tu viaje evolutivo",
+    "stats": {
+      "totalAgents": "Total de Agentes",
+      "avgFitness": "Fitness Promedio",
+      "generations": "Generaciones",
+      "breedings": "Breedings"
+    },
+    "traits": {
+      "social": "Social",
+      "technical": "Técnico",
+      "creativity": "Creatividad",
+      "analysis": "Análisis",
+      "trading": "Trading",
+      "empathy": "Empatía",
+      "teaching": "Enseñanza",
+      "leadership": "Liderazgo"
+    },
+    "rarity": {
+      "legendary": "Legendario",
+      "epic": "Épico",
+      "rare": "Raro",
+      "uncommon": "Poco Común",
+      "common": "Común"
+    },
+    "actions": {
+      "viewDetails": "Ver Detalles",
+      "startBreeding": "Iniciar Breeding",
+      "viewLineage": "Ver Linaje"
+    }
+  },
+  "profile": {
+    "title": "Mi Perfil",
+    "connected": "Conectado",
+    "disconnected": "Desconectado",
+    "stats": {
+      "agents": "Mis Agentes",
+      "breedings": "Breedings Realizados",
+      "generation": "Generación Más Alta"
+    },
+    "empty": {
+      "title": "Sin agentes todavía",
+      "description": "Conecta tu wallet y activa tu primer agente"
+    },
+    "cta": "Activar Primer Agente"
+  },
+  "agentDetail": {
+    "title": "Detalles del Agente",
+    "generation": "Generación",
+    "fitness": "Fitness",
+    "dna": "DNA Hash",
+    "owner": "Propietario",
+    "createdAt": "Creado",
+    "traits": "Traits",
+    "lineage": "Linaje",
+    "parents": "Padres",
+    "children": "Descendencia",
+    "actions": {
+      "breed": "Criar",
+      "transfer": "Transferir",
+      "viewOnChain": "Ver On-Chain"
+    }
+  },
+  "common": {
+    "loading": "Cargando...",
+    "error": "Error",
+    "retry": "Reintentar",
+    "cancel": "Cancelar",
+    "confirm": "Confirmar",
+    "save": "Guardar",
+    "close": "Cerrar",
+    "back": "Volver",
+    "next": "Siguiente",
+    "submit": "Enviar"
+  },
+  "languageSwitcher": {
+    "label": "Idioma",
+    "en": "English",
+    "es": "Español"
+  }
+}

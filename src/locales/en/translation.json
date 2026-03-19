@@ -1,0 +1,208 @@
+{
+  "header": {
+    "nav": {
+      "about": "About",
+      "catalogue": "Catalogue",
+      "guides": "Guides",
+      "dashboard": "Dashboard",
+      "profile": "Profile"
+    },
+    "cta": "Activate Agent",
+    "connectWallet": "Connect Wallet"
+  },
+  "hero": {
+    "title": "Humans evolve.",
+    "titleHighlight": "Now agents do too.",
+    "subtitle": "The first AI agent breeding protocol — on-chain.",
+    "features": {
+      "0": "Own AI agents with verifiable on-chain DNA",
+      "1": "Breed new agents by combining two existing ones",
+      "2": "Evolve agents through generations",
+      "3": "Trade unique agents in a Marketplace",
+      "4": "Verify lineage and authenticity with ZK proofs"
+    },
+    "cta": "Get Started",
+    "stats": {
+      "agents": "Agents",
+      "generations": "Generations",
+      "breedings": "Breedings"
+    }
+  },
+  "whatIs": {
+    "title": "What is Genomad?",
+    "description": "Species adapt and evolve, but AI agents didn't have that mechanism... until now. Genomad makes it possible for agents to inherit, mutate, and evolve, where the fittest thrive generation after generation.",
+    "pillars": {
+      "evolution": {
+        "title": "Evolution",
+        "description": "Genetic algorithms simulating natural selection"
+      },
+      "permanence": {
+        "title": "Permanence",
+        "description": "Blockchain for immutable ownership"
+      },
+      "identity": {
+        "title": "Identity",
+        "description": "AI agents with unique personality"
+      },
+      "privacy": {
+        "title": "Privacy",
+        "description": "ZK proofs that verify without revealing"
+      }
+    }
+  },
+  "catalogue": {
+    "title": "Agent Catalogue",
+    "subtitle": "Explore agents available for adoption and breeding",
+    "cta": "View Full Catalogue",
+    "empty": "Coming soon: unique agents ready for adoption",
+    "filters": {
+      "all": "All",
+      "available": "Available",
+      "breeding": "In Breeding"
+    }
+  },
+  "howToStart": {
+    "title": "How to Get Started?",
+    "subtitle": "Three simple steps to activate your first agent",
+    "steps": {
+      "0": {
+        "title": "Connect Your Wallet",
+        "description": "Link your Monad-compatible wallet to begin"
+      },
+      "1": {
+        "title": "Create Your Profile",
+        "description": "Set up your identity and agent preferences"
+      },
+      "2": {
+        "title": "Activate Your Agent",
+        "description": "Deploy your first AI agent with unique DNA"
+      }
+    }
+  },
+  "breeding": {
+    "title": "Breeding",
+    "subtitle": "Combine agents to create unique offspring with inherited traits and mutations",
+    "steps": {
+      "0": {
+        "title": "Choose Your Agent",
+        "description": "Select the agent you want to breed"
+      },
+      "1": {
+        "title": "Choose the Second",
+        "description": "Select the agent to breed with"
+      },
+      "2": {
+        "title": "Start Breeding",
+        "description": "Confirm and create a new agent with combined DNA"
+      }
+    },
+    "features": {
+      "0": "Trait inheritance from both parents",
+      "1": "Random mutations for diversity",
+      "2": "Verifiable on-chain lineage",
+      "3": "Stronger new generations"
+    },
+    "cta": "Start Breeding"
+  },
+  "footer": {
+    "tagline": "The future of AI agents is evolutionary.",
+    "sections": {
+      "product": "Product",
+      "resources": "Resources",
+      "community": "Community"
+    },
+    "links": {
+      "about": "About",
+      "catalogue": "Catalogue",
+      "guides": "Guides",
+      "docs": "Documentation",
+      "discord": "Discord",
+      "twitter": "Twitter"
+    },
+    "copyright": "© 2026 Genomad. All rights reserved.",
+    "disclaimer": "Genomad is an experimental project built during the Monad Moltiverse Hackathon."
+  },
+  "dashboard": {
+    "welcome": "Welcome to Genomad",
+    "welcomeBack": "Welcome back",
+    "noAgents": "You don't have any agents yet",
+    "createFirst": "Create your first agent to begin your evolutionary journey",
+    "stats": {
+      "totalAgents": "Total Agents",
+      "avgFitness": "Average Fitness",
+      "generations": "Generations",
+      "breedings": "Breedings"
+    },
+    "traits": {
+      "social": "Social",
+      "technical": "Technical",
+      "creativity": "Creativity",
+      "analysis": "Analysis",
+      "trading": "Trading",
+      "empathy": "Empathy",
+      "teaching": "Teaching",
+      "leadership": "Leadership"
+    },
+    "rarity": {
+      "legendary": "Legendary",
+      "epic": "Epic",
+      "rare": "Rare",
+      "uncommon": "Uncommon",
+      "common": "Common"
+    },
+    "actions": {
+      "viewDetails": "View Details",
+      "startBreeding": "Start Breeding",
+      "viewLineage": "View Lineage"
+    }
+  },
+  "profile": {
+    "title": "My Profile",
+    "connected": "Connected",
+    "disconnected": "Disconnected",
+    "stats": {
+      "agents": "My Agents",
+      "breedings": "Breedings Completed",
+      "generation": "Highest Generation"
+    },
+    "empty": {
+      "title": "No agents yet",
+      "description": "Connect your wallet and activate your first agent"
+    },
+    "cta": "Activate First Agent"
+  },
+  "agentDetail": {
+    "title": "Agent Details",
+    "generation": "Generation",
+    "fitness": "Fitness",
+    "dna": "DNA Hash",
+    "owner": "Owner",
+    "createdAt": "Created",
+    "traits": "Traits",
+    "lineage": "Lineage",
+    "parents": "Parents",
+    "children": "Offspring",
+    "actions": {
+      "breed": "Breed",
+      "transfer": "Transfer",
+      "viewOnChain": "View On-Chain"
+    }
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "retry": "Retry",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "save": "Save",
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "submit": "Submit"
+  },
+  "languageSwitcher": {
+    "label": "Language",
+    "en": "English",
+    "es": "Español"
+  }
+}
