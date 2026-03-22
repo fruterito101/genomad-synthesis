@@ -1,20 +1,20 @@
 // ============================================
-// CONTRACT ADDRESSES - Base Network
+// CONTRACT ADDRESSES - Base Mainnet (Deployed)
 // ============================================
 
 export const CONTRACTS = {
   testnet: {
-    // Base Sepolia - Deploy pending
+    // Base Sepolia
     genomadNFT: process.env.NEXT_PUBLIC_TESTNET_GENOMAD_NFT || "",
     breedingFactory: process.env.NEXT_PUBLIC_TESTNET_BREEDING_FACTORY || "",
     traitVerifier: process.env.NEXT_PUBLIC_TESTNET_TRAIT_VERIFIER || "",
     gmdToken: process.env.NEXT_PUBLIC_TESTNET_GMD_TOKEN || "",
   },
   mainnet: {
-    // Base Mainnet - Deploy pending for Synthesis Hackathon
-    genomadNFT: process.env.NEXT_PUBLIC_MAINNET_GENOMAD_NFT || "",
-    breedingFactory: process.env.NEXT_PUBLIC_MAINNET_BREEDING_FACTORY || "",
-    traitVerifier: process.env.NEXT_PUBLIC_MAINNET_TRAIT_VERIFIER || "",
+    // Base Mainnet - LIVE CONTRACTS
+    genomadNFT: "0x9f20494A0FbC929adAC553f4A2FCFa7D2b448Cf0",
+    breedingFactory: "0x74Bb441677b6E7de0d1FF75e0a3F766f5e8470db",
+    traitVerifier: "0x99D2090a76a1f3cfe79F6Fb3A01F7F23C0ECce7F",
     gmdToken: process.env.NEXT_PUBLIC_MAINNET_GMD_TOKEN || "",
   },
 } as const;
