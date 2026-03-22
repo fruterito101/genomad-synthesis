@@ -6,7 +6,8 @@ import dynamic from "next/dynamic";
 import { 
   Header, 
   Hero, 
-  WhatIsGenomad, 
+  WhatIsGenomad,
+  ContractsSection,
   AgentsCatalogue, 
   HowToStart, 
   Breeding, 
@@ -42,6 +43,7 @@ export default function Home() {
       <Hero />
       <InteractiveGlobe className="border-t border-border" />
       <WhatIsGenomad />
+      <ContractsSection />
       <AgentsCatalogue />
       <HowToStart />
       <Breeding />
