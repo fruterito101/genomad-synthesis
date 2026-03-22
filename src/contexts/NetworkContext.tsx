@@ -15,6 +15,7 @@ interface NetworkContextType {
     genomadNFT: string;
     breedingFactory: string;
     gmdToken: string;
+    reputationRegistry: string;
   };
   rpcUrl: string;
   publicClient: PublicClient;
