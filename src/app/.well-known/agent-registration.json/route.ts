@@ -1,0 +1,45 @@
+import { NextResponse } from "next/server";
+
+// ERC-8004 standard location for agent registration
+// /.well-known/agent-registration.json
+export async function GET() {
+  const agentRegistration = {
+    type: "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
+    name: "Genomad",
+    description: "AI agent identity infrastructure with genetic traits, on-chain breeding, ZK private traits verification, and multi-owner custody.",
+    image: "https://genomad-synthesis.vercel.app/logo.png",
+    services: [
+      {
+        name: "web",
+        endpoint: "https://genomad-synthesis.vercel.app/"
+      },
+      {
+        name: "GenomadNFT",
+        endpoint: "eip155:8453:0x9f20494A0FbC929adAC553f4A2FCFa7D2b448Cf0"
+      },
+      {
+        name: "BreedingFactory",
+        endpoint: "eip155:8453:0x74Bb441677b6E7de0d1FF75e0a3F766f5e8470db"
+      },
+      {
+        name: "TraitVerifier",
+        endpoint: "eip155:8453:0x99D2090a76a1f3cfe79F6Fb3A01F7F23C0ECce7F"
+      }
+    ],
+    active: true,
+    registrations: [
+      {
+        agentId: 35797,
+        agentRegistry: "eip155:8453:0x8004A169FB4a3325136EB29fA0ceB6D2e539a432"
+      }
+    ],
+    supportedTrust: ["reputation", "validation"]
+  };
+
+  return NextResponse.json(agentRegistration, {
+    headers: {
+      "Content-Type": "application/json",
+      "Cache-Control": "public, max-age=3600"
+    }
+  });
+}
