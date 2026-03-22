@@ -1,53 +1,34 @@
+import { base } from "viem/chains";
 import { defineChain } from "viem";
 
 // ============================================
-// MONAD TESTNET
+// BASE MAINNET (Primary for Synthesis Hackathon)
 // ============================================
-export const monadTestnet = defineChain({
-  id: 10143,
-  name: "Monad Testnet",
+export const baseMainnet = base;
+
+// ============================================
+// BASE SEPOLIA TESTNET
+// ============================================
+export const baseTestnet = defineChain({
+  id: 84532,
+  name: "Base Sepolia",
   nativeCurrency: {
     decimals: 18,
-    name: "Monad",
-    symbol: "MON",
+    name: "Ethereum",
+    symbol: "ETH",
   },
   rpcUrls: {
     default: {
-      http: ["https://testnet-rpc.monad.xyz"],
+      http: ["https://sepolia.base.org"],
     },
   },
   blockExplorers: {
     default: { 
-      name: "Monad Explorer", 
-      url: "https://testnet.monadexplorer.com" 
+      name: "BaseScan", 
+      url: "https://sepolia.basescan.org" 
     },
   },
   testnet: true,
-});
-
-// ============================================
-// MONAD MAINNET
-// ============================================
-export const monadMainnet = defineChain({
-  id: 1, // TODO: Actualizar con el chainId real de Monad Mainnet cuando se lance
-  name: "Monad",
-  nativeCurrency: {
-    decimals: 18,
-    name: "Monad",
-    symbol: "MON",
-  },
-  rpcUrls: {
-    default: {
-      http: ["https://rpc.monad.xyz"],
-    },
-  },
-  blockExplorers: {
-    default: { 
-      name: "Monad Explorer", 
-      url: "https://monadexplorer.com" 
-    },
-  },
-  testnet: false,
 });
 
 // ============================================
@@ -57,15 +38,15 @@ export const monadMainnet = defineChain({
 // Default: testnet
 const isMainnet = process.env.NEXT_PUBLIC_NETWORK === "mainnet";
 
-export const activeChain = isMainnet ? monadMainnet : monadTestnet;
+export const activeChain = isMainnet ? baseMainnet : baseTestnet;
 
 // Export both for flexibility
 export const chains = {
-  testnet: monadTestnet,
-  mainnet: monadMainnet,
+  testnet: baseTestnet,
+  mainnet: baseMainnet,
 };
 
 // Helper to get chain by network name
 export function getChain(network: "testnet" | "mainnet") {
-  return network === "mainnet" ? monadMainnet : monadTestnet;
+  return network === "mainnet" ? baseMainnet : baseTestnet;
 }

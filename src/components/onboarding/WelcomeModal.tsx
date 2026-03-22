@@ -41,8 +41,8 @@ export function WelcomeModal({ isOpen, onClose, onStartOnboarding }: WelcomeModa
     },
     {
       icon: Zap,
-      title: "On-Chain en Monad",
-      description: "Tus agentes viven como NFTs en Monad blockchain. Datos verificables, propiedad real.",
+      title: "On-Chain en Base",
+      description: "Tus agentes viven como NFTs en Base blockchain. Datos verificables, propiedad real.",
       color: "from-orange-500 to-yellow-500",
     },
   ];

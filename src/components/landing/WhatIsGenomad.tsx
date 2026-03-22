@@ -31,7 +31,7 @@ export function WhatIsGenomad() {
     { 
       icon: Shield, 
       title: i18n.language === "es" ? "On-Chain" : "On-Chain",
-      desc: i18n.language === "es" ? "Verificable en Monad blockchain" : "Verifiable on Monad blockchain",
+      desc: i18n.language === "es" ? "Verificable en Base blockchain" : "Verifiable on Base blockchain",
       color: "text-emerald-500"
     },
   ];

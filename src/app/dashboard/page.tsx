@@ -137,7 +137,7 @@ export default function DashboardPage() {
               transition={{ delay: 0.2 }}
             >
               <Zap className="w-4 h-4 text-primary" />
-              <span className="text-sm text-muted-foreground">Built on Monad</span>
+              <span className="text-sm text-muted-foreground">Built on Base</span>
             </motion.div>
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
               <span className="text-foreground">{isEs ? "Evoluciona tu " : "Evolve your "}</span>

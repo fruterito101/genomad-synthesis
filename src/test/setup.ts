@@ -62,13 +62,13 @@ vi.mock("@/contexts/NetworkContext", () => ({
   useNetwork: () => ({
     network: "testnet",
     switchNetwork: vi.fn(),
-    chain: { id: 10143, name: "Monad Testnet" },
+    chain: { id: 8453, name: "Base Sepolia" },
     contracts: {
       genomadNFT: "0x9f20494A0FbC929adAC553f4A2FCFa7D2b448Cf0",
       breedingFactory: "0x72D60f32185B67606a533dc28DeC3f88E05788De",
       gmdToken: "0x03DD45bA22F57b715a2F30C3C945E57DA0AC7777",
     },
-    rpcUrl: "https://testnet-rpc.monad.xyz",
+    rpcUrl: "https://sepolia.base.org",
     isMainnet: false,
     isTestnet: true,
   }),

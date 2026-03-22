@@ -231,7 +231,7 @@ export async function notifyAgentActivated(
     userId: targetUserId,
     type: "agent_activated",
     title: "Agente Activado On-Chain ⛓️",
-    message: `Tu agente "${agentName}" ahora está activo en Monad. Token ID: ${tokenId}`,
+    message: `Tu agente "${agentName}" ahora está activo en Base. Token ID: ${tokenId}`,
     priority: "high",
     metadata: { agentName, agentId, tokenId, txHash },
   });

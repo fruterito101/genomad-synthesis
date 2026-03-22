@@ -1,21 +1,26 @@
 // ============================================
-// CONTRACT ADDRESSES - Deployed 2026-03-01
+// CONTRACT ADDRESSES - Base Network
 // ============================================
 
 export const CONTRACTS = {
   testnet: {
-    genomadNFT: "0x190fd355ED38e82a2390C07222C4BcB4DbC4cD20",
-    breedingFactory: "0x2703fb336139292c7ED854061072e316727ED7fA",
-    traitVerifier: "0xaccaE8B19AD67df4Ce91638855c9B41A5Da90be3",
+    // Base Sepolia - Deploy pending
+    genomadNFT: process.env.NEXT_PUBLIC_TESTNET_GENOMAD_NFT || "",
+    breedingFactory: process.env.NEXT_PUBLIC_TESTNET_BREEDING_FACTORY || "",
+    traitVerifier: process.env.NEXT_PUBLIC_TESTNET_TRAIT_VERIFIER || "",
     gmdToken: process.env.NEXT_PUBLIC_TESTNET_GMD_TOKEN || "",
   },
   mainnet: {
+    // Base Mainnet - Deploy pending for Synthesis Hackathon
     genomadNFT: process.env.NEXT_PUBLIC_MAINNET_GENOMAD_NFT || "",
     breedingFactory: process.env.NEXT_PUBLIC_MAINNET_BREEDING_FACTORY || "",
     traitVerifier: process.env.NEXT_PUBLIC_MAINNET_TRAIT_VERIFIER || "",
     gmdToken: process.env.NEXT_PUBLIC_MAINNET_GMD_TOKEN || "",
   },
 } as const;
+
+// ERC-8004 Identity Registry on Base Mainnet
+export const ERC8004_REGISTRY = "0x8004A169FB4a3325136EB29fA0ceB6D2e539a432";
 
 // Get contracts for specific network
 export function getContracts(network: "testnet" | "mainnet") {

@@ -31,7 +31,7 @@ Actualmente Genomad:
 │            │                                             │
 │            ▼                                             │
 │   ┌─────────────────┐                                   │
-│   │ 2. Mint NFT     │  ← on-chain (Monad)              │
+│   │ 2. Mint NFT     │  ← on-chain (Base)              │
 │   └────────┬────────┘                                   │
 │            │                                             │
 │            ▼                                             │

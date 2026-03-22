@@ -134,7 +134,7 @@ export function ActivateAgentButton({
         return (
           <>
             <Zap className="w-4 h-4" />
-            {isEs ? "Activar en Monad" : "Activate on Monad"}
+            {isEs ? "Activar en Base" : "Activate on Base"}
           </>
         );
     }

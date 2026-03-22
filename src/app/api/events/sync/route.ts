@@ -15,7 +15,7 @@ import { processEvents } from "@/lib/blockchain/events/handlers";
 let lastSyncedBlock: bigint | null = null;
 let lastSyncTime: Date | null = null;
 
-// Default block range to look back (about 1 hour on Monad)
+// Default block range to look back (about 1 hour on Base)
 const DEFAULT_BLOCK_LOOKBACK = BigInt(1800);
 // Max blocks per request (to avoid timeout)
 const MAX_BLOCKS_PER_SYNC = BigInt(1000);

@@ -463,7 +463,7 @@ Actualizar flujo de breeding para usar ZK proofs.
 **Tiempo:** 6-8h | **Estado:** ⬜
 
 **Descripción:**
-Crear plugin de OpenClaw que lee agentes desde Monad en lugar de archivos locales.
+Crear plugin de OpenClaw que lee agentes desde Base en lugar de archivos locales.
 
 **Estructura:**
 ```
@@ -507,7 +507,7 @@ export async function loadAgentFromChain(
 ```
 
 **Criterios de aceptación:**
-- [ ] Lee datos de Monad correctamente
+- [ ] Lee datos de Base correctamente
 - [ ] Verifica custodia antes de desencriptar
 - [ ] Desencripta con wallet del usuario
 - [ ] Configura OpenClaw en memoria (no archivos)
@@ -623,5 +623,5 @@ Tests end-to-end del flujo completo.
 
 ---
 
-*Última actualización: 2026-02-28*
+*Última actualización: *
 *Autor: Fruterito + Brian*

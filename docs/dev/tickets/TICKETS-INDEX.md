@@ -1,6 +1,6 @@
 # 🎯 TICKETS DE DESARROLLO - Genomad
 
-> Última actualización: 2026-02-27
+> Última actualización: 
 > Total estimado: 45-55 horas
 
 ---
@@ -35,7 +35,7 @@ Lo que hace único a Genomad: agentes bred = agentes REALES.
 
 ## 🔗 FASE 2: Web3 Integration
 
-Conectar con blockchain (Monad).
+Conectar con blockchain (Base).
 
 | # | Ticket | Tiempo | Estado |
 |---|--------|--------|--------|

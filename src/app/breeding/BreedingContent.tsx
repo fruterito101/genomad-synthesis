@@ -378,7 +378,7 @@ export default function BreedingContent() {
               <motion.div className="mt-6 sm:mt-8 p-4 rounded-xl bg-amber-500/10 border border-amber-500/30" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                 <p className="text-sm font-medium mb-3 text-amber-500 flex items-center gap-2">
                   <Zap className="w-4 h-4" />
-                  Activa tus agentes en Monad para hacer breeding
+                  Activa tus agentes en Base para hacer breeding
                 </p>
                 <div className="flex flex-col sm:flex-row gap-3">
                   {!parentA.tokenId && (

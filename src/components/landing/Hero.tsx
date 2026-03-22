@@ -37,7 +37,7 @@ export function Hero() {
             >
               <Badge variant="outline" className="border-primary text-primary">
                 <Sparkles className="w-3 h-3 mr-1" />
-                {i18n.language === "es" ? "Beta en Monad Testnet" : "Beta on Monad Testnet"}
+                {i18n.language === "es" ? "Beta en Base Sepolia" : "Beta on Base Sepolia"}
               </Badge>
             </motion.div>
 

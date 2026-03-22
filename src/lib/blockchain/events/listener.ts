@@ -3,12 +3,12 @@
 // Uses polling approach compatible with Vercel serverless
 
 import { createPublicClient, http, parseAbiItem, type Log } from "viem";
-import { monadTestnet } from "@/lib/blockchain/chains";
+import { baseTestnet } from "@/lib/blockchain/chains";
 import { CONTRACTS } from "@/lib/blockchain/contracts";
 
 // Public client for reading from chain
 export const publicClient = createPublicClient({
-  chain: monadTestnet,
+  chain: baseTestnet,
   transport: http(),
 });
 

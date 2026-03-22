@@ -130,4 +130,4 @@ FASE 4 (validación)
 
 ---
 
-**Creado:** 2026-02-17 | **Autor:** Fruterito 🍓
+**Creado:**  | **Autor:** Fruterito 🍓

@@ -170,8 +170,8 @@ export function ActivateAgentModal({
         icon: <Loader2 className="w-6 h-6 animate-spin" />,
         title: isEs ? "Firma la Transacción" : "Sign the Transaction",
         desc: isEs
-          ? "Confirma en tu wallet para registrar el agente en Monad"
-          : "Confirm in your wallet to register the agent on Monad",
+          ? "Confirma en tu wallet para registrar el agente en Base"
+          : "Confirm in your wallet to register the agent on Base",
         color: "text-orange-400",
       },
       confirming: {
@@ -233,7 +233,7 @@ export function ActivateAgentModal({
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-bold flex items-center gap-2">
               <Zap className="w-5 h-5 text-primary" />
-              {isEs ? "Activar en Monad" : "Activate on Monad"}
+              {isEs ? "Activar en Base" : "Activate on Base"}
             </h2>
             {!isProcessing && (
               <button onClick={onClose} className="text-gray-400 hover:text-white">
@@ -312,7 +312,7 @@ export function ActivateAgentModal({
               </div>
               <div className="flex items-center gap-3 text-sm text-gray-300">
                 <Dna className="w-4 h-4 text-primary" />
-                <span>{isEs ? "NFT único en Monad" : "Unique NFT on Monad"}</span>
+                <span>{isEs ? "NFT único en Base" : "Unique NFT on Base"}</span>
               </div>
             </div>
           )}

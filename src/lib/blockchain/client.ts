@@ -1,29 +1,30 @@
 // src/lib/blockchain/client.ts
 import { createPublicClient, createWalletClient, http } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { monadTestnet, monadMainnet, activeChain } from "./chains";
+import { base } from "viem/chains";
+import { baseTestnet, baseMainnet, activeChain } from "./chains";
 
 // ============================================
 // RPC URLs
 // ============================================
-const TESTNET_RPC = process.env.NEXT_PUBLIC_TESTNET_RPC || "https://testnet-rpc.monad.xyz";
-const MAINNET_RPC = process.env.NEXT_PUBLIC_MAINNET_RPC || "https://rpc.monad.xyz";
+const TESTNET_RPC = process.env.NEXT_PUBLIC_TESTNET_RPC || "https://sepolia.base.org";
+const MAINNET_RPC = process.env.NEXT_PUBLIC_MAINNET_RPC || "https://mainnet.base.org";
 
 // Get RPC for active chain
 function getActiveRPC() {
-  return activeChain.id === monadMainnet.id ? MAINNET_RPC : TESTNET_RPC;
+  return activeChain.id === baseMainnet.id ? MAINNET_RPC : TESTNET_RPC;
 }
 
 // ============================================
 // PUBLIC CLIENTS (Read operations)
 // ============================================
 export const publicClientTestnet = createPublicClient({
-  chain: monadTestnet,
+  chain: baseTestnet,
   transport: http(TESTNET_RPC),
 });
 
 export const publicClientMainnet = createPublicClient({
-  chain: monadMainnet,
+  chain: baseMainnet,
   transport: http(MAINNET_RPC),
 });
 
@@ -33,50 +34,44 @@ export const publicClient = createPublicClient({
   transport: http(getActiveRPC()),
 });
 
-// Get public client by network
-export function getPublicClient(network: "testnet" | "mainnet") {
-  return network === "mainnet" ? publicClientMainnet : publicClientTestnet;
-}
-
 // ============================================
-// WALLET CLIENT (Write operations - server-side)
+// WALLET CLIENT (Write operations - server-side only)
 // ============================================
-export function createDeployerClient(network?: "testnet" | "mainnet") {
-  const privateKey = process.env.DEPLOYER_PRIVATE_KEY;
-  if (!privateKey) {
-    throw new Error("DEPLOYER_PRIVATE_KEY not set");
+const getPrivateKey = () => {
+  const key = process.env.PRIVATE_KEY;
+  if (!key) {
+    throw new Error("PRIVATE_KEY not set in environment");
   }
+  return key as `0x${string}`;
+};
 
-  const account = privateKeyToAccount(`0x${privateKey.replace("0x", "")}`);
-  const chain = network === "mainnet" ? monadMainnet : 
-                network === "testnet" ? monadTestnet : activeChain;
-  const rpc = network === "mainnet" ? MAINNET_RPC : 
-              network === "testnet" ? TESTNET_RPC : getActiveRPC();
+// Lazy-loaded wallet client (only when needed for writes)
+let _walletClient: ReturnType<typeof createWalletClient> | null = null;
 
-  return createWalletClient({
-    account,
-    chain,
-    transport: http(rpc),
-  });
+export function getWalletClient() {
+  if (!_walletClient) {
+    const account = privateKeyToAccount(getPrivateKey());
+    _walletClient = createWalletClient({
+      account,
+      chain: activeChain,
+      transport: http(getActiveRPC()),
+    });
+  }
+  return _walletClient;
 }
 
 // ============================================
 // HELPERS
 // ============================================
-export function getDeployerAddress(): string {
-  const privateKey = process.env.DEPLOYER_PRIVATE_KEY;
-  if (!privateKey) {
-    throw new Error("DEPLOYER_PRIVATE_KEY not set");
-  }
-
-  const account = privateKeyToAccount(`0x${privateKey.replace("0x", "")}`);
-  return account.address;
+export function getPublicClient(network: "testnet" | "mainnet") {
+  return network === "mainnet" ? publicClientMainnet : publicClientTestnet;
 }
 
-export function isMainnet(): boolean {
-  return activeChain.id === monadMainnet.id;
+export function getRpcUrl(network: "testnet" | "mainnet") {
+  return network === "mainnet" ? MAINNET_RPC : TESTNET_RPC;
 }
 
-export function isTestnet(): boolean {
-  return activeChain.id === monadTestnet.id;
-}
+// Export chain info
+export { activeChain };
+export const CHAIN_ID = activeChain.id;
+export const CHAIN_NAME = activeChain.name;

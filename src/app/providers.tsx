@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { PrivyProvider } from "@privy-io/react-auth";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { WagmiProvider } from "wagmi";
-import { monadTestnet, monadMainnet } from "@/lib/blockchain/chains";
+import { baseTestnet, baseMainnet } from "@/lib/blockchain/chains";
 import { wagmiConfig } from "@/lib/wagmi/config";
 import { I18nProvider } from "@/i18n";
 import { NetworkProvider } from "@/contexts/NetworkContext";
@@ -13,14 +13,14 @@ const queryClient = new QueryClient();
 
 // Get initial chain from localStorage (client-side only)
 function getInitialChain() {
-  if (typeof window === "undefined") return monadTestnet;
+  if (typeof window === "undefined") return baseTestnet;
   const saved = localStorage.getItem("genomad-network");
-  return saved === "mainnet" ? monadMainnet : monadTestnet;
+  return saved === "mainnet" ? baseMainnet : baseTestnet;
 }
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [mounted, setMounted] = useState(false);
-  const [currentChain, setCurrentChain] = useState(monadTestnet);
+  const [currentChain, setCurrentChain] = useState(baseTestnet);
   const appId = process.env.NEXT_PUBLIC_PRIVY_APP_ID;
 
   useEffect(() => {
@@ -31,7 +31,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
     // Listen for network changes
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === "genomad-network") {
-        setCurrentChain(e.newValue === "mainnet" ? monadMainnet : monadTestnet);
+        setCurrentChain(e.newValue === "mainnet" ? baseMainnet : baseTestnet);
       }
     };
     
@@ -86,7 +86,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
                 },
                 // Soporta AMBAS redes - default es la seleccionada
                 defaultChain: currentChain,
-                supportedChains: [monadTestnet, monadMainnet],
+                supportedChains: [baseTestnet, baseMainnet],
               }}
             >
               {children}

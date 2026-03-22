@@ -9,12 +9,12 @@ import { db } from "@/lib/db";
 import { breedingRequests } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { createPublicClient, http } from "viem";
-import { monadTestnet } from "@/lib/blockchain/chains";
+import { baseTestnet } from "@/lib/blockchain/chains";
 import { CONTRACTS, BREEDING_FACTORY_ABI } from "@/lib/blockchain/contracts";
 
 // Public client for reading from chain
 const publicClient = createPublicClient({
-  chain: monadTestnet,
+  chain: baseTestnet,
   transport: http(),
 });
 

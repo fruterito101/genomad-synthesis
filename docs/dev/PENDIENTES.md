@@ -1,6 +1,6 @@
 # 📋 PENDIENTES - Genomad Backend
 
-> Última actualización: 2026-02-27 20:37 UTC
+> Última actualización:  20:37 UTC
 > Rama: dev
 
 ---
@@ -24,7 +24,7 @@
 
 | # | Tarea | Detalle | Estado |
 |---|-------|---------|--------|
-| 7 | **Config Chain** | Cambiar Sepolia → Monad | ✅ Completo |
+| 7 | **Config Chain** | Cambiar Sepolia → Base | ✅ Completo |
 | 8 | **Hooks Usuario** | useRegisterAgent, useBreeding (user firma TX) | ❌ Pendiente |
 | 9 | **Sync DB ↔ Chain** | Acciones DB llamen contratos | ❌ Pendiente |
 | 10 | **Event Listeners** | Escuchar eventos on-chain | ❌ Pendiente |
@@ -53,7 +53,7 @@
 - [x] Custody/Co-owners
 - [x] Heuristics
 - [x] Crypto (commitment, signatures)
-- [x] Contratos deployados (Monad testnet)
+- [x] Contratos deployados (Base)
 - [x] Spec Multi-Agent
 
 ---

@@ -3,7 +3,7 @@
 ## Overview
 
 FASE 4 implementa la arquitectura completa on-chain para Genomad:
-- **Full on-chain storage**: SOUL.md e IDENTITY.md encriptados en Monad
+- **Full on-chain storage**: SOUL.md e IDENTITY.md encriptados en Base
 - **ZK Proofs**: RISC Zero para verificación de traits, breeding, custody
 - **Custody System**: Propiedad compartida con thresholds
 - **Breeding**: Reproducción genética con ZK verification
@@ -102,7 +102,7 @@ FASE 4 implementa la arquitectura completa on-chain para Genomad:
 | `/genomad-approve-breeding <id>` | Approve breeding |
 | `/genomad-reject-breeding <id>` | Reject breeding |
 | `/genomad-check-pending` | Pending requests |
-| `/genomad-sync` | Sync to Monad |
+| `/genomad-sync` | Sync to Base |
 
 ## Files Created
 
@@ -148,7 +148,7 @@ FASE 4 implementa la arquitectura completa on-chain para Genomad:
 
 ## Deploy Checklist
 
-- [ ] Deploy RiscZeroVerifierRouter on Monad (~-7)
+- [ ] Deploy RiscZeroVerifierRouter on Base (~-7)
 - [ ] Deploy GenomadNFT with verifier address
 - [ ] Deploy BreedingFactory with NFT address
 - [ ] Update contract addresses in frontend
@@ -157,7 +157,7 @@ FASE 4 implementa la arquitectura completa on-chain para Genomad:
 
 ## UX Golden Rule
 
-> Usuario solo ve Activar en Monad → Firma → Listo
+> Usuario solo ve Activar en Base → Firma → Listo
 > CERO complejidad técnica visible
 
 ---

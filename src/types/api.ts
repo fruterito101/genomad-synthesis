@@ -129,7 +129,7 @@ export interface MarketplaceItem {
   agent: Agent;
   type: "breeding" | "rental" | "sale";
   price: string;
-  currency: "GENO" | "MON";
+  currency: "GENO" | "ETH";
   availableUntil?: Date;
   owner: {
     id: string;

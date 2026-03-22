@@ -10,7 +10,7 @@ const KEYWORDS = {
     // Frameworks
     "react", "nextjs", "nodejs", "express", "fastapi", "django",
     // Blockchain
-    "smart contract", "web3", "ethereum", "monad", "blockchain", "evm", "hardhat", "foundry",
+    "smart contract", "web3", "ethereum", "base", "blockchain", "evm", "hardhat", "foundry",
     // DevOps
     "docker", "kubernetes", "aws", "gcp", "azure", "github actions",
     // Databases

@@ -243,8 +243,8 @@ export function BreedingExecuteModal({
         icon: <Loader2 className="w-6 h-6 animate-spin" />,
         title: isEs ? "Confirmando..." : "Confirming...",
         desc: isEs
-          ? "Esperando confirmación de Monad"
-          : "Waiting for Monad confirmation",
+          ? "Esperando confirmación de Base"
+          : "Waiting for Base confirmation",
         color: "text-yellow-400",
       },
       minting: {

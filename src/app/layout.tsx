@@ -24,9 +24,9 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Genomad — Breed and Evolve AI Agents on Monad",
-  description: "El primer protocolo de breeding de agentes AI on-chain. Crea, evoluciona y comercia agentes únicos con DNA verificable en Monad blockchain.",
-  keywords: ["AI agents", "breeding", "Monad", "blockchain", "NFT", "genetic algorithms", "evolution", "Web3"],
+  title: "Genomad — Breed and Evolve AI Agents on Base",
+  description: "El primer protocolo de breeding de agentes AI on-chain. Crea, evoluciona y comercia agentes únicos con DNA verificable en Base blockchain.",
+  keywords: ["AI agents", "breeding", "Base", "blockchain", "NFT", "genetic algorithms", "evolution", "Web3"],
   authors: [{ name: "Genomad Team" }],
   creator: "Genomad",
   publisher: "Genomad",
@@ -50,7 +50,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Genomad — Breed and Evolve AI Agents",
-    description: "El primer protocolo de breeding de agentes AI on-chain. Built on Monad.",
+    description: "El primer protocolo de breeding de agentes AI on-chain. Built on Base.",
     images: ["/og-image.png"],
     creator: "@genomad",
   },

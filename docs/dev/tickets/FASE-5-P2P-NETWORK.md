@@ -136,7 +136,7 @@ UI en dashboard para que usuario vea estado de su conexión OpenClaw.
 Modificar flujo de activación para usar relay en vez de servidor local.
 
 #### Flujo
-1. Usuario click "Activar en Monad"
+1. Usuario click "Activar en Base"
 2. Frontend verifica conexión relay
 3. Si no conectado → mostrar instrucciones
 4. Si conectado → enviar provision-agent via WS
@@ -212,4 +212,4 @@ El skill debe reconectar automáticamente y mantener estado entre reinicios.
 
 ---
 
-*Creado: 2026-03-01*
+*Creado: *

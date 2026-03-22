@@ -2,7 +2,7 @@
 
 > Prioridad: Alta
 > Estimación total: 12-16 horas
-> Conectar la plataforma con blockchain (Monad)
+> Conectar la plataforma con blockchain (Base)
 
 ---
 
@@ -22,7 +22,7 @@ Actualmente las acciones se guardan solo en DB. Esta fase conecta con los smart 
 **Dependencias:** Ninguna
 
 #### Descripción
-Corregir la configuración de chain: actualmente apunta a Sepolia pero los contratos están en Monad testnet.
+Corregir la configuración de chain: actualmente apunta a Sepolia pero los contratos están en Base.
 
 #### Archivos a modificar
 ```
@@ -40,8 +40,8 @@ src/app/providers.tsx
 - NEXT_PUBLIC_CHAIN_ID=11155111
 - NEXT_PUBLIC_CHAIN_NAME=Sepolia
 + NEXT_PUBLIC_CHAIN_RPC=https://testnet-rpc.monad.xyz
-+ NEXT_PUBLIC_CHAIN_ID=10143
-+ NEXT_PUBLIC_CHAIN_NAME=Monad Testnet
++ NEXT_PUBLIC_CHAIN_ID=8453
++ NEXT_PUBLIC_CHAIN_NAME=Base
 ```
 
 **src/lib/wagmi/config.ts:**
@@ -73,7 +73,7 @@ export const wagmiConfig = createConfig({
 ```
 
 #### Criterios de Aceptación
-- [ ] .env.local apunta a Monad
+- [ ] .env.local apunta a Base
 - [ ] wagmi config usa monadTestnet
 - [ ] Privy config usa monadTestnet
 - [ ] Conexión a RPC funciona
@@ -232,7 +232,7 @@ src/lib/blockchain/
 | BreedingCancelled | Actualizar status |
 
 #### Criterios de Aceptación
-- [ ] Listener conecta a Monad RPC
+- [ ] Listener conecta a Base RPC
 - [ ] Procesa eventos correctamente
 - [ ] Actualiza DB según evento
 - [ ] Maneja reconexiones

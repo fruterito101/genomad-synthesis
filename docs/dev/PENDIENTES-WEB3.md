@@ -1,13 +1,13 @@
 # 🔗 PENDIENTES WEB3 - Genomad
 
-> Última actualización: 2026-02-27
+> Última actualización: 
 > Todo lo necesario para pasar de Web2.5 → Web3
 
 ---
 
 ## 📍 ESTADO ACTUAL
 
-### Contratos Deployados (Monad Testnet)
+### Contratos Deployados (Base)
 
 | Contrato | Address | Status |
 |----------|---------|--------|
@@ -15,7 +15,7 @@
 | **BreedingFactory** | `0x72D60f32185B67606a533dc28DeC3f88E05788De` | ✅ Deployed |
 | **$GMD Token** | `0x03DD45bA22F57b715a2F30C3C945E57DA0AC7777` | ✅ Deployed |
 
-**Network:** Monad Testnet (Chain ID: 10143)
+**Network:** Base (Chain ID: 8453)
 **RPC:** `https://testnet-rpc.monad.xyz`
 
 ---
@@ -24,11 +24,11 @@
 
 ### 1. Config de Chain Incorrecta
 
-**Problema:** El código apunta a Sepolia pero los contratos están en Monad.
+**Problema:** El código apunta a Sepolia pero los contratos están en Base.
 
 | Archivo | Actual | Debe ser |
 |---------|--------|----------|
-| `.env.local` | `CHAIN_ID=11155111` (Sepolia) | `CHAIN_ID=10143` (Monad) |
+| `.env.local` | `CHAIN_ID=11155111` (Sepolia) | `CHAIN_ID=8453` (Base) |
 | `src/lib/wagmi/config.ts` | `sepoliaTestnet` | `monadTestnet` |
 | `src/app/providers.tsx` | `defaultChain: sepoliaTestnet` | `defaultChain: monadTestnet` |
 
@@ -124,8 +124,8 @@ event BreedingCancelled(uint256 indexed requestId);
 **Archivo actual:**
 ```typescript
 export const monadTestnet = {
-  id: 10143,
-  name: "Monad Testnet",
+  id: 8453,
+  name: "Base",
   // ...
 }
 ```
@@ -148,7 +148,7 @@ export const monadTestnet = {
 - `getBreedingRequest(requestId)`
 
 **Pendiente:**
-- [ ] Verificar que funcionen con Monad RPC
+- [ ] Verificar que funcionen con Base RPC
 - [ ] Crear hooks de React para usarlas
 
 ---
@@ -156,7 +156,7 @@ export const monadTestnet = {
 ## 🛠️ PLAN DE IMPLEMENTACIÓN
 
 ### Fase 1: Config Correcta (1-2 horas)
-1. Cambiar `.env.local` a Monad
+1. Cambiar `.env.local` a Base
 2. Actualizar `wagmi/config.ts`
 3. Actualizar `providers.tsx`
 4. Verificar conexión
@@ -172,7 +172,7 @@ export const monadTestnet = {
 3. Handlers de reconciliación
 
 ### Fase 4: Testing (2-3 horas)
-1. Test de conexión a Monad
+1. Test de conexión a Base
 2. Test de cada función de contrato
 3. Test de flujo completo de breeding
 
@@ -182,7 +182,7 @@ export const monadTestnet = {
 
 ```
 src/lib/blockchain/
-├── chains.ts       ← Definición de Monad testnet
+├── chains.ts       ← Definición de Base
 ├── client.ts       ← Public + Wallet clients
 ├── contracts.ts    ← ABIs y addresses
 ├── read.ts         ← Funciones de lectura
@@ -214,7 +214,7 @@ src/hooks/
 
 ## 📝 NOTAS
 
-### Monad Específico
+### Base Específico
 - RPC puede ser lento a veces
 - Block time ~1s
 - Gas muy bajo
@@ -230,7 +230,7 @@ src/hooks/
 
 Antes de considerar Web3 completo:
 
-- [ ] Config apunta a Monad testnet
+- [ ] Config apunta a Base
 - [ ] Usuario puede conectar wallet
 - [ ] Usuario puede registrar agente (firma TX)
 - [ ] Usuario puede request breeding (paga fee)

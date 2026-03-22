@@ -32,7 +32,7 @@ const TUTORIAL_VIDEOS = {
   activate: {
     id: "dQw4w9WgXcQ",
     title: "Activar tu Agente On-Chain",
-    description: "Guía para activar en Monad",
+    description: "Guía para activar en Base",
   },
 };
 

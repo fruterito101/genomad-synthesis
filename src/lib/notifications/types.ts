@@ -164,7 +164,7 @@ export const NOTIFICATION_TEMPLATES: Record<NotificationType, Omit<NotificationT
   },
   agent_activated: {
     titleTemplate: "Agente Activado On-Chain ⛓️",
-    messageTemplate: "Tu agente \"{agentName}\" ahora está activo en Monad. Token ID: {tokenId}",
+    messageTemplate: "Tu agente \"{agentName}\" ahora está activo en Base. Token ID: {tokenId}",
     priority: "high",
   },
   agent_transferred: {

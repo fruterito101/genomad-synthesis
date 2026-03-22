@@ -107,7 +107,7 @@ export function AgentCard({
     viewDetails: "Ver Detalles", 
     active: "Activo", 
     inactive: "Off",
-    activate: "Activar Monad",
+    activate: "Activar Base",
     onChain: "On-Chain"
   },
 }: AgentCardProps) {
@@ -313,7 +313,7 @@ export function AgentCard({
                 <Eye className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />{labels.viewDetails}
               </Button>
               
-              {/* Activate on Monad Button - Orange if not on-chain */}
+              {/* Activate on Base Button - Orange if not on-chain */}
               {!isOnChain && agent.dnaHash && (
                 <Button 
                   size="sm" 

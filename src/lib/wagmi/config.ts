@@ -1,21 +1,22 @@
 import { createConfig, http } from "wagmi";
-import { monadTestnet, monadMainnet, activeChain } from "@/lib/blockchain/chains";
+import { base } from "viem/chains";
+import { baseTestnet, baseMainnet, activeChain } from "@/lib/blockchain/chains";
 
 // ============================================
-// WAGMI CONFIG - Soporte Testnet + Mainnet
+// WAGMI CONFIG - Base Testnet + Mainnet
 // ============================================
 export const wagmiConfig = createConfig({
-  chains: [monadTestnet, monadMainnet],
+  chains: [baseTestnet, baseMainnet],
   transports: {
-    [monadTestnet.id]: http(
-      process.env.NEXT_PUBLIC_TESTNET_RPC || "https://testnet-rpc.monad.xyz"
+    [baseTestnet.id]: http(
+      process.env.NEXT_PUBLIC_TESTNET_RPC || "https://sepolia.base.org"
     ),
-    [monadMainnet.id]: http(
-      process.env.NEXT_PUBLIC_MAINNET_RPC || "https://rpc.monad.xyz"
+    [baseMainnet.id]: http(
+      process.env.NEXT_PUBLIC_MAINNET_RPC || "https://mainnet.base.org"
     ),
   },
   ssr: true,
 });
 
 // Re-export chains
-export { monadTestnet, monadMainnet, activeChain } from "@/lib/blockchain/chains";
+export { baseTestnet, baseMainnet, activeChain } from "@/lib/blockchain/chains";

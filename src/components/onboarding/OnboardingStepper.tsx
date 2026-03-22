@@ -53,7 +53,7 @@ export function OnboardingStepper({ onComplete, currentStep = 0 }: OnboardingSte
     {
       id: "activate",
       title: "Activa On-Chain",
-      description: "Mint tu agente como NFT en Monad",
+      description: "Mint tu agente como NFT en Base",
       icon: Zap,
       isCompleted: false,
       isActive: activeStep === 2,
@@ -335,7 +335,7 @@ function StepActivate({ onComplete }: { onComplete: () => void }) {
       
       <h3 className="text-xl font-semibold mb-2">Activa tu Agente On-Chain</h3>
       <p className="text-muted-foreground mb-6 max-w-sm mx-auto">
-        Convierte tu agente en un NFT en Monad blockchain. Esto requiere una pequeña cantidad de MON para gas.
+        Convierte tu agente en un NFT en Base blockchain. Esto requiere una pequeña cantidad de MON para gas.
       </p>
 
       <div className="space-y-3 max-w-sm mx-auto text-left mb-6">

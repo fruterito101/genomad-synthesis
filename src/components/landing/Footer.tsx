@@ -17,7 +17,7 @@ export function Footer() {
     resources: [
       { label: "Docs", href: "#" },
       { label: "GitHub", href: "https://github.com/fruterito101/genomad" },
-      { label: "Monad", href: "https://monad.xyz" },
+      { label: "Base", href: "https://base.org" },
     ],
     socials: [
       { icon: Twitter, href: "https://twitter.com/genomad", label: "Twitter" },
@@ -98,7 +98,7 @@ export function Footer() {
           </p>
           <p className="text-sm text-muted-foreground">
             {i18n.language === "es" ? "Construido en" : "Built on"}{" "}
-            <span className="text-primary font-medium">Monad</span>
+            <span className="text-primary font-medium">Base</span>
           </p>
         </div>
       </div>
