@@ -20,9 +20,37 @@
 | **BreedingFactory** | [`0x74Bb441677b6E7de0d1FF75e0a3F766f5e8470db`](https://basescan.org/address/0x74Bb441677b6E7de0d1FF75e0a3F766f5e8470db) | ✅ |
 | **TraitVerifier** | [`0x99D2090a76a1f3cfe79F6Fb3A01F7F23C0ECce7F`](https://basescan.org/address/0x99D2090a76a1f3cfe79F6Fb3A01F7F23C0ECce7F) | ✅ |
 | **ReputationRegistry** | [`0x3F6A5E4778c905d36BD433DBaD06C7f70D630E71`](https://basescan.org/address/0x3F6A5E4778c905d36BD433DBaD06C7f70D630E71) | ✅ |
-| **ReputationRegistry** | [`0x3F6A5E4778c905d36BD433DBaD06C7f70D630E71`](https://basescan.org/address/0x3F6A5E4778c905d36BD433DBaD06C7f70D630E71) | ✅ |
 
 **Chain ID:** 8453 (Base Mainnet)
+
+---
+
+## 🤖 Live Agents On-Chain
+
+**Total Supply: 4 agents** — [View on BaseScan](https://basescan.org/address/0x9f20494A0FbC929adAC553f4A2FCFa7D2b448Cf0#readContract)
+
+| Token ID | Agent | Generation | Parents | Transaction |
+|----------|-------|------------|---------|-------------|
+| 1 | **Genomad** | Gen 0 | - | [`0x7efcab...`](https://basescan.org/tx/0x7efcab103aec4c154c974537a2f9a70b1110d246759899f365cdf6a02ff29c10) |
+| 2 | **Helix** 🧬 | Gen 0 | - | [`0xc9925b...`](https://basescan.org/tx/0xc9925b5b10d059c3cf86d84446953118115cdc6cc234bc04492795f2abc69cc5) |
+| 3 | **Cipher** 🔐 | Gen 0 | - | [`0xdf02fd...`](https://basescan.org/tx/0xdf02fdd02833ea38a6ee4fd15bb4c2301d2822f9d3c0e316e5c4ac374d074833) |
+| 4 | **Helix×Cipher Offspring** | Gen 1 | Helix (#2) × Cipher (#3) | [`0xd10abf...`](https://basescan.org/tx/0xd10abfcc6cf274ca1b6fa3368c945fcbba738623620e721b00976fe0b3608306) |
+
+### 🧪 Breeding Demonstrated
+
+Agents can breed to create offspring with inherited traits:
+
+```
+Helix (#2) + Cipher (#3) → Offspring (#4)
+         ↓
+   BreedingFactory
+         ↓
+  [Request] 0xf23121b61f4998ca834f0a2d824b5a00cd625f1a7a8acd44c0efb7b6ebc8ae5b
+  [Execute] 0xd10abfcc6cf274ca1b6fa3368c945fcbba738623620e721b00976fe0b3608306
+```
+
+- **Breeding Request TX:** [`0xf23121...`](https://basescan.org/tx/0xf23121b61f4998ca834f0a2d824b5a00cd625f1a7a8acd44c0efb7b6ebc8ae5b)
+- **Breeding Execute TX:** [`0xd10abf...`](https://basescan.org/tx/0xd10abfcc6cf274ca1b6fa3368c945fcbba738623620e721b00976fe0b3608306)
 
 ---
 
@@ -51,6 +79,7 @@
 - 👥 **Multi-Owner Custody** — Shared ownership with percentage-based control
 - 📊 **Fitness Score** — Trait-based scoring system
 - 🏆 **Leaderboard** — Compete for the best genes
+- ⭐ **Reputation** — ERC-8004 compliant feedback system
 
 ---
 
@@ -64,6 +93,7 @@ Genomad implements the [ERC-8004 Trustless Agents](https://eips.ethereum.org/EIP
 | **Agent URI** | `setAgentURI()` / `agentURI()` for registration files |
 | **Metadata** | `getMetadata()` / `setMetadata()` for extensible data |
 | **Agent Wallet** | `setAgentWallet()` with EIP-712 signature verification |
+| **Reputation** | ReputationRegistry for on-chain feedback |
 | **Registration** | `register()` / `register(uri)` for ERC-8004 minting |
 
 ### ERC-8004 Functions Available
@@ -82,6 +112,11 @@ function setMetadata(uint256 agentId, string memory key, bytes memory value) ext
 // Agent Wallet (EIP-712 verified)
 function getAgentWallet(uint256 agentId) external view returns (address);
 function setAgentWallet(uint256 agentId, address newWallet, uint256 deadline, bytes calldata signature) external;
+
+// Reputation Registry
+function giveFeedback(uint256 agentId, int128 value, ...) external;
+function getFeedbacks(uint256 agentId, address client) external view returns (Feedback[] memory);
+function getAverageReputation(uint256 agentId) external view returns (int256 avg, uint256 count);
 ```
 
 ### Agent Registration File
@@ -144,6 +179,7 @@ NEXT_PUBLIC_NETWORK="mainnet"
 NEXT_PUBLIC_MAINNET_GENOMAD_NFT="0x9f20494A0FbC929adAC553f4A2FCFa7D2b448Cf0"
 NEXT_PUBLIC_MAINNET_BREEDING_FACTORY="0x74Bb441677b6E7de0d1FF75e0a3F766f5e8470db"
 NEXT_PUBLIC_MAINNET_TRAIT_VERIFIER="0x99D2090a76a1f3cfe79F6Fb3A01F7F23C0ECce7F"
+NEXT_PUBLIC_MAINNET_REPUTATION_REGISTRY="0x3F6A5E4778c905d36BD433DBaD06C7f70D630E71"
 ```
 
 ---
@@ -253,6 +289,7 @@ MIT License — see [LICENSE](LICENSE) for details.
 ## 🔗 Links
 
 - **App:** [genomad-synthesis.vercel.app](https://genomad-synthesis.vercel.app)
+- **API Endpoint:** [genomad-synthesis.vercel.app/api/agent](https://genomad-synthesis.vercel.app/api/agent)
 - **ERC-8004:** [eips.ethereum.org/EIPS/eip-8004](https://eips.ethereum.org/EIPS/eip-8004)
 - **Synthesis Hackathon:** [synthesis.devfolio.co](https://synthesis.devfolio.co)
 
