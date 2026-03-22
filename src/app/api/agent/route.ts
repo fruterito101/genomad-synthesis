@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 
 // ERC-8004 Agent Registration File
-// Served at /api/agent and /.well-known/agent-registration.json
 export async function GET() {
   const agentRegistration = {
     type: "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
@@ -29,6 +28,10 @@ export async function GET() {
       {
         name: "TraitVerifier",
         endpoint: "eip155:8453:0x99D2090a76a1f3cfe79F6Fb3A01F7F23C0ECce7F"
+      },
+      {
+        name: "ReputationRegistry",
+        endpoint: "eip155:8453:0x3F6A5E4778c905d36BD433DBaD06C7f70D630E71"
       }
     ],
     active: true,
@@ -44,7 +47,8 @@ export async function GET() {
       zkProofs: true,
       multiOwnerCustody: true,
       geneticTraits: 8,
-      onChainData: true
+      onChainData: true,
+      reputationSystem: true
     }
   };
 

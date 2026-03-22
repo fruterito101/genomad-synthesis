@@ -8,6 +8,7 @@ export const CONTRACTS = {
     genomadNFT: process.env.NEXT_PUBLIC_TESTNET_GENOMAD_NFT || "",
     breedingFactory: process.env.NEXT_PUBLIC_TESTNET_BREEDING_FACTORY || "",
     traitVerifier: process.env.NEXT_PUBLIC_TESTNET_TRAIT_VERIFIER || "",
+    reputationRegistry: process.env.NEXT_PUBLIC_TESTNET_REPUTATION_REGISTRY || "",
     gmdToken: process.env.NEXT_PUBLIC_TESTNET_GMD_TOKEN || "",
   },
   mainnet: {
@@ -15,6 +16,7 @@ export const CONTRACTS = {
     genomadNFT: "0x9f20494A0FbC929adAC553f4A2FCFa7D2b448Cf0",
     breedingFactory: "0x74Bb441677b6E7de0d1FF75e0a3F766f5e8470db",
     traitVerifier: "0x99D2090a76a1f3cfe79F6Fb3A01F7F23C0ECce7F",
+    reputationRegistry: "0x3F6A5E4778c905d36BD433DBaD06C7f70D630E71",
     gmdToken: process.env.NEXT_PUBLIC_MAINNET_GMD_TOKEN || "",
   },
 } as const;
@@ -34,4 +36,4 @@ export function getActiveContracts() {
 }
 
 // Type for contract addresses
-export type ContractAddresses = typeof CONTRACTS.testnet;
+export type ContractAddresses = typeof CONTRACTS.mainnet;

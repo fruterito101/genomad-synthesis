@@ -1,25 +1,35 @@
 "use client";
 
-import { ExternalLink, CheckCircle2, Shield, Code2 } from "lucide-react";
+import { ExternalLink, CheckCircle2, Shield, Code2, Star } from "lucide-react";
 
 const contracts = [
   {
     name: "GenomadNFT",
     address: "0x9f20494A0FbC929adAC553f4A2FCFa7D2b448Cf0",
     description: "ERC-8004 compliant agent identity NFT",
-    features: ["agentURI", "metadata", "agentWallet", "custody"]
+    features: ["agentURI", "metadata", "agentWallet", "custody"],
+    icon: "shield"
   },
   {
     name: "BreedingFactory", 
     address: "0x74Bb441677b6E7de0d1FF75e0a3F766f5e8470db",
     description: "Agent breeding with genetic crossover",
-    features: ["crossover", "mutation", "custody split"]
+    features: ["crossover", "mutation", "custody split"],
+    icon: "code"
   },
   {
     name: "TraitVerifier",
     address: "0x99D2090a76a1f3cfe79F6Fb3A01F7F23C0ECce7F", 
     description: "ZK proof verification on-chain",
-    features: ["trait proofs", "breed proofs", "privacy"]
+    features: ["trait proofs", "breed proofs", "privacy"],
+    icon: "check"
+  },
+  {
+    name: "ReputationRegistry",
+    address: "0x3F6A5E4778c905d36BD433DBaD06C7f70D630E71",
+    description: "ERC-8004 reputation system for agents",
+    features: ["feedback", "ratings", "trust scores"],
+    icon: "star"
   }
 ];
 
@@ -45,7 +55,7 @@ export function ContractsSection() {
         </div>
 
         {/* Contracts Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {contracts.map((contract) => (
             <div 
               key={contract.name}
@@ -53,9 +63,10 @@ export function ContractsSection() {
             >
               <div className="flex items-center gap-3 mb-4">
                 <div className="p-2 rounded-lg bg-primary/10">
-                  {contract.name === "GenomadNFT" && <Shield className="w-5 h-5 text-primary" />}
-                  {contract.name === "BreedingFactory" && <Code2 className="w-5 h-5 text-primary" />}
-                  {contract.name === "TraitVerifier" && <CheckCircle2 className="w-5 h-5 text-primary" />}
+                  {contract.icon === "shield" && <Shield className="w-5 h-5 text-primary" />}
+                  {contract.icon === "code" && <Code2 className="w-5 h-5 text-primary" />}
+                  {contract.icon === "check" && <CheckCircle2 className="w-5 h-5 text-primary" />}
+                  {contract.icon === "star" && <Star className="w-5 h-5 text-primary" />}
                 </div>
                 <h3 className="font-semibold text-lg">{contract.name}</h3>
               </div>
@@ -92,11 +103,13 @@ export function ContractsSection() {
 
         {/* Chain Info */}
         <div className="mt-8 text-center">
-          <div className="inline-flex items-center gap-4 text-sm text-muted-foreground">
+          <div className="inline-flex items-center gap-4 text-sm text-muted-foreground flex-wrap justify-center">
             <span>Chain: <span className="text-foreground font-medium">Base Mainnet</span></span>
-            <span className="w-1 h-1 rounded-full bg-muted-foreground" />
+            <span className="w-1 h-1 rounded-full bg-muted-foreground hidden sm:block" />
             <span>Chain ID: <span className="text-foreground font-medium">8453</span></span>
-            <span className="w-1 h-1 rounded-full bg-muted-foreground" />
+            <span className="w-1 h-1 rounded-full bg-muted-foreground hidden sm:block" />
+            <span>Contracts: <span className="text-foreground font-medium">4</span></span>
+            <span className="w-1 h-1 rounded-full bg-muted-foreground hidden sm:block" />
             <a 
               href="https://basescan.org/address/0x9f20494A0FbC929adAC553f4A2FCFa7D2b448Cf0"
               target="_blank"

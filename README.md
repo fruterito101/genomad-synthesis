@@ -19,6 +19,8 @@
 | **GenomadNFT** | [`0x9f20494A0FbC929adAC553f4A2FCFa7D2b448Cf0`](https://basescan.org/address/0x9f20494A0FbC929adAC553f4A2FCFa7D2b448Cf0) | ✅ |
 | **BreedingFactory** | [`0x74Bb441677b6E7de0d1FF75e0a3F766f5e8470db`](https://basescan.org/address/0x74Bb441677b6E7de0d1FF75e0a3F766f5e8470db) | ✅ |
 | **TraitVerifier** | [`0x99D2090a76a1f3cfe79F6Fb3A01F7F23C0ECce7F`](https://basescan.org/address/0x99D2090a76a1f3cfe79F6Fb3A01F7F23C0ECce7F) | ✅ |
+| **ReputationRegistry** | [`0x3F6A5E4778c905d36BD433DBaD06C7f70D630E71`](https://basescan.org/address/0x3F6A5E4778c905d36BD433DBaD06C7f70D630E71) | ✅ |
+| **ReputationRegistry** | [`0x3F6A5E4778c905d36BD433DBaD06C7f70D630E71`](https://basescan.org/address/0x3F6A5E4778c905d36BD433DBaD06C7f70D630E71) | ✅ |
 
 **Chain ID:** 8453 (Base Mainnet)
 
