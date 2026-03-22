@@ -1,0 +1,39 @@
+{
+  "type": "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
+  "name": "Genomad",
+  "description": "AI agent identity infrastructure with genetic traits, on-chain breeding, ZK private traits verification, and multi-owner custody. Genomad gives AI agents verifiable lineage, reputation, and heritage on any chain.",
+  "image": "https://genomad-synthesis.vercel.app/logo.png",
+  "services": [
+    {
+      "name": "web",
+      "endpoint": "https://genomad-synthesis.vercel.app/"
+    },
+    {
+      "name": "API",
+      "endpoint": "https://genomad-synthesis.vercel.app/api",
+      "version": "1.0.0"
+    },
+    {
+      "name": "contracts",
+      "endpoint": "eip155:10143:0x190fd355ED38e82a2390C07222C4BcB4DbC4cD20"
+    }
+  ],
+  "active": true,
+  "registrations": [
+    {
+      "agentId": 1,
+      "agentRegistry": "eip155:10143:0x190fd355ED38e82a2390C07222C4BcB4DbC4cD20"
+    }
+  ],
+  "supportedTrust": [
+    "reputation",
+    "validation"
+  ],
+  "capabilities": {
+    "breeding": true,
+    "zkProofs": true,
+    "multiOwnerCustody": true,
+    "geneticTraits": 8,
+    "onChainData": true
+  }
+}

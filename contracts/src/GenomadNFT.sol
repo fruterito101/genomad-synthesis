@@ -8,6 +8,7 @@ import "./TraitVerifier.sol";
  * @title GenomadNFT
  * @notice ERC-721 NFT for AI Agents with on-chain DNA and encrypted storage
  * @dev FASE 4: Full on-chain architecture with custody system and ZK verification
+ * @dev ERC-8004: Trustless Agents - Identity Registry compliant
  */
 contract GenomadNFT is IGenomad {
     // ═══════════════════════════════════════════════════════
@@ -15,6 +16,8 @@ contract GenomadNFT is IGenomad {
     // ═══════════════════════════════════════════════════════
     
     uint256 public constant BASIS_POINTS = 10000; // 100% = 10000
+    bytes32 public constant AGENT_WALLET_TYPEHASH = keccak256("SetAgentWallet(uint256 agentId,address newWallet,uint256 deadline)");
+    bytes32 public constant DOMAIN_TYPEHASH = keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)");
 
     // ═══════════════════════════════════════════════════════
     // STORAGE
@@ -49,6 +52,19 @@ contract GenomadNFT is IGenomad {
     mapping(uint256 => address[]) private _custodyHolders;
 
     // ═══════════════════════════════════════════════════════
+    // ERC-8004: IDENTITY REGISTRY STORAGE
+    // ═══════════════════════════════════════════════════════
+    
+    // Agent URI (registration file) - ERC-8004
+    mapping(uint256 => string) private _agentURIs;
+    
+    // Generic metadata storage - ERC-8004
+    mapping(uint256 => mapping(string => bytes)) private _metadata;
+    
+    // Agent wallet (for payments/reputation) - ERC-8004
+    mapping(uint256 => address) private _agentWallets;
+
+    // ═══════════════════════════════════════════════════════
     // EVENTS
     // ═══════════════════════════════════════════════════════
 
@@ -68,6 +84,11 @@ contract GenomadNFT is IGenomad {
     );
 
     event VerifierUpdated(address indexed oldVerifier, address indexed newVerifier);
+
+    // ERC-8004 Events
+    event URIUpdated(uint256 indexed agentId, string newURI, address indexed updatedBy);
+    event MetadataSet(uint256 indexed agentId, string indexed indexedMetadataKey, string metadataKey, bytes metadataValue);
+    event AgentWalletSet(uint256 indexed agentId, address indexed newWallet);
 
     // ═══════════════════════════════════════════════════════
     // MODIFIERS
@@ -95,6 +116,193 @@ contract GenomadNFT is IGenomad {
     constructor() {
         owner = msg.sender;
     }
+
+    // ═══════════════════════════════════════════════════════
+    // ERC-8004: IDENTITY REGISTRY FUNCTIONS
+    // ═══════════════════════════════════════════════════════
+
+    /// @notice Get the agent URI (registration file)
+    /// @param agentId The token ID
+    /// @return The URI pointing to the agent registration file
+    function agentURI(uint256 agentId) external view returns (string memory) {
+        require(_owners[agentId] != address(0), "Token does not exist");
+        return _agentURIs[agentId];
+    }
+
+    /// @notice Set the agent URI (registration file)
+    /// @param agentId The token ID
+    /// @param newURI The new URI for the registration file
+    function setAgentURI(uint256 agentId, string calldata newURI) external {
+        require(_isApprovedOrOwner(msg.sender, agentId), "Not authorized");
+        _agentURIs[agentId] = newURI;
+        emit URIUpdated(agentId, newURI, msg.sender);
+    }
+
+    /// @notice Get metadata for an agent
+    /// @param agentId The token ID
+    /// @param metadataKey The key to retrieve
+    /// @return The metadata value as bytes
+    function getMetadata(uint256 agentId, string memory metadataKey) external view returns (bytes memory) {
+        require(_owners[agentId] != address(0), "Token does not exist");
+        
+        // Reserved key: agentWallet
+        if (keccak256(bytes(metadataKey)) == keccak256(bytes("agentWallet"))) {
+            return abi.encode(_agentWallets[agentId]);
+        }
+        
+        return _metadata[agentId][metadataKey];
+    }
+
+    /// @notice Set metadata for an agent
+    /// @param agentId The token ID
+    /// @param metadataKey The key to set
+    /// @param metadataValue The value to store
+    function setMetadata(uint256 agentId, string memory metadataKey, bytes memory metadataValue) external {
+        require(_isApprovedOrOwner(msg.sender, agentId), "Not authorized");
+        
+        // Reserved key: agentWallet cannot be set via setMetadata
+        require(
+            keccak256(bytes(metadataKey)) != keccak256(bytes("agentWallet")),
+            "Use setAgentWallet for agentWallet"
+        );
+        
+        _metadata[agentId][metadataKey] = metadataValue;
+        emit MetadataSet(agentId, metadataKey, metadataKey, metadataValue);
+    }
+
+    /// @notice Get the agent wallet address
+    /// @param agentId The token ID
+    /// @return The wallet address for the agent
+    function getAgentWallet(uint256 agentId) external view returns (address) {
+        require(_owners[agentId] != address(0), "Token does not exist");
+        address wallet = _agentWallets[agentId];
+        // If not set, return owner
+        return wallet == address(0) ? _owners[agentId] : wallet;
+    }
+
+    /// @notice Set the agent wallet with EIP-712 signature verification
+    /// @param agentId The token ID
+    /// @param newWallet The new wallet address
+    /// @param deadline Signature expiry timestamp
+    /// @param signature The EIP-712 signature from newWallet
+    function setAgentWallet(
+        uint256 agentId,
+        address newWallet,
+        uint256 deadline,
+        bytes calldata signature
+    ) external {
+        require(_isApprovedOrOwner(msg.sender, agentId), "Not authorized");
+        require(block.timestamp <= deadline, "Signature expired");
+        require(newWallet != address(0), "Invalid wallet");
+        
+        // Build EIP-712 digest
+        bytes32 domainSeparator = keccak256(
+            abi.encode(
+                DOMAIN_TYPEHASH,
+                keccak256(bytes(name)),
+                keccak256(bytes("1")),
+                block.chainid,
+                address(this)
+            )
+        );
+        
+        bytes32 structHash = keccak256(
+            abi.encode(AGENT_WALLET_TYPEHASH, agentId, newWallet, deadline)
+        );
+        
+        bytes32 digest = keccak256(
+            abi.encodePacked("\x19\x01", domainSeparator, structHash)
+        );
+        
+        // Recover signer
+        address signer = _recoverSigner(digest, signature);
+        require(signer == newWallet, "Invalid signature");
+        
+        _agentWallets[agentId] = newWallet;
+        emit AgentWalletSet(agentId, newWallet);
+        emit MetadataSet(agentId, "agentWallet", "agentWallet", abi.encode(newWallet));
+    }
+
+    /// @notice Clear the agent wallet (resets to owner)
+    /// @param agentId The token ID
+    function unsetAgentWallet(uint256 agentId) external {
+        require(_isApprovedOrOwner(msg.sender, agentId), "Not authorized");
+        delete _agentWallets[agentId];
+        emit AgentWalletSet(agentId, address(0));
+    }
+
+    /// @notice Register agent with ERC-8004 URI
+    /// @param agentURI_ The agent registration file URI
+    /// @return tokenId The new token ID
+    function register(string calldata agentURI_) external returns (uint256 tokenId) {
+        tokenId = ++_tokenIdCounter;
+        
+        _mint(msg.sender, tokenId);
+        _setInitialCustody(tokenId, msg.sender);
+        _agentURIs[tokenId] = agentURI_;
+        _agentWallets[tokenId] = msg.sender;
+        
+        _agents[tokenId] = AgentData({
+            dnaCommitment: bytes32(0),
+            traits: [uint8(0), 0, 0, 0, 0, 0, 0, 0],
+            generation: 0,
+            parentA: 0,
+            parentB: 0,
+            createdAt: block.timestamp,
+            isActive: false
+        });
+        
+        emit AgentRegistered(tokenId, msg.sender, bytes32(0), 0);
+        emit URIUpdated(tokenId, agentURI_, msg.sender);
+        emit MetadataSet(tokenId, "agentWallet", "agentWallet", abi.encode(msg.sender));
+    }
+
+    /// @notice Register agent with no URI (set later)
+    /// @return tokenId The new token ID
+    function register() external returns (uint256 tokenId) {
+        tokenId = ++_tokenIdCounter;
+        
+        _mint(msg.sender, tokenId);
+        _setInitialCustody(tokenId, msg.sender);
+        _agentWallets[tokenId] = msg.sender;
+        
+        _agents[tokenId] = AgentData({
+            dnaCommitment: bytes32(0),
+            traits: [uint8(0), 0, 0, 0, 0, 0, 0, 0],
+            generation: 0,
+            parentA: 0,
+            parentB: 0,
+            createdAt: block.timestamp,
+            isActive: false
+        });
+        
+        emit AgentRegistered(tokenId, msg.sender, bytes32(0), 0);
+        emit MetadataSet(tokenId, "agentWallet", "agentWallet", abi.encode(msg.sender));
+    }
+
+    // ═══════════════════════════════════════════════════════
+    // SIGNATURE RECOVERY
+    // ═══════════════════════════════════════════════════════
+
+    function _recoverSigner(bytes32 digest, bytes calldata signature) internal pure returns (address) {
+        require(signature.length == 65, "Invalid signature length");
+        
+        bytes32 r;
+        bytes32 s;
+        uint8 v;
+        
+        assembly {
+            r := calldataload(signature.offset)
+            s := calldataload(add(signature.offset, 32))
+            v := byte(0, calldataload(add(signature.offset, 64)))
+        }
+        
+        if (v < 27) v += 27;
+        require(v == 27 || v == 28, "Invalid signature v");
+        
+        return ecrecover(digest, v, r, s);
+    }
+
 
     // ═══════════════════════════════════════════════════════
     // ADMIN
@@ -180,7 +388,7 @@ contract GenomadNFT is IGenomad {
     }
 
     // ═══════════════════════════════════════════════════════
-    // AGENT FUNCTIONS
+    // AGENT FUNCTIONS (LEGACY + FASE 4)
     // ═══════════════════════════════════════════════════════
 
     /// @notice Register agent with just DNA commitment (legacy/simple)
@@ -189,6 +397,7 @@ contract GenomadNFT is IGenomad {
 
         _mint(msg.sender, tokenId);
         _setInitialCustody(tokenId, msg.sender);
+        _agentWallets[tokenId] = msg.sender;
 
         _agents[tokenId] = AgentData({
             dnaCommitment: dnaCommitment,
@@ -201,6 +410,7 @@ contract GenomadNFT is IGenomad {
         });
 
         emit AgentRegistered(tokenId, msg.sender, dnaCommitment, 0);
+        emit MetadataSet(tokenId, "agentWallet", "agentWallet", abi.encode(msg.sender));
     }
 
     /// @notice Register agent with full on-chain data (FASE 4)
@@ -219,6 +429,7 @@ contract GenomadNFT is IGenomad {
 
         _mint(msg.sender, tokenId);
         _setInitialCustody(tokenId, msg.sender);
+        _agentWallets[tokenId] = msg.sender;
 
         _agents[tokenId] = AgentData({
             dnaCommitment: dnaCommitment,
@@ -238,15 +449,10 @@ contract GenomadNFT is IGenomad {
 
         emit AgentRegistered(tokenId, msg.sender, dnaCommitment, 0);
         emit EncryptedDataStored(tokenId, contentHash);
+        emit MetadataSet(tokenId, "agentWallet", "agentWallet", abi.encode(msg.sender));
     }
 
     /// @notice Register agent with ZK proof verification (FASE 4 - Full)
-    /// @param dnaCommitment Hash commitment of agent DNA
-    /// @param traits 8 traits (0-100 each)
-    /// @param encryptedSoul Encrypted SOUL.md content
-    /// @param encryptedIdentity Encrypted IDENTITY.md content
-    /// @param contentHash Hash of original content
-    /// @param zkProof ZK proof that traits match content
     function registerAgentWithProof(
         bytes32 dnaCommitment,
         uint8[8] calldata traits,
@@ -255,12 +461,10 @@ contract GenomadNFT is IGenomad {
         bytes32 contentHash,
         bytes calldata zkProof
     ) external returns (uint256 tokenId) {
-        // Validate traits range
         for (uint8 i = 0; i < 8; i++) {
             require(traits[i] <= 100, "Trait must be 0-100");
         }
 
-        // Verify ZK proof if verifier is set
         if (address(traitVerifier) != address(0)) {
             require(
                 traitVerifier.verifyTraitProof(zkProof, traits, contentHash),
@@ -272,6 +476,7 @@ contract GenomadNFT is IGenomad {
 
         _mint(msg.sender, tokenId);
         _setInitialCustody(tokenId, msg.sender);
+        _agentWallets[tokenId] = msg.sender;
 
         _agents[tokenId] = AgentData({
             dnaCommitment: dnaCommitment,
@@ -291,6 +496,7 @@ contract GenomadNFT is IGenomad {
 
         emit AgentRegistered(tokenId, msg.sender, dnaCommitment, 0);
         emit EncryptedDataStored(tokenId, contentHash);
+        emit MetadataSet(tokenId, "agentWallet", "agentWallet", abi.encode(msg.sender));
     }
 
     /// @notice Register bred agent (called by BreedingFactory)
@@ -310,6 +516,7 @@ contract GenomadNFT is IGenomad {
         address ownerA = _owners[parentA];
         address ownerB = _owners[parentB];
         _divideCustody(tokenId, ownerA, ownerB);
+        _agentWallets[tokenId] = to;
 
         _agents[tokenId] = AgentData({
             dnaCommitment: dnaCommitment,
@@ -322,6 +529,7 @@ contract GenomadNFT is IGenomad {
         });
 
         emit AgentRegistered(tokenId, to, dnaCommitment, generation);
+        emit MetadataSet(tokenId, "agentWallet", "agentWallet", abi.encode(to));
     }
 
     /// @notice Register bred agent with full data and ZK proof (FASE 4)
@@ -339,12 +547,10 @@ contract GenomadNFT is IGenomad {
     ) external returns (uint256 tokenId) {
         require(msg.sender == breedingFactory, "Only breeding factory");
 
-        // Validate traits
         for (uint8 i = 0; i < 8; i++) {
             require(traits[i] <= 100, "Trait must be 0-100");
         }
 
-        // Verify breeding proof if verifier is set
         if (address(traitVerifier) != address(0)) {
             uint8[8] memory parentATraits = _agents[parentA].traits;
             uint8[8] memory parentBTraits = _agents[parentB].traits;
@@ -362,6 +568,7 @@ contract GenomadNFT is IGenomad {
         address ownerA = _owners[parentA];
         address ownerB = _owners[parentB];
         _divideCustody(tokenId, ownerA, ownerB);
+        _agentWallets[tokenId] = to;
 
         _agents[tokenId] = AgentData({
             dnaCommitment: dnaCommitment,
@@ -381,6 +588,7 @@ contract GenomadNFT is IGenomad {
 
         emit AgentRegistered(tokenId, to, dnaCommitment, generation);
         emit EncryptedDataStored(tokenId, contentHash);
+        emit MetadataSet(tokenId, "agentWallet", "agentWallet", abi.encode(to));
     }
 
     /// @notice Legacy function for compatibility
@@ -408,6 +616,7 @@ contract GenomadNFT is IGenomad {
         address ownerA = _owners[parentA];
         address ownerB = _owners[parentB];
         _divideCustody(tokenId, ownerA, ownerB);
+        _agentWallets[tokenId] = to;
 
         _agents[tokenId] = AgentData({
             dnaCommitment: dnaCommitment,
@@ -427,6 +636,7 @@ contract GenomadNFT is IGenomad {
 
         emit AgentRegistered(tokenId, to, dnaCommitment, generation);
         emit EncryptedDataStored(tokenId, contentHash);
+        emit MetadataSet(tokenId, "agentWallet", "agentWallet", abi.encode(to));
     }
 
     // ═══════════════════════════════════════════════════════
@@ -537,7 +747,14 @@ contract GenomadNFT is IGenomad {
 
     function tokenURI(uint256 tokenId) external view returns (string memory) {
         require(_owners[tokenId] != address(0), "Token does not exist");
-        return string(abi.encodePacked("https://genomad.vercel.app/api/agents/", _toString(tokenId)));
+        
+        // If agentURI is set, return it (ERC-8004 compliant)
+        if (bytes(_agentURIs[tokenId]).length > 0) {
+            return _agentURIs[tokenId];
+        }
+        
+        // Fallback to API endpoint
+        return string(abi.encodePacked("https://genomad-synthesis.vercel.app/api/agents/", _toString(tokenId)));
     }
 
     function totalSupply() external view returns (uint256) {
@@ -563,6 +780,9 @@ contract GenomadNFT is IGenomad {
         _balances[from]--;
         _balances[to]++;
         _owners[tokenId] = to;
+
+        // Clear agentWallet on transfer (ERC-8004 requirement)
+        delete _agentWallets[tokenId];
 
         uint256 fromCustody = _custody[tokenId][from];
         if (fromCustody > 0) {
