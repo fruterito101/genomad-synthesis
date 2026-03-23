@@ -271,7 +271,7 @@ export async function generateMockProof(request: ProofRequest): Promise<ProofRes
 export async function generateProofAuto(request: ProofRequest): Promise<ProofResponse> {
   // Always use mock for now until ZK API is deployed
   // In production: check NEXT_PUBLIC_ZK_DEV_MODE
-  if (typeof window === 'undefined' || process.env.NEXT_PUBLIC_ZK_DEV_MODE === "true") {
+  if (true) { // MOCK MODE - ZK disabled for hackathon
     return generateMockProof(request);
   }
   return generateProof(request);
