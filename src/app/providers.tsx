@@ -13,9 +13,9 @@ const queryClient = new QueryClient();
 
 // Get initial chain from localStorage (client-side only)
 function getInitialChain() {
-  if (typeof window === "undefined") return baseTestnet;
+  if (typeof window === "undefined") return baseMainnet;
   const saved = localStorage.getItem("genomad-network");
-  return saved === "mainnet" ? baseMainnet : baseTestnet;
+  return saved === "testnet" ? baseTestnet : baseMainnet;
 }
 
 export function Providers({ children }: { children: React.ReactNode }) {
