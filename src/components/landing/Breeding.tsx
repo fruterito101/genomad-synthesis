@@ -2,7 +2,7 @@
 "use client";
 
 import Link from "next/link";
-import { Heart, ArrowRight, Dna, Shuffle, TrendingUp } from "lucide-react";
+import { Heart, ArrowRight, Dna, Shuffle, TrendingUp, Sparkles } from "lucide-react";
 
 const features = [
   {
@@ -75,7 +75,7 @@ export function Breeding() {
               <div className="flex items-center justify-center gap-4 mb-8">
                 {/* Parent A */}
                 <div className="w-20 h-20 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 flex items-center justify-center">
-                  <span className="text-2xl">🧬</span>
+                  <Dna className="w-8 h-8 text-primary" />
                 </div>
                 
                 {/* Plus */}
@@ -85,7 +85,7 @@ export function Breeding() {
                 
                 {/* Parent B */}
                 <div className="w-20 h-20 rounded-xl bg-gradient-to-br from-accent/20 to-accent/5 border border-accent/20 flex items-center justify-center">
-                  <span className="text-2xl">🧬</span>
+                  <Dna className="w-8 h-8 text-primary" />
                 </div>
               </div>
 
@@ -97,7 +97,7 @@ export function Breeding() {
               {/* Offspring */}
               <div className="flex justify-center">
                 <div className="w-24 h-24 rounded-xl bg-gradient-to-br from-primary/30 via-accent/20 to-secondary/20 border border-primary/30 flex items-center justify-center glow">
-                  <span className="text-3xl">✨</span>
+                  <Sparkles className="w-10 h-10 text-primary" />
                 </div>
               </div>
 
