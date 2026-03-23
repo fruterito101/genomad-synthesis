@@ -76,7 +76,7 @@ export function AgentsCatalogue() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/agents?limit=6")
+    fetch("/api/agents/public?limit=6")
       .then((res) => res.json())
       .then((data) => {
         setAgents(data.agents || []);
