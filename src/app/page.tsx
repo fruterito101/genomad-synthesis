@@ -3,7 +3,8 @@
 
 import { 
   Header, 
-  Hero, 
+  Hero,
+  VideoSection,
   WhatIsGenomad,
   ContractsSection,
   AgentsCatalogue, 
@@ -17,6 +18,7 @@ export default function Home() {
     <main className="bg-background min-h-screen">
       <Header />
       <Hero />
+      <VideoSection />
       <WhatIsGenomad />
       <ContractsSection />
       <AgentsCatalogue />
