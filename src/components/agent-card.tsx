@@ -5,7 +5,7 @@ import { motion } from "framer-motion"
 import Link from "next/link"
 import { 
   Cpu, Palette, MessageSquare, Brain, Heart, TrendingUp, 
-  GraduationCap, Crown, Star, Eye, Dna, Zap, Check, Loader2, Link2
+  GraduationCap, Crown, Star, Eye, Dna, Zap, Check, Loader2, Link2, Power, PowerOff, Trash2
 } from "lucide-react"
 import { Card, CardContent, CardHeader, Badge, Button } from "@/components/ui"
 import { Avatar, AvatarFallback } from "@/components/ui"
@@ -333,6 +333,49 @@ export function AgentCard({
                 </Button>
               )}
               
+              {/* Agent Management Actions */}
+              {isMine && getAccessToken && (
+                <div className="flex gap-1">
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    className="text-xs px-2"
+                    onClick={async (e) => {
+                      e.stopPropagation();
+                      const token = await getAccessToken();
+                      if (!token) return;
+                      await fetch(`/api/agents/${agent.id}`, {
+                        method: "PATCH",
+                        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+                        body: JSON.stringify({ isActive: !agent.isActive }),
+                      });
+                      window.location.reload();
+                    }}
+                    title={agent.isActive ? "Desactivar" : "Activar"}
+                  >
+                    {agent.isActive ? <PowerOff className="w-3 h-3" /> : <Power className="w-3 h-3" />}
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    className="text-xs px-2 text-red-500 hover:bg-red-500/10"
+                    onClick={async (e) => {
+                      e.stopPropagation();
+                      if (!confirm("¿Eliminar este agente?")) return;
+                      const token = await getAccessToken();
+                      if (!token) return;
+                      await fetch(`/api/agents/${agent.id}`, {
+                        method: "DELETE",
+                        headers: { Authorization: `Bearer ${token}` },
+                      });
+                      window.location.reload();
+                    }}
+                    title="Eliminar"
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </Button>
+                </div>
+              )}
               {/* If on-chain, show breed button */}
               {isOnChain && (
                 <Link href={`/breeding?parentA=${agent.id}`} className="flex-1" onClick={(e) => e.stopPropagation()}>
