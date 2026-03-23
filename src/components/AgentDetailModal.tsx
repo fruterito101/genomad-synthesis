@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { usePrivy } from "@privy-io/react-auth";
+import { AgentChatButton } from "./AgentChatButton";
 import {
   X, Dna, Crown, Cpu, Palette, MessageSquare, Brain, Heart,
   TrendingUp, GraduationCap, Zap, Link2, Copy,
@@ -378,6 +379,16 @@ export function AgentDetailModal({ agent, isOpen, onClose }: AgentDetailModalPro
                                 <ExternalLink className="w-4 h-4" />
                                 Ver en BaseScan
                               </a>
+                              {/* Chat Button */}
+                              <AgentChatButton
+                                agent={{
+                                  id: details.agent.id,
+                                  name: details.agent.name,
+                                  traits: details.agent.traits as any,
+                                  tokenId: details.agent.tokenId || undefined,
+                                }}
+                                className="mt-2 w-full justify-center"
+                              />
                             </div>
                           )}
 
