@@ -1,10 +1,11 @@
 // src/components/ActivateAgentButton.tsx
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { usePrivy } from "@privy-io/react-auth";
 import { useRegisterAgent } from "@/hooks/useGenomadNFT";
+import { useSwitchToBase } from "@/hooks/useSwitchToBase";
 import { Zap, Loader2, Check, AlertCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
@@ -34,7 +35,8 @@ export function ActivateAgentButton({
   const { i18n } = useTranslation();
   const { getAccessToken } = usePrivy();
   const { registerAsync, isPending, isConfirming, isSuccess, isError, error, hash, reset } = useRegisterAgent();
-  const [status, setStatus] = useState<"idle" | "signing" | "confirming" | "updating" | "done" | "error">("idle");
+  const { isOnBase, ensureBase } = useSwitchToBase();
+  const [status, setStatus] = useState<"idle" | "switching" | "signing" | "confirming" | "updating" | "done" | "error">("idle");
   const isEs = i18n.language === "es";
 
   // Si ya tiene tokenId, mostrar como activado
@@ -42,7 +44,7 @@ export function ActivateAgentButton({
     return (
       <div className={`flex items-center gap-2 text-emerald-500 ${className}`}>
         <Check className="w-4 h-4" />
-        <span className="text-sm">{isEs ? "Activado" : "Activated"}</span>
+        <span className="text-sm">{isEs ? "En Base" : "On Base"} #{agent.tokenId}</span>
       </div>
     );
   }
@@ -55,21 +57,21 @@ export function ActivateAgentButton({
 
   const handleActivate = async () => {
     try {
+      // 1. Asegurar que estamos en Base
+      if (!isOnBase) {
+        setStatus("switching");
+        await ensureBase();
+      }
+      
       setStatus("signing");
       
-      // Generar DNA commitment desde el hash existente
-      let hash = agent.commitment || agent.dnaHash || "";
-      if (hash.startsWith("0x")) hash = hash.slice(2);
-      hash = hash.padStart(64, "0");
-      const dnaCommitment = `0x${hash}` as `0x${string}`;
-      
-      // Registrar on-chain
-      const { txHash, tokenId } = await registerAsync(dnaCommitment);
+      // 2. Registrar on-chain
+      const { txHash, tokenId } = await registerAsync();
       console.log("[ACTIVATION] Got result - txHash:", txHash, "tokenId:", tokenId);
+      
       setStatus("confirming");
       
-      // Esperar confirmación (el hook maneja esto)
-      // Mientras tanto, actualizar en nuestra API
+      // 3. Actualizar en nuestra API
       setStatus("updating");
       
       const token = await getAccessToken();
@@ -83,21 +85,29 @@ export function ActivateAgentButton({
         if (!patchRes.ok) console.error("[ACTIVATION] PATCH failed");
         else console.log("[ACTIVATION] ✅ Saved!");
       } else {
-        console.warn("[ACTIVATION] ⚠️ No tokenId to save");
+        console.warn("[ACTIVATION] ⚠️ No tokenId to save, will retry on page refresh");
       }
       
       setStatus("done");
       onActivated?.(tokenId || "", txHash || "");
       
-    } catch (err) {
+    } catch (err: any) {
+      console.error("[ACTIVATION] Error:", err);
       setStatus("error");
-      const errorMsg = err instanceof Error ? err.message : "Error activating agent";
+      const errorMsg = err?.shortMessage || err?.message || "Error activating agent";
       onError?.(errorMsg);
     }
   };
 
   const getButtonContent = () => {
     switch (status) {
+      case "switching":
+        return (
+          <>
+            <Loader2 className="w-4 h-4 animate-spin" />
+            {isEs ? "Cambiando a Base..." : "Switching to Base..."}
+          </>
+        );
       case "signing":
         return (
           <>
@@ -143,7 +153,7 @@ export function ActivateAgentButton({
     }
   };
 
-  const isDisabled = status === "signing" || status === "confirming" || status === "updating";
+  const isDisabled = status === "switching" || status === "signing" || status === "confirming" || status === "updating";
   
   return (
     <motion.button
