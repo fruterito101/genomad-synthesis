@@ -1,133 +1,118 @@
 // src/components/landing/Breeding.tsx
 "use client";
 
-import { motion } from "framer-motion";
-import { Card, CardContent, Badge, Button } from "@/components/ui";
-import { Dna, Plus, ArrowRight, Sparkles, Crown, Activity, Zap } from "lucide-react";
-import { useTranslation } from "react-i18next";
+import Link from "next/link";
+import { Heart, ArrowRight, Dna, Shuffle, TrendingUp } from "lucide-react";
+
+const features = [
+  {
+    icon: Shuffle,
+    title: "Genetic Crossover",
+    description: "Traits are combined using weighted, uniform, or single-point crossover algorithms.",
+  },
+  {
+    icon: TrendingUp,
+    title: "Mutation System",
+    description: "Random mutations can improve or modify traits, creating unique variations.",
+  },
+  {
+    icon: Dna,
+    title: "Lineage Tracking",
+    description: "Full family tree stored on-chain. Track ancestry through unlimited generations.",
+  },
+];
 
 export function Breeding() {
-  const { i18n } = useTranslation();
-
-  const crossoverTypes = [
-    { 
-      icon: Crown, 
-      name: "Weighted",
-      desc: i18n.language === "es" ? "Traits dominantes prevalecen" : "Dominant traits prevail",
-      color: "text-yellow-500"
-    },
-    { 
-      icon: Activity, 
-      name: "Uniform",
-      desc: i18n.language === "es" ? "División 50/50 equilibrada" : "Balanced 50/50 split",
-      color: "text-primary"
-    },
-    { 
-      icon: Zap, 
-      name: "Single-Point",
-      desc: i18n.language === "es" ? "Corte aleatorio del DNA" : "Random DNA cut point",
-      color: "text-accent"
-    },
-  ];
-
   return (
-    <section className="py-16 sm:py-24 px-4 bg-background">
+    <section id="breeding" className="py-24 px-6 border-t border-border">
       <div className="max-w-6xl mx-auto">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
-          {/* Visual */}
-          <motion.div
-            className="relative"
-            initial={{ opacity: 0, x: -30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-          >
-            <div className="flex items-center justify-center gap-4">
-              {/* Parent A */}
-              <Card className="p-6 text-center">
-                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary to-purple-600 mx-auto mb-3 flex items-center justify-center">
-                  <Dna className="w-8 h-8 text-white" />
-                </div>
-                <p className="font-semibold">Parent A</p>
-                <Badge variant="outline" className="mt-2">85.4 Fitness</Badge>
-              </Card>
-
-              {/* Plus */}
-              <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
-                <Plus className="w-6 h-6 text-primary" />
-              </div>
-
-              {/* Parent B */}
-              <Card className="p-6 text-center">
-                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-secondary to-emerald-600 mx-auto mb-3 flex items-center justify-center">
-                  <Dna className="w-8 h-8 text-white" />
-                </div>
-                <p className="font-semibold">Parent B</p>
-                <Badge variant="outline" className="mt-2">78.2 Fitness</Badge>
-              </Card>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          {/* Left: Content */}
+          <div>
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent/10 border border-accent/20 mb-6">
+              <Heart className="w-4 h-4 text-accent" />
+              <span className="text-sm text-accent">Breeding System</span>
             </div>
-
-            {/* Arrow */}
-            <div className="flex justify-center my-6">
-              <motion.div
-                animate={{ y: [0, 5, 0] }}
-                transition={{ duration: 1.5, repeat: Infinity }}
-              >
-                <ArrowRight className="w-8 h-8 text-primary rotate-90" />
-              </motion.div>
-            </div>
-
-            {/* Child */}
-            <Card className="p-6 text-center max-w-xs mx-auto border-primary/50">
-              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary via-accent to-secondary mx-auto mb-3 flex items-center justify-center">
-                <Sparkles className="w-10 h-10 text-white" />
-              </div>
-              <p className="font-semibold text-lg">New Agent</p>
-              <Badge className="mt-2 bg-primary">88.1 Fitness ↑</Badge>
-              <p className="text-xs text-muted-foreground mt-2">Gen 2 • Traits heredados</p>
-            </Card>
-          </motion.div>
-
-          {/* Content */}
-          <motion.div
-            initial={{ opacity: 0, x: 30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-          >
-            <Badge variant="outline" className="mb-4">
-              {i18n.language === "es" ? "Sistema Genético" : "Genetic System"}
-            </Badge>
-            <h2 className="text-3xl sm:text-4xl font-bold mb-4">
-              {i18n.language === "es" ? "Breeding de " : ""}
-              <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                {i18n.language === "es" ? "Agentes" : "Agent Breeding"}
-              </span>
+            
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+              Create the next generation
             </h2>
-            <p className="text-muted-foreground text-lg mb-6">
-              {i18n.language === "es" 
-                ? "Combina dos agentes para crear uno nuevo con traits heredados. El fitness puede mejorar o empeorar dependiendo de la genética."
-                : "Combine two agents to create a new one with inherited traits. Fitness can improve or worsen depending on genetics."}
+            
+            <p className="text-muted-foreground text-lg mb-8 leading-relaxed">
+              Combine two agents to create offspring with inherited traits. 
+              Each child has a unique combination of its parents' genetics, 
+              plus potential mutations that could create superior agents.
             </p>
 
-            <h4 className="font-semibold mb-4">{i18n.language === "es" ? "Tipos de Crossover" : "Crossover Types"}</h4>
-            <div className="space-y-3 mb-6">
-              {crossoverTypes.map((type) => (
-                <div key={type.name} className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-                  <div className={`w-10 h-10 rounded-lg bg-muted flex items-center justify-center ${type.color}`}>
-                    <type.icon className="w-5 h-5" />
+            {/* Features */}
+            <div className="space-y-4 mb-8">
+              {features.map((feature, i) => (
+                <div key={i} className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <feature.icon className="w-4 h-4 text-primary" />
                   </div>
                   <div>
-                    <p className="font-medium">{type.name}</p>
-                    <p className="text-sm text-muted-foreground">{type.desc}</p>
+                    <h3 className="font-medium mb-0.5">{feature.title}</h3>
+                    <p className="text-sm text-muted-foreground">{feature.description}</p>
                   </div>
                 </div>
               ))}
             </div>
 
-            <Button size="lg" href="/breeding">
-              {i18n.language === "es" ? "Ir a Breeding" : "Go to Breeding"}
-              <ArrowRight className="w-4 h-4 ml-2" />
-            </Button>
-          </motion.div>
+            <Link
+              href="/breeding"
+              className="btn-primary inline-flex items-center gap-2"
+            >
+              Start Breeding
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+
+          {/* Right: Visual */}
+          <div className="relative">
+            <div className="card p-8">
+              {/* Breeding diagram */}
+              <div className="flex items-center justify-center gap-4 mb-8">
+                {/* Parent A */}
+                <div className="w-20 h-20 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 flex items-center justify-center">
+                  <span className="text-2xl">🧬</span>
+                </div>
+                
+                {/* Plus */}
+                <div className="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center">
+                  <Heart className="w-4 h-4 text-accent" />
+                </div>
+                
+                {/* Parent B */}
+                <div className="w-20 h-20 rounded-xl bg-gradient-to-br from-accent/20 to-accent/5 border border-accent/20 flex items-center justify-center">
+                  <span className="text-2xl">🧬</span>
+                </div>
+              </div>
+
+              {/* Arrow */}
+              <div className="flex justify-center mb-8">
+                <div className="w-px h-12 bg-gradient-to-b from-border to-primary/50" />
+              </div>
+
+              {/* Offspring */}
+              <div className="flex justify-center">
+                <div className="w-24 h-24 rounded-xl bg-gradient-to-br from-primary/30 via-accent/20 to-secondary/20 border border-primary/30 flex items-center justify-center glow">
+                  <span className="text-3xl">✨</span>
+                </div>
+              </div>
+
+              {/* Labels */}
+              <div className="text-center mt-6">
+                <p className="text-sm text-muted-foreground">
+                  Offspring inherits traits from both parents
+                </p>
+              </div>
+            </div>
+
+            {/* Decorative elements */}
+            <div className="absolute -top-4 -right-4 w-24 h-24 bg-primary/10 rounded-full blur-2xl" />
+            <div className="absolute -bottom-4 -left-4 w-32 h-32 bg-accent/10 rounded-full blur-2xl" />
+          </div>
         </div>
       </div>
     </section>

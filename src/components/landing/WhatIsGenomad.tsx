@@ -1,84 +1,61 @@
 // src/components/landing/WhatIsGenomad.tsx
 "use client";
 
-import { motion } from "framer-motion";
-import { Card, CardContent, Badge } from "@/components/ui";
-import { Dna, Sparkles, TrendingUp, Shield } from "lucide-react";
-import { useTranslation } from "react-i18next";
+import { Dna, Cpu, GitBranch, Shield } from "lucide-react";
+
+const features = [
+  {
+    icon: Dna,
+    title: "Genetic Traits",
+    description: "8 unique traits define each agent's DNA. Technical, Creativity, Social, Analysis, Empathy, Trading, Teaching, Leadership.",
+  },
+  {
+    icon: GitBranch,
+    title: "On-Chain Breeding",
+    description: "Combine two agents to create offspring with inherited and mutated traits. Full lineage tracking on Base.",
+  },
+  {
+    icon: Cpu,
+    title: "AI Integration",
+    description: "Connect real AI agents via Telegram bots. Your agent's personality is shaped by its genetic traits.",
+  },
+  {
+    icon: Shield,
+    title: "Verifiable Proofs",
+    description: "Zero-knowledge proofs verify trait validity without revealing the actual values. Privacy by design.",
+  },
+];
 
 export function WhatIsGenomad() {
-  const { t, i18n } = useTranslation();
-
-  const features = [
-    { 
-      icon: Dna, 
-      title: i18n.language === "es" ? "DNA Único" : "Unique DNA",
-      desc: i18n.language === "es" ? "8 traits genéticos definen la personalidad" : "8 genetic traits define personality",
-      color: "text-primary"
-    },
-    { 
-      icon: Sparkles, 
-      title: i18n.language === "es" ? "Evolución" : "Evolution",
-      desc: i18n.language === "es" ? "Mejora con cada generación" : "Improve with each generation",
-      color: "text-accent"
-    },
-    { 
-      icon: TrendingUp, 
-      title: i18n.language === "es" ? "Fitness" : "Fitness",
-      desc: i18n.language === "es" ? "Mide el rendimiento del agente" : "Measures agent performance",
-      color: "text-secondary"
-    },
-    { 
-      icon: Shield, 
-      title: i18n.language === "es" ? "On-Chain" : "On-Chain",
-      desc: i18n.language === "es" ? "Verificable en Base blockchain" : "Verifiable on Base blockchain",
-      color: "text-emerald-500"
-    },
-  ];
-
   return (
-    <section id="about" className="py-16 sm:py-24 px-4 bg-background">
+    <section id="how-it-works" className="py-24 px-6">
       <div className="max-w-6xl mx-auto">
-        <motion.div
-          className="text-center mb-12"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-        >
-          <Badge variant="outline" className="mb-4">
-            {i18n.language === "es" ? "El Protocolo" : "The Protocol"}
-          </Badge>
-          <h2 className="text-3xl sm:text-4xl font-bold mb-4">
-            <span className="text-foreground">{i18n.language === "es" ? "¿Qué es " : "What is "}</span>
-            <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Genomad</span>
-            <span className="text-foreground">?</span>
+        {/* Header */}
+        <div className="max-w-2xl mb-16">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">
+            What is <span className="gradient-text">Genomad</span>?
           </h2>
-          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            {i18n.language === "es" 
-              ? "El primer protocolo de breeding de agentes AI on-chain. Crea, evoluciona y comercia agentes únicos."
-              : "The first on-chain AI agent breeding protocol. Create, evolve, and trade unique agents."}
+          <p className="text-muted-foreground text-lg">
+            A protocol that brings genetic evolution to AI agents. Each agent has unique DNA 
+            that can be verified, bred, and evolved on-chain.
           </p>
-        </motion.div>
+        </div>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-          {features.map((feature, index) => (
-            <motion.div
-              key={feature.title}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.1 }}
+        {/* Features Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {features.map((feature, i) => (
+            <div
+              key={i}
+              className="card p-6 group hover:border-primary/30 transition-all duration-300"
             >
-              <Card className="h-full hover:border-primary/50 transition-colors">
-                <CardContent className="p-6 text-center">
-                  <div className={`w-12 h-12 rounded-xl mx-auto mb-4 flex items-center justify-center bg-muted ${feature.color}`}>
-                    <feature.icon className="w-6 h-6" />
-                  </div>
-                  <h3 className="font-semibold text-lg mb-2">{feature.title}</h3>
-                  <p className="text-sm text-muted-foreground">{feature.desc}</p>
-                </CardContent>
-              </Card>
-            </motion.div>
+              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
+                <feature.icon className="w-5 h-5 text-primary" />
+              </div>
+              <h3 className="text-lg font-semibold mb-2">{feature.title}</h3>
+              <p className="text-muted-foreground text-sm leading-relaxed">
+                {feature.description}
+              </p>
+            </div>
           ))}
         </div>
       </div>

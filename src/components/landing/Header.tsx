@@ -1,156 +1,128 @@
 // src/components/landing/Header.tsx
 "use client";
 
-import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import Image from "next/image";
-import { Button } from "@/components/ui";
-import { useTranslation } from "react-i18next";
+import { useState, useEffect } from "react";
+import { usePrivy } from "@privy-io/react-auth";
 import { Menu, X, Dna } from "lucide-react";
 
 export function Header() {
-  const { t, i18n } = useTranslation();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [activeSection, setActiveSection] = useState("");
+  const { login, authenticated, user, logout } = usePrivy();
   const [isScrolled, setIsScrolled] = useState(false);
-
-  const navItems = [
-    { label: t("header.nav.about"), href: "#about" },
-    { label: t("header.nav.catalogue"), href: "#catalogue" },
-    { label: t("header.nav.guides"), href: "#guides" },
-  ];
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 50);
+    const handleScroll = () => setIsScrolled(window.scrollY > 20);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) setActiveSection(entry.target.id);
-        });
-      },
-      { rootMargin: "-50% 0px -50% 0px" }
-    );
-    const sections = document.querySelectorAll("section[id]");
-    sections.forEach((section) => observer.observe(section));
-    return () => sections.forEach((section) => observer.unobserve(section));
-  }, []);
-
-  const handleNavClick = (href: string) => {
-    setIsMenuOpen(false);
-    const element = document.querySelector(href);
-    if (element) element.scrollIntoView({ behavior: "smooth" });
-  };
-
-  const toggleLanguage = () => {
-    const newLang = i18n.language === "es" ? "en" : "es";
-    i18n.changeLanguage(newLang);
-  };
+  const navLinks = [
+    { href: "#how-it-works", label: "How it works" },
+    { href: "#agents", label: "Agents" },
+    { href: "#breeding", label: "Breeding" },
+    { href: "/dashboard", label: "Dashboard" },
+  ];
 
   return (
-    <motion.header
+    <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled ? "bg-background/80 backdrop-blur-lg border-b border-border" : "bg-transparent"
+        isScrolled ? "bg-background/80 backdrop-blur-lg border-b border-border" : ""
       }`}
-      initial={{ y: -100 }}
-      animate={{ y: 0 }}
-      transition={{ duration: 0.5 }}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 sm:h-20">
+      <div className="max-w-6xl mx-auto px-6">
+        <nav className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2">
+          <Link href="/" className="flex items-center gap-2 group">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-              <Dna className="w-5 h-5 text-white" />
+              <Dna className="w-4 h-4 text-white" />
             </div>
-            <span className="font-bold text-lg">Genomad</span>
+            <span className="font-semibold text-lg">Genomad</span>
           </Link>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-6">
-            {navItems.map((item) => {
-              const sectionId = item.href.replace("#", "");
-              const isActive = activeSection === sectionId;
-              return (
-                <button
-                  key={item.href}
-                  onClick={() => handleNavClick(item.href)}
-                  className={`text-sm font-medium transition-colors relative px-2 py-1 ${
-                    isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"
-                  }`}
+          {/* Desktop Nav */}
+          <div className="hidden md:flex items-center gap-8">
+            {navLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {link.label}
+              </Link>
+            ))}
+          </div>
+
+          {/* Auth */}
+          <div className="hidden md:flex items-center gap-4">
+            {authenticated ? (
+              <div className="flex items-center gap-3">
+                <Link
+                  href="/profile"
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  {item.label}
-                  {isActive && (
-                    <motion.div
-                      className="absolute -bottom-1 left-0 right-0 h-0.5 bg-primary rounded-full"
-                      layoutId="activeNav"
-                    />
-                  )}
+                  {user?.wallet?.address?.slice(0, 6)}...{user?.wallet?.address?.slice(-4)}
+                </Link>
+                <button
+                  onClick={logout}
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Logout
                 </button>
-              );
-            })}
-
-            {/* Language Switcher */}
-            <button
-              onClick={toggleLanguage}
-              className="px-3 py-1.5 rounded-lg text-sm font-medium bg-muted text-muted-foreground hover:text-foreground transition-colors"
-            >
-              {i18n.language === "es" ? "EN" : "ES"}
-            </button>
-
-            <Button size="sm" href="/dashboard">
-              {t("header.cta")}
-            </Button>
-          </nav>
+              </div>
+            ) : (
+              <button
+                onClick={login}
+                className="btn-primary text-sm px-4 py-2"
+              >
+                Connect Wallet
+              </button>
+            )}
+          </div>
 
           {/* Mobile Menu Button */}
           <button
-            className="md:hidden p-2 rounded-lg hover:bg-muted transition-colors"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="md:hidden p-2 text-muted-foreground"
           >
-            {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
-        </div>
-      </div>
+        </nav>
 
-      {/* Mobile Menu */}
-      <AnimatePresence>
-        {isMenuOpen && (
-          <motion.div
-            className="md:hidden bg-background/95 backdrop-blur-lg border-b border-border"
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-          >
-            <nav className="px-4 py-4 flex flex-col gap-2">
-              {navItems.map((item) => (
-                <button
-                  key={item.href}
-                  onClick={() => handleNavClick(item.href)}
-                  className="text-base font-medium py-2 text-left text-muted-foreground hover:text-foreground transition-colors"
+        {/* Mobile Menu */}
+        {isMobileMenuOpen && (
+          <div className="md:hidden py-4 border-t border-border">
+            <div className="flex flex-col gap-4">
+              {navLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  {item.label}
-                </button>
+                  {link.label}
+                </Link>
               ))}
-              <button
-                onClick={toggleLanguage}
-                className="text-base font-medium py-2 text-left text-muted-foreground"
-              >
-                🌐 {i18n.language === "es" ? "English" : "Español"}
-              </button>
-              <Button className="mt-2" href="/dashboard">
-                {t("header.cta")}
-              </Button>
-            </nav>
-          </motion.div>
+              {authenticated ? (
+                <button
+                  onClick={() => { logout(); setIsMobileMenuOpen(false); }}
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors text-left"
+                >
+                  Logout
+                </button>
+              ) : (
+                <button
+                  onClick={() => { login(); setIsMobileMenuOpen(false); }}
+                  className="btn-primary text-sm px-4 py-2 w-fit"
+                >
+                  Connect Wallet
+                </button>
+              )}
+            </div>
+          </div>
         )}
-      </AnimatePresence>
-    </motion.header>
+      </div>
+    </header>
   );
 }
 

@@ -1,161 +1,82 @@
 // src/components/landing/Hero.tsx
 "use client";
 
-import { motion } from "framer-motion";
-import { Button, Card, Badge } from "@/components/ui";
-import { Check, Sparkles, Dna } from "lucide-react";
-import { useTranslation } from "react-i18next";
+import { usePrivy } from "@privy-io/react-auth";
+import Link from "next/link";
+import { ArrowRight, Sparkles } from "lucide-react";
 
 export function Hero() {
-  const { t, i18n } = useTranslation();
-
-  const features = [
-    t("hero.features.0"),
-    t("hero.features.1"),
-    t("hero.features.2"),
-    t("hero.features.3"),
-    t("hero.features.4"),
-  ];
+  const { login, authenticated } = usePrivy();
 
   return (
-    <section className="min-h-screen flex items-center justify-center pt-20 sm:pt-24 pb-16 px-4 bg-background">
-      <div className="max-w-6xl mx-auto w-full">
-        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-          {/* Content */}
-          <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6 }}
-            className="order-2 lg:order-1"
-          >
-            {/* Beta Badge */}
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4 }}
-              className="mb-4"
-            >
-              <Badge variant="outline" className="border-primary text-primary">
-                <Sparkles className="w-3 h-3 mr-1" />
-                {i18n.language === "es" ? "Beta en Base Sepolia" : "Beta on Base Sepolia"}
-              </Badge>
-            </motion.div>
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+      {/* Background */}
+      <div className="absolute inset-0 bg-grid opacity-50" />
+      
+      {/* Gradient orbs */}
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/20 rounded-full blur-[120px] animate-pulse" />
+      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-accent/20 rounded-full blur-[120px] animate-pulse delay-1000" />
+      
+      {/* Content */}
+      <div className="relative z-10 max-w-4xl mx-auto px-6 text-center">
+        {/* Badge */}
+        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-8">
+          <Sparkles className="w-4 h-4 text-primary" />
+          <span className="text-sm text-primary">Live on Base Mainnet</span>
+        </div>
 
-            {/* Tagline */}
-            <motion.h1 
-              className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold leading-tight mb-4 sm:mb-6"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-            >
-              <span className="text-foreground">{t("hero.title")}</span>
-              <br />
-              <span className="bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-transparent">
-                {t("hero.titleHighlight")}
-              </span>
-            </motion.h1>
+        {/* Headline */}
+        <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-6">
+          <span className="gradient-text">Evolve</span> your
+          <br />
+          AI agents on-chain
+        </h1>
 
-            {/* Subtitle */}
-            <motion.p 
-              className="text-base sm:text-lg md:text-xl mb-6 sm:mb-8 text-muted-foreground"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-            >
-              {t("hero.subtitle")}
-            </motion.p>
+        {/* Subheadline */}
+        <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed">
+          Genomad is a genetic protocol for AI agents. Register, breed, and evolve 
+          your agents with verifiable on-chain traits and lineage.
+        </p>
 
-            {/* Features List */}
-            <motion.ul 
-              className="space-y-2 sm:space-y-3 mb-6 sm:mb-8"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.6, delay: 0.3 }}
-            >
-              {features.map((feature, index) => (
-                <motion.li
-                  key={index}
-                  className="flex items-start gap-2 sm:gap-3 text-sm sm:text-base"
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.4, delay: 0.4 + index * 0.1 }}
-                >
-                  <span className="mt-0.5 shrink-0 h-5 w-5 rounded-full bg-secondary/20 flex items-center justify-center">
-                    <Check className="w-3 h-3 text-secondary" />
-                  </span>
-                  <span className="text-foreground">{feature}</span>
-                </motion.li>
-              ))}
-            </motion.ul>
+        {/* CTAs */}
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+          {authenticated ? (
+            <Link href="/dashboard" className="btn-primary flex items-center gap-2 text-base">
+              Go to Dashboard
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          ) : (
+            <button onClick={login} className="btn-primary flex items-center gap-2 text-base">
+              Get Started
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          )}
+          <Link href="#how-it-works" className="btn-secondary text-base">
+            Learn more
+          </Link>
+        </div>
 
-            {/* CTA Buttons */}
-            <motion.div 
-              className="flex flex-col sm:flex-row gap-3 sm:gap-4"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.8 }}
-            >
-              <Button size="lg" href="/dashboard" className="w-full sm:w-auto">
-                <Dna className="w-4 h-4 mr-2" />
-                {t("header.cta")}
-              </Button>
-              <Button variant="outline" size="lg" href="#about" className="w-full sm:w-auto">
-                {i18n.language === "es" ? "Aprende Más" : "Learn More"}
-              </Button>
-            </motion.div>
-          </motion.div>
+        {/* Stats */}
+        <div className="grid grid-cols-3 gap-8 mt-20 max-w-lg mx-auto">
+          <div>
+            <div className="text-3xl font-bold gradient-text">6+</div>
+            <div className="text-sm text-muted-foreground mt-1">Agents Minted</div>
+          </div>
+          <div>
+            <div className="text-3xl font-bold gradient-text">4</div>
+            <div className="text-sm text-muted-foreground mt-1">Smart Contracts</div>
+          </div>
+          <div>
+            <div className="text-3xl font-bold gradient-text">8</div>
+            <div className="text-sm text-muted-foreground mt-1">Trait Types</div>
+          </div>
+        </div>
+      </div>
 
-          {/* Video Section */}
-          <motion.div
-            className="relative order-1 lg:order-2"
-            initial={{ opacity: 0, x: 30 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-          >
-            <Card className="aspect-video overflow-hidden p-0">
-              <video
-                autoPlay
-                loop
-                muted
-                playsInline
-                className="w-full h-full object-cover"
-              >
-                <source 
-                  src="https://res.cloudinary.com/ddejtxqjq/video/upload/v1771212418/GMD_zqv1gd.mp4" 
-                  type="video/mp4" 
-                />
-              </video>
-            </Card>
-
-            {/* Floating stats */}
-            <motion.div
-              className="hidden sm:block absolute -bottom-4 -left-4"
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.4, delay: 1 }}
-            >
-              <Card className="p-4 text-center min-w-[100px] border-primary/50 bg-card/80 backdrop-blur">
-                <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">8</p>
-                <p className="text-sm text-muted-foreground whitespace-nowrap">
-                  {i18n.language === "es" ? "Traits únicos" : "Unique Traits"}
-                </p>
-              </Card>
-            </motion.div>
-
-            <motion.div
-              className="hidden sm:block absolute -top-4 -right-4"
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.4, delay: 1.2 }}
-            >
-              <Card className="p-4 text-center min-w-[130px] border-secondary/50 bg-card/80 backdrop-blur">
-                <p className="text-2xl sm:text-3xl font-bold text-secondary">∞</p>
-                <p className="text-sm text-muted-foreground whitespace-nowrap">
-                  {i18n.language === "es" ? "Combinaciones" : "Combinations"}
-                </p>
-              </Card>
-            </motion.div>
-          </motion.div>
+      {/* Scroll indicator */}
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2">
+        <div className="w-6 h-10 rounded-full border-2 border-muted-foreground/30 flex items-start justify-center p-2">
+          <div className="w-1 h-2 bg-muted-foreground/50 rounded-full animate-bounce" />
         </div>
       </div>
     </section>

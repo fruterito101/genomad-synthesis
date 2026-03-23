@@ -1,126 +1,109 @@
+// src/components/landing/ContractsSection.tsx
 "use client";
 
-import { ExternalLink, CheckCircle2, Shield, Code2, Star } from "lucide-react";
+import { ExternalLink, Copy, Check } from "lucide-react";
+import { useState } from "react";
 
 const contracts = [
   {
     name: "GenomadNFT",
     address: "0x9f20494A0FbC929adAC553f4A2FCFa7D2b448Cf0",
-    description: "ERC-8004 compliant agent identity NFT",
-    features: ["agentURI", "metadata", "agentWallet", "custody"],
-    icon: "shield"
+    description: "ERC-721 NFT contract for agent registration and ownership",
   },
   {
-    name: "BreedingFactory", 
+    name: "BreedingFactory",
     address: "0x74Bb441677b6E7de0d1FF75e0a3F766f5e8470db",
-    description: "Agent breeding with genetic crossover",
-    features: ["crossover", "mutation", "custody split"],
-    icon: "code"
+    description: "Handles breeding requests and offspring creation",
   },
   {
     name: "TraitVerifier",
-    address: "0x99D2090a76a1f3cfe79F6Fb3A01F7F23C0ECce7F", 
-    description: "ZK proof verification on-chain",
-    features: ["trait proofs", "breed proofs", "privacy"],
-    icon: "check"
+    address: "0x99D2090a76a1f3cfe79F6Fb3A01F7F23C0ECce7F",
+    description: "ZK proof verification for trait validation",
   },
   {
     name: "ReputationRegistry",
     address: "0x3F6A5E4778c905d36BD433DBaD06C7f70D630E71",
-    description: "ERC-8004 reputation system for agents",
-    features: ["feedback", "ratings", "trust scores"],
-    icon: "star"
-  }
+    description: "Stores feedback and reputation scores",
+  },
 ];
 
 export function ContractsSection() {
+  const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+
+  const copyAddress = (address: string, index: number) => {
+    navigator.clipboard.writeText(address);
+    setCopiedIndex(index);
+    setTimeout(() => setCopiedIndex(null), 2000);
+  };
+
   return (
-    <section className="w-full py-16 md:py-24 bg-gradient-to-b from-background to-muted/20">
-      <div className="max-w-7xl mx-auto px-4">
+    <section className="py-24 px-6 border-t border-border">
+      <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-500/10 text-green-500 text-sm mb-4">
-            <CheckCircle2 className="w-4 h-4" />
-            Live on Base Mainnet
+        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-12">
+          <div>
+            <h2 className="text-3xl md:text-4xl font-bold mb-2">
+              Smart Contracts
+            </h2>
+            <p className="text-muted-foreground">
+              Deployed and verified on Base Mainnet
+            </p>
           </div>
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            ERC-8004 Contracts
-          </h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
-            Fully deployed and verified smart contracts implementing the 
-            <a href="https://eips.ethereum.org/EIPS/eip-8004" target="_blank" rel="noopener" className="text-primary hover:underline ml-1">
-              ERC-8004 Trustless Agents
-            </a> standard.
-          </p>
+          <a
+            href="https://basescan.org"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm text-primary hover:underline flex items-center gap-1"
+          >
+            View on BaseScan
+            <ExternalLink className="w-3 h-3" />
+          </a>
         </div>
 
-        {/* Contracts Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {contracts.map((contract) => (
-            <div 
-              key={contract.name}
-              className="bg-card border border-border rounded-xl p-6 hover:border-primary/50 transition-colors"
+        {/* Contracts List */}
+        <div className="space-y-4">
+          {contracts.map((contract, i) => (
+            <div
+              key={i}
+              className="card p-5 flex flex-col md:flex-row md:items-center justify-between gap-4"
             >
-              <div className="flex items-center gap-3 mb-4">
-                <div className="p-2 rounded-lg bg-primary/10">
-                  {contract.icon === "shield" && <Shield className="w-5 h-5 text-primary" />}
-                  {contract.icon === "code" && <Code2 className="w-5 h-5 text-primary" />}
-                  {contract.icon === "check" && <CheckCircle2 className="w-5 h-5 text-primary" />}
-                  {contract.icon === "star" && <Star className="w-5 h-5 text-primary" />}
-                </div>
-                <h3 className="font-semibold text-lg">{contract.name}</h3>
+              <div className="flex-1">
+                <h3 className="font-semibold mb-1">{contract.name}</h3>
+                <p className="text-sm text-muted-foreground">
+                  {contract.description}
+                </p>
               </div>
-              
-              <p className="text-sm text-muted-foreground mb-4">
-                {contract.description}
-              </p>
-
-              {/* Address */}
-              <a
-                href={`https://basescan.org/address/${contract.address}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 text-xs font-mono bg-muted/50 rounded-lg px-3 py-2 hover:bg-muted transition-colors mb-4"
-              >
-                <span className="truncate">{contract.address}</span>
-                <ExternalLink className="w-3 h-3 flex-shrink-0" />
-              </a>
-
-              {/* Features */}
-              <div className="flex flex-wrap gap-2">
-                {contract.features.map((feature) => (
-                  <span 
-                    key={feature}
-                    className="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary"
-                  >
-                    {feature}
-                  </span>
-                ))}
+              <div className="flex items-center gap-2">
+                <code className="text-xs md:text-sm font-mono text-muted-foreground bg-muted/50 px-3 py-1.5 rounded">
+                  {contract.address.slice(0, 6)}...{contract.address.slice(-4)}
+                </code>
+                <button
+                  onClick={() => copyAddress(contract.address, i)}
+                  className="p-2 hover:bg-muted rounded-lg transition-colors"
+                  title="Copy address"
+                >
+                  {copiedIndex === i ? (
+                    <Check className="w-4 h-4 text-green-500" />
+                  ) : (
+                    <Copy className="w-4 h-4 text-muted-foreground" />
+                  )}
+                </button>
+                <a
+                  href={`https://basescan.org/address/${contract.address}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-2 hover:bg-muted rounded-lg transition-colors"
+                  title="View on BaseScan"
+                >
+                  <ExternalLink className="w-4 h-4 text-muted-foreground" />
+                </a>
               </div>
             </div>
           ))}
-        </div>
-
-        {/* Chain Info */}
-        <div className="mt-8 text-center">
-          <div className="inline-flex items-center gap-4 text-sm text-muted-foreground flex-wrap justify-center">
-            <span>Chain: <span className="text-foreground font-medium">Base Mainnet</span></span>
-            <span className="w-1 h-1 rounded-full bg-muted-foreground hidden sm:block" />
-            <span>Chain ID: <span className="text-foreground font-medium">8453</span></span>
-            <span className="w-1 h-1 rounded-full bg-muted-foreground hidden sm:block" />
-            <span>Contracts: <span className="text-foreground font-medium">4</span></span>
-            <span className="w-1 h-1 rounded-full bg-muted-foreground hidden sm:block" />
-            <a 
-              href="https://basescan.org/address/0x9f20494A0FbC929adAC553f4A2FCFa7D2b448Cf0"
-              target="_blank"
-              rel="noopener"
-              className="text-primary hover:underline inline-flex items-center gap-1"
-            >
-              View on BaseScan <ExternalLink className="w-3 h-3" />
-            </a>
-          </div>
         </div>
       </div>
     </section>
   );
 }
+
+export default ContractsSection;
