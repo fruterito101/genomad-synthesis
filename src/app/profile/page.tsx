@@ -19,7 +19,7 @@ import { BreedingRequests } from "@/components/BreedingRequests";
 import { CoOwnersDisplay } from "@/components/CoOwnersDisplay";
 import { NetworkSwitcher } from "@/components/NetworkSwitcher";
 import { AppSidebar } from "@/components/app-sidebar";
-import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
+
 import { Button } from "@/components/ui";
 import { ConnectionStatus } from "@/components/relay";
 import { useGMDBalance } from "@/hooks/useGMDBalance";
@@ -79,11 +79,11 @@ export default function ProfilePage() {
   if (!authenticated) return (<div className="min-h-screen flex flex-col items-center justify-center gap-4 px-4 bg-background"><Shield className="w-12 h-12 sm:w-16 sm:h-16 text-primary" /><h1 className="text-xl sm:text-2xl font-bold text-center">{i18n.language === "es" ? "Conecta para continuar" : "Connect to Continue"}</h1><LoginButton /></div>);
 
   return (
-    <SidebarProvider>
+    <div className="flex min-h-screen bg-background">
       <AppSidebar />
-      <SidebarInset>
+      <div className="flex-1 ml-56">
         <header className="flex h-14 items-center gap-4 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 lg:px-6">
-          <SidebarTrigger className="-ml-1" />
+          
           <h1 className="font-semibold">{i18n.language === "es" ? "Mi Perfil" : "My Profile"}</h1>
           <div className="flex-1" />
           <NetworkSwitcher />
@@ -279,7 +279,7 @@ export default function ProfilePage() {
             )}
           </motion.div>
         </main>
-      </SidebarInset>
-    </SidebarProvider>
+      </div>
+    </div>
   );
 }

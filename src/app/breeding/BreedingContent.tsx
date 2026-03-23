@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { LoginButton } from "@/components/LoginButton";
 import { AppSidebar } from "@/components/app-sidebar";
-import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
+
 import { Button } from "@/components/ui";
 import { Dna, Plus, Loader2, ArrowRight, Sparkles, Check, Clock, Shield, Zap, Crown, Activity, RefreshCw, AlertCircle, ChevronDown, Cpu, Palette, MessageSquare, Brain, Heart, TrendingUp, GraduationCap } from "lucide-react";
 import { SuccessModal } from "@/components/SuccessModal";
@@ -199,11 +199,11 @@ export default function BreedingContent() {
 
   return (
     <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-background"><Dna className="w-10 h-10 sm:w-12 sm:h-12 animate-pulse text-primary" /></div>}>
-    <SidebarProvider>
+    <div className="flex min-h-screen bg-background">
       <AppSidebar />
-      <SidebarInset>
+      <div className="flex-1 ml-56">
         <header className="flex h-14 items-center gap-4 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 lg:px-6">
-          <SidebarTrigger className="-ml-1" />
+          
           <h1 className="font-semibold">Breeding Lab</h1>
           <div className="flex-1" />
           <NetworkSwitcher />
@@ -444,8 +444,8 @@ export default function BreedingContent() {
           child={result?.child || null}
           breeding={result?.breeding || undefined}
         />
-      </SidebarInset>
-    </SidebarProvider>
+      </div>
+    </div>
     </Suspense>
   );
 }
