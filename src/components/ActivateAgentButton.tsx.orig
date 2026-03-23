@@ -58,10 +58,7 @@ export function ActivateAgentButton({
       setStatus("signing");
       
       // Generar DNA commitment desde el hash existente
-      let hash = agent.commitment || agent.dnaHash || "";
-      if (hash.startsWith("0x")) hash = hash.slice(2);
-      hash = hash.padStart(64, "0");
-      const dnaCommitment = `0x${hash}` as `0x${string}`;
+      const dnaCommitment = (agent.commitment || `0x${agent.dnaHash}`) as `0x${string}`;
       
       // Registrar on-chain
       const { txHash, tokenId } = await registerAsync(dnaCommitment);

@@ -134,7 +134,10 @@ export function AgentCard({
       setActivationStatus("signing")
       
       // Generate DNA commitment from hash
-      const dnaCommitment = (agent.commitment || `0x${agent.dnaHash}`) as `0x${string}`
+      let hash = agent.commitment || agent.dnaHash || "";
+      if (hash.startsWith("0x")) hash = hash.slice(2);
+      hash = hash.padStart(64, "0");
+      const dnaCommitment = `0x${hash}` as `0x${string}`
       
       // Register on-chain
       const { txHash, tokenId } = await registerAsync(dnaCommitment)
