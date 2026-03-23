@@ -1,11 +1,12 @@
 // src/hooks/useGenomadNFT.ts
 // Hooks para interactuar con GenomadNFT contract
 
-import { useWriteContract, useWaitForTransactionReceipt, useReadContract } from "wagmi";
+import { useWriteContract, useWaitForTransactionReceipt, useReadContract, usePublicClient } from "wagmi";
 import { CONTRACTS } from "@/lib/blockchain/contracts";
 import { useCallback } from "react";
+import { decodeEventLog, type Hash } from "viem";
 
-// ABI simplificado para register
+// ABI para register
 const REGISTER_ABI = [
   {
     inputs: [],
@@ -14,12 +15,30 @@ const REGISTER_ABI = [
     stateMutability: "nonpayable",
     type: "function",
   },
+] as const;
+
+// ABI para eventos
+const EVENTS_ABI = [
   {
-    inputs: [{ name: "agentURI_", type: "string" }],
-    name: "register",
-    outputs: [{ name: "tokenId", type: "uint256" }],
-    stateMutability: "nonpayable",
-    type: "function",
+    anonymous: false,
+    inputs: [
+      { indexed: true, name: "from", type: "address" },
+      { indexed: true, name: "to", type: "address" },
+      { indexed: true, name: "tokenId", type: "uint256" },
+    ],
+    name: "Transfer",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      { indexed: true, name: "tokenId", type: "uint256" },
+      { indexed: true, name: "owner", type: "address" },
+      { indexed: false, name: "dnaCommitment", type: "bytes32" },
+      { indexed: false, name: "generation", type: "uint256" },
+    ],
+    name: "AgentRegistered",
+    type: "event",
   },
 ] as const;
 
@@ -91,14 +110,39 @@ const GENOMAD_ABI = [
     stateMutability: "view",
     type: "function",
   },
-  {
-    inputs: [{ name: "tokenId", type: "uint256" }],
-    name: "tokenURI",
-    outputs: [{ name: "", type: "string" }],
-    stateMutability: "view",
-    type: "function",
-  },
 ] as const;
+
+// Helper para parsear tokenId de los logs
+function parseTokenIdFromLogs(logs: any[]): bigint | undefined {
+  for (const log of logs) {
+    try {
+      // Intentar decodificar Transfer event (from = 0x0 significa mint)
+      const decoded = decodeEventLog({
+        abi: EVENTS_ABI,
+        data: log.data,
+        topics: log.topics,
+      });
+      
+      if (decoded.eventName === "Transfer" && decoded.args) {
+        const args = decoded.args as { from: string; to: string; tokenId: bigint };
+        // Si from es zero address, es un mint
+        if (args.from === "0x0000000000000000000000000000000000000000") {
+          console.log("[useGenomadNFT] Found tokenId from Transfer event:", args.tokenId);
+          return args.tokenId;
+        }
+      }
+      
+      if (decoded.eventName === "AgentRegistered" && decoded.args) {
+        const args = decoded.args as { tokenId: bigint };
+        console.log("[useGenomadNFT] Found tokenId from AgentRegistered event:", args.tokenId);
+        return args.tokenId;
+      }
+    } catch (e) {
+      // No es este evento, continuar
+    }
+  }
+  return undefined;
+}
 
 // ============================================
 // WRITE HOOKS
@@ -108,24 +152,17 @@ const GENOMAD_ABI = [
  * Register a new agent on-chain (ERC-8004 style)
  */
 export function useRegisterAgent() {
-  const { writeContract, writeContractAsync, data: hash, isPending, error, reset } = useWriteContract();
+  const { writeContractAsync, data: hash, isPending, error, reset } = useWriteContract();
+  const publicClient = usePublicClient();
   
   const { isLoading: isConfirming, isSuccess, data: receipt } = useWaitForTransactionReceipt({
     hash,
   });
 
-  // Registrar sin URI (más simple)
-  const register = useCallback(() => {
-    writeContract({
-      address: CONTRACTS.genomadNFT as `0x${string}`,
-      abi: REGISTER_ABI,
-      functionName: "register",
-      args: [],
-    });
-  }, [writeContract]);
-
-  const registerAsync = useCallback(async (dnaCommitment?: `0x${string}`) => {
-    // Usar register() sin argumentos - más simple y confiable
+  const registerAsync = useCallback(async (_dnaCommitment?: `0x${string}`) => {
+    console.log("[useGenomadNFT] Starting register()...");
+    
+    // 1. Enviar transacción
     const txHash = await writeContractAsync({
       address: CONTRACTS.genomadNFT as `0x${string}`,
       abi: REGISTER_ABI,
@@ -133,12 +170,35 @@ export function useRegisterAgent() {
       args: [],
     });
     
-    // TODO: Parsear tokenId del receipt
-    return { txHash, tokenId: undefined };
-  }, [writeContractAsync]);
+    console.log("[useGenomadNFT] TX sent:", txHash);
+    
+    // 2. Esperar confirmación y obtener receipt
+    if (!publicClient) {
+      console.warn("[useGenomadNFT] No publicClient, returning without tokenId");
+      return { txHash, tokenId: undefined };
+    }
+    
+    console.log("[useGenomadNFT] Waiting for receipt...");
+    const txReceipt = await publicClient.waitForTransactionReceipt({ 
+      hash: txHash,
+      confirmations: 1,
+    });
+    
+    console.log("[useGenomadNFT] Receipt received, logs:", txReceipt.logs.length);
+    
+    // 3. Parsear tokenId de los logs
+    const tokenId = parseTokenIdFromLogs(txReceipt.logs);
+    
+    if (tokenId) {
+      console.log("[useGenomadNFT] ✅ Parsed tokenId:", tokenId.toString());
+    } else {
+      console.warn("[useGenomadNFT] ⚠️ Could not parse tokenId from logs");
+    }
+    
+    return { txHash, tokenId: tokenId?.toString() };
+  }, [writeContractAsync, publicClient]);
 
   return {
-    register,
     registerAsync,
     hash,
     isPending,
