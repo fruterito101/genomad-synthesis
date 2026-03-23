@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { usePrivy } from "@privy-io/react-auth";
+import { NotificationBell } from "@/components/NotificationBell";
 import {
   LayoutDashboard,
   Dna,
@@ -12,6 +13,7 @@ import {
   LogOut,
   ChevronLeft,
   ChevronRight,
+  Bell,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -50,6 +52,9 @@ export function AppSidebar() {
             <Dna className="w-4 h-4 text-white" />
           </div>
         )}
+        
+        {/* Notifications - only when expanded */}
+        {!collapsed && <NotificationBell />}
       </div>
 
       {/* Nav */}
@@ -77,6 +82,13 @@ export function AppSidebar() {
 
       {/* Footer */}
       <div className="p-3 border-t border-border space-y-2">
+        {/* Notifications when collapsed */}
+        {collapsed && (
+          <div className="flex justify-center">
+            <NotificationBell />
+          </div>
+        )}
+        
         {/* Wallet */}
         {user?.wallet?.address && !collapsed && (
           <div className="px-3 py-2 text-xs text-muted-foreground font-mono truncate">
@@ -109,18 +121,6 @@ export function AppSidebar() {
         </button>
       </div>
     </aside>
-  );
-}
-
-// Simple wrapper to replace SidebarProvider pattern
-export function SidebarLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="min-h-screen bg-background">
-      <AppSidebar />
-      <main className="pl-56 min-h-screen transition-all duration-300">
-        {children}
-      </main>
-    </div>
   );
 }
 

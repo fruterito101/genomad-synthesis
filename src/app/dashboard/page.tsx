@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import dynamic from "next/dynamic";
+const RequestBreedingModal = dynamic(() => import("@/components/RequestBreedingModal").then(m => ({ default: m.RequestBreedingModal })), { ssr: false });
 import { usePrivy } from "@privy-io/react-auth";
 import Link from "next/link";
 import { 
@@ -116,6 +118,8 @@ export default function DashboardPage() {
   const [myAgents, setMyAgents] = useState<Agent[]>([]);
   const [stats, setStats] = useState<Stats>({ totalAgents: 0, activeAgents: 0, totalBreedings: 0 });
   const [loading, setLoading] = useState(true);
+  const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
+  const [showBreedingModal, setShowBreedingModal] = useState(false);
 
   const fetchData = useCallback(async () => {
     try {
@@ -372,12 +376,22 @@ export default function DashboardPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {agents.map((agent) => {
                 const isMine = myAgents.some((m) => m.id === agent.id);
-                return <AgentCard key={agent.id} agent={agent} isMine={isMine} />;
+                return <div key={agent.id} onClick={() => { if (!isMine) { setSelectedAgent(agent); setShowBreedingModal(true); } }} className={!isMine ? "cursor-pointer" : ""}><AgentCard agent={agent} isMine={isMine} /></div>;
               })}
             </div>
           )}
         </div>
       </main>
+
+      {/* Breeding Request Modal */}
+      <RequestBreedingModal
+        isOpen={showBreedingModal}
+        onClose={() => { setShowBreedingModal(false); setSelectedAgent(null); }}
+        targetAgent={selectedAgent}
+        myAgents={myAgents}
+        getAccessToken={getAccessToken}
+        onSuccess={fetchData}
+      />
     </div>
   );
 }
