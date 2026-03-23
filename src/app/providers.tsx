@@ -57,7 +57,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
   if (!mounted) {
     return (
       <I18nProvider>
-        <div className="min-h-screen bg-[#0B0F2F]">
+        <div className="min-h-screen bg-background">
           {children}
         </div>
       </I18nProvider>
