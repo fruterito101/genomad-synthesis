@@ -2,15 +2,110 @@
 // Hooks para interactuar con GenomadNFT contract
 
 import { useWriteContract, useWaitForTransactionReceipt, useReadContract } from "wagmi";
-import { CONTRACTS, GENOMAD_NFT_ABI } from "@/lib/blockchain/contracts";
+import { CONTRACTS } from "@/lib/blockchain/contracts";
 import { useCallback } from "react";
+
+// ABI simplificado para register
+const REGISTER_ABI = [
+  {
+    inputs: [],
+    name: "register",
+    outputs: [{ name: "tokenId", type: "uint256" }],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [{ name: "agentURI_", type: "string" }],
+    name: "register",
+    outputs: [{ name: "tokenId", type: "uint256" }],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+] as const;
+
+// ABI para otras funciones
+const GENOMAD_ABI = [
+  {
+    inputs: [{ name: "tokenId", type: "uint256" }],
+    name: "activateAgent",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [{ name: "tokenId", type: "uint256" }],
+    name: "deactivateAgent",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      { name: "from", type: "address" },
+      { name: "to", type: "address" },
+      { name: "tokenId", type: "uint256" },
+    ],
+    name: "transferFrom",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [{ name: "tokenId", type: "uint256" }],
+    name: "getAgentData",
+    outputs: [
+      {
+        components: [
+          { name: "dnaCommitment", type: "bytes32" },
+          { name: "generation", type: "uint256" },
+          { name: "parentA", type: "uint256" },
+          { name: "parentB", type: "uint256" },
+          { name: "createdAt", type: "uint256" },
+          { name: "isActive", type: "bool" },
+        ],
+        name: "",
+        type: "tuple",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [{ name: "tokenId", type: "uint256" }],
+    name: "ownerOf",
+    outputs: [{ name: "", type: "address" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [{ name: "account", type: "address" }],
+    name: "balanceOf",
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "totalSupply",
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [{ name: "tokenId", type: "uint256" }],
+    name: "tokenURI",
+    outputs: [{ name: "", type: "string" }],
+    stateMutability: "view",
+    type: "function",
+  },
+] as const;
 
 // ============================================
 // WRITE HOOKS
 // ============================================
 
 /**
- * Register a new agent on-chain
+ * Register a new agent on-chain (ERC-8004 style)
  */
 export function useRegisterAgent() {
   const { writeContract, writeContractAsync, data: hash, isPending, error, reset } = useWriteContract();
@@ -19,22 +114,27 @@ export function useRegisterAgent() {
     hash,
   });
 
-  const register = useCallback((dnaCommitment: `0x${string}`) => {
+  // Registrar sin URI (más simple)
+  const register = useCallback(() => {
     writeContract({
       address: CONTRACTS.genomadNFT as `0x${string}`,
-      abi: GENOMAD_NFT_ABI,
-      functionName: "registerAgent",
-      args: [dnaCommitment],
+      abi: REGISTER_ABI,
+      functionName: "register",
+      args: [],
     });
   }, [writeContract]);
 
-  const registerAsync = useCallback(async (dnaCommitment: `0x${string}`) => {
-    return writeContractAsync({
+  const registerAsync = useCallback(async (dnaCommitment?: `0x${string}`) => {
+    // Usar register() sin argumentos - más simple y confiable
+    const txHash = await writeContractAsync({
       address: CONTRACTS.genomadNFT as `0x${string}`,
-      abi: GENOMAD_NFT_ABI,
-      functionName: "registerAgent",
-      args: [dnaCommitment],
+      abi: REGISTER_ABI,
+      functionName: "register",
+      args: [],
     });
+    
+    // TODO: Parsear tokenId del receipt
+    return { txHash, tokenId: undefined };
   }, [writeContractAsync]);
 
   return {
@@ -64,7 +164,7 @@ export function useActivateAgent() {
   const activate = useCallback((tokenId: bigint) => {
     writeContract({
       address: CONTRACTS.genomadNFT as `0x${string}`,
-      abi: GENOMAD_NFT_ABI,
+      abi: GENOMAD_ABI,
       functionName: "activateAgent",
       args: [tokenId],
     });
@@ -73,7 +173,7 @@ export function useActivateAgent() {
   const activateAsync = useCallback(async (tokenId: bigint) => {
     return writeContractAsync({
       address: CONTRACTS.genomadNFT as `0x${string}`,
-      abi: GENOMAD_NFT_ABI,
+      abi: GENOMAD_ABI,
       functionName: "activateAgent",
       args: [tokenId],
     });
@@ -106,7 +206,7 @@ export function useDeactivateAgent() {
   const deactivate = useCallback((tokenId: bigint) => {
     writeContract({
       address: CONTRACTS.genomadNFT as `0x${string}`,
-      abi: GENOMAD_NFT_ABI,
+      abi: GENOMAD_ABI,
       functionName: "deactivateAgent",
       args: [tokenId],
     });
@@ -115,7 +215,7 @@ export function useDeactivateAgent() {
   const deactivateAsync = useCallback(async (tokenId: bigint) => {
     return writeContractAsync({
       address: CONTRACTS.genomadNFT as `0x${string}`,
-      abi: GENOMAD_NFT_ABI,
+      abi: GENOMAD_ABI,
       functionName: "deactivateAgent",
       args: [tokenId],
     });
@@ -152,7 +252,7 @@ export function useTransferAgent() {
   ) => {
     writeContract({
       address: CONTRACTS.genomadNFT as `0x${string}`,
-      abi: GENOMAD_NFT_ABI,
+      abi: GENOMAD_ABI,
       functionName: "transferFrom",
       args: [from, to, tokenId],
     });
@@ -165,7 +265,7 @@ export function useTransferAgent() {
   ) => {
     return writeContractAsync({
       address: CONTRACTS.genomadNFT as `0x${string}`,
-      abi: GENOMAD_NFT_ABI,
+      abi: GENOMAD_ABI,
       functionName: "transferFrom",
       args: [from, to, tokenId],
     });
@@ -189,58 +289,40 @@ export function useTransferAgent() {
 // READ HOOKS
 // ============================================
 
-/**
- * Get agent data by tokenId
- */
 export function useAgentData(tokenId: bigint | undefined) {
   return useReadContract({
     address: CONTRACTS.genomadNFT as `0x${string}`,
-    abi: GENOMAD_NFT_ABI,
+    abi: GENOMAD_ABI,
     functionName: "getAgentData",
     args: tokenId ? [tokenId] : undefined,
-    query: {
-      enabled: !!tokenId,
-    },
+    query: { enabled: !!tokenId },
   });
 }
 
-/**
- * Get owner of a token
- */
 export function useAgentOwner(tokenId: bigint | undefined) {
   return useReadContract({
     address: CONTRACTS.genomadNFT as `0x${string}`,
-    abi: GENOMAD_NFT_ABI,
+    abi: GENOMAD_ABI,
     functionName: "ownerOf",
     args: tokenId ? [tokenId] : undefined,
-    query: {
-      enabled: !!tokenId,
-    },
+    query: { enabled: !!tokenId },
   });
 }
 
-/**
- * Get balance of an address
- */
 export function useAgentBalance(address: `0x${string}` | undefined) {
   return useReadContract({
     address: CONTRACTS.genomadNFT as `0x${string}`,
-    abi: GENOMAD_NFT_ABI,
+    abi: GENOMAD_ABI,
     functionName: "balanceOf",
     args: address ? [address] : undefined,
-    query: {
-      enabled: !!address,
-    },
+    query: { enabled: !!address },
   });
 }
 
-/**
- * Get total supply of agents
- */
 export function useTotalAgents() {
   return useReadContract({
     address: CONTRACTS.genomadNFT as `0x${string}`,
-    abi: GENOMAD_NFT_ABI,
+    abi: GENOMAD_ABI,
     functionName: "totalSupply",
   });
 }
